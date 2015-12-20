@@ -1,0 +1,7 @@
+[package]
+name = "aperture-import"
+version = "0.1.0"
+authors = ["Hubert Figuière <hub@figuiere.net>"]
+
+[dependencies]
+plist = { git = "https://github.com/hfiguiere/rust-plist.git", rev = "5cfc0ea" }
