@@ -3,6 +3,7 @@ mod aplib;
 
 use std::env;
 use aplib::library::Library;
+//use aplib::folder::Folder;
 
 fn main() {
 
@@ -16,18 +17,27 @@ fn main() {
             println!("Version {}", version);
         }
 
-        let count = library.count_albums();
-        println!("{} albums", count);
-
-        let folder_count = library.count_folders();
-        println!("{} folder", folder_count);
-
         let model_info = library.get_model_info();
 
         println!("model info");
         println!("\tDB version: {}", model_info.db_version);
         println!("\tDB minor version: {}", model_info.db_minor_version);
         println!("\tProject version: {}", model_info.project_version);
+
+        let count = library.count_albums();
+        println!("{} albums", count);
+
+        let folder_count = library.count_folders();
+        println!("{} folder", folder_count);
+
+        let folders = library.list_folders();
+        println!("Folders:");
+        println!("| Name | uuid | type | model id | path |");
+        for folder in folders {
+            println!("| {} | {} | {} | {} | {} |",
+                     folder.name, folder.uuid, folder.folder_type,
+                     folder.model_id, folder.path);
+        }
     } else {
         println!("Argument required");
     }

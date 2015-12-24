@@ -90,3 +90,17 @@ Aperture.aplibrary
 |
 +- Previews
 +- Thumbnails
+
+
+
+ApertureData.xml: seems to contain a dump of the whole data model but
+it seems to not be present everywhere.
+
+Database/Folders is all the containers, folders, project, etc.
+The .apfolder files are binary plists.
+
+
+
+Folders
+-------
+

@@ -6,6 +6,7 @@ use std::fs;
 use std::path::{Path,PathBuf};
 
 use self::plist::PlistEvent;
+use aplib::folder::Folder;
 
 // This is mostly from db_version = 110
 
@@ -158,6 +159,29 @@ impl Library {
         &self.version
     }
 
+    fn list_items(&self, dir: &str, ext: &str) -> Vec<String>
+    {
+        let mut ppath = PathBuf::from(self.path.to_owned());
+        ppath.push(DATABASE_DIR);
+        ppath.push(dir);
+
+        let mut list: Vec<String> = Vec::new();
+
+        if !fs::metadata(&ppath).unwrap().is_dir() {
+            // XXX return a Result
+            return list;
+        }
+
+        for entry in fs::read_dir(&ppath).unwrap() {
+            let entry = entry.unwrap();
+            let p = entry.path();
+            if p.extension().unwrap() == ext {
+                list.push(entry.path().to_str().unwrap().to_owned());
+            }
+        }
+        list
+    }
+
     fn count_items(&self, dir: &str, ext: &str) -> u32
     {
         let mut ppath = PathBuf::from(self.path.to_owned());
@@ -199,5 +223,15 @@ impl Library {
         self.count_items(FOLDERS_DIR, "apfolder")
     }
 
+
+    pub fn list_folders(&self) -> Vec<Folder>
+    {
+        let file_list = self.list_items(FOLDERS_DIR, "apfolder");
+        let mut folders: Vec<Folder> = Vec::new();
+        for file in file_list {
+            folders.push(Folder::from(&file));
+        }
+        folders
+    }
 }
 
