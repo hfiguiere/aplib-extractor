@@ -5,8 +5,9 @@ use std::fs::File;
 use std::fs;
 use std::path::{Path,PathBuf};
 
-use self::plist::PlistEvent;
+use self::plist::Plist;
 use aplib::folder::Folder;
+use aplib::plutils;
 
 // This is mostly from db_version = 110
 
@@ -19,74 +20,38 @@ const ALBUMS_DIR: &'static str = "Albums";
 const FOLDERS_DIR: &'static str = "Folders";
 
 pub struct ModelInfo {
-    is_iphoto_library: bool,
+    pub is_iphoto_library: bool,
     pub db_version: i64,
     pub db_minor_version: i64,
-    master_count: i64,
-    version_count: i64,
+    pub master_count: i64,
+    pub version_count: i64,
     pub project_version: i64,
 }
 
 impl ModelInfo {
-    fn parse(events : Vec<PlistEvent>) -> ModelInfo
+    fn parse(plist : &Plist) -> ModelInfo
     {
-        let mut model = ModelInfo { is_iphoto_library: false,
-                                    db_version: 0, db_minor_version: 0,
-                                    master_count: 0, version_count: 0,
-                                    project_version: 0 };
-        let mut i = 0usize;
-        loop {
-            match events[i] {
-                PlistEvent::Key(ref s) => {
-                    match s.as_ref() {
-                        "DatabaseMinorVersion" => match events[i + 1] {
-                            PlistEvent::IntegerValue(n) => {
-                                model.db_minor_version = n;
-                            },
-                            _ => ()
-                        },
-                        "DatabaseVersion" => match events[i + 1] {
-                            PlistEvent::IntegerValue(n) => {
-                                model.db_version = n;
-                            },
-                            _ => ()
-                        },
-                        "isIPhotoLibrary" => match events[i + 1] {
-                            PlistEvent::BooleanValue(b) => {
-                                model.is_iphoto_library= b;
-                            },
-                            _ => ()
-                        },
-                        "masterCount" => match events[i + 1] {
-                            PlistEvent::IntegerValue(n) => {
-                                model.master_count = n;
-                            },
-                            _ => ()
-                        },
-                        "versionCount" => match events[i + 1] {
-                            PlistEvent::IntegerValue(n) => {
-                                model.version_count = n;
-                            },
-                            _ => ()
-                        },
-                        "projectVersion" => match events[i + 1] {
-                            PlistEvent::IntegerValue(n) => {
-                                model.project_version = n;
-                            },
-                            _ => ()
-                        },
-                        _ => i += 1
-                    }
-                },
-                _ => ()
-            }
-            i += 1;
-            if i >= events.len() {
-                break;
+        use aplib::plutils::{get_int_value,get_bool_value};
+
+        match *plist {
+            Plist::Dictionary(ref dict) => ModelInfo {
+                db_minor_version: get_int_value(dict,
+                                                "DatabaseMinorVersion"),
+                db_version: get_int_value(dict, "DatabaseVersion"),
+                is_iphoto_library: get_bool_value(dict, "isIPhotoLibrary"),
+                master_count: get_int_value(dict, "masterCount"),
+                version_count: get_int_value(dict, "versionCount"),
+                project_version: get_int_value(dict, "projectVersion")
+            },
+            _ => ModelInfo {
+                is_iphoto_library: false,
+                db_version: 0,
+                db_minor_version: 0,
+                master_count: 0,
+                version_count: 0,
+                project_version: 0
             }
         }
-
-        model
     }
 }
 
@@ -103,57 +68,35 @@ impl Library {
         Library { path: p, version: "".to_string() }
     }
 
-    fn parse_plist(&self, path : &Path) -> Vec<PlistEvent>
+    fn parse_plist(&self, path : &Path) -> Plist
     {
-        use self::plist::StreamingParser;
-
         let mut ppath = PathBuf::from(self.path.to_owned());
         ppath.push(path);
+
         let f = File::open(&ppath).unwrap();
-
-        let streaming_parser = StreamingParser::new(f);
-
-        streaming_parser.map(|e| e.unwrap()).collect()
+        Plist::read(f).unwrap()
     }
 
     pub fn library_version(&mut self) -> &String
     {
         if self.version.is_empty()
         {
-            let events = self.parse_plist(Path::new(INFO_PLIST));
+            let plist = self.parse_plist(Path::new(INFO_PLIST));
 
-            let mut i = 0usize;
-            loop {
-                match events[i] {
-                    PlistEvent::Key(ref s) => {
-                        match s.as_ref() {
-                            "CFBundleShortVersionString" =>
-                                match events[i + 1] {
-                                    PlistEvent::StringValue(ref s) => {
-                                        self.version = s.clone();
-                                    },
-                                    _ => ()
-                                },
-                            "CFBundleIdentifier" =>
-                                match events[i + 1] {
-                                    PlistEvent::StringValue(ref s) => {
-                                        if s != BUNDLE_IDENTIFIER {
-                                            println!("FATAL not a library");
-                                            self.version = "".to_string();
-                                            return &self.version;
-                                        }
-                                    }
-                                    _ => ()
-                                },
-                            _ => i += 1
-                        }
-                    },
-                    _ => ()
-                }
-                i += 1;
-                if i >= events.len() {
-                    break;
-                }
+            match plist {
+                Plist::Dictionary(ref dict) => {
+                    let bundle_id = plutils::get_str_value(dict,
+                                                           "CFBundleIdentifier");
+                    if bundle_id != BUNDLE_IDENTIFIER {
+                        println!("FATAL not a library");
+                        self.version = "".to_string();
+                        return &self.version;
+                    }
+                    self.version =
+                        plutils::get_str_value(dict,
+                                               "CFBundleShortVersionString");
+                },
+                _ => ()
             }
         }
         &self.version
@@ -208,9 +151,10 @@ impl Library {
     {
         let mut ppath = PathBuf::from(DATABASE_DIR);
         ppath.push(DATAMODEL_VERSION_PLIST);
+
         let plist = self.parse_plist(ppath.as_path());
 
-        ModelInfo::parse(plist)
+        ModelInfo::parse(&plist)
     }
 
     pub fn count_albums(&self) -> u32
