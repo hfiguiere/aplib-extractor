@@ -29,10 +29,8 @@ fn main() {
         println!("\tProject version: {}", model_info.project_version);
 
         let folder_count = library.count_folders();
-        println!("{} folder", folder_count);
-
         let folders = library.list_folders();
-        println!("Folders:");
+        println!("{} Folders:", folder_count);
         println!("| Name | uuid | type | model id | path |");
         for folder in folders {
             if !folder.is_valid() {
@@ -43,11 +41,9 @@ fn main() {
                      folder.model_id, folder.path);
         }
 
-        let count = library.count_albums();
-        println!("{} albums", count);
-
+        let album_count = library.count_albums();
         let albums = library.list_albums();
-        println!("Albums:");
+        println!("{} Albums:", album_count);
         println!("| name | uuid | folder | type | class | model id |");
         for album in albums {
             if !album.is_valid() {
@@ -57,6 +53,31 @@ fn main() {
                      album.name,
                      album.uuid, album.folder_uuid, album.album_type,
                      album.subclass, album.model_id);
+        }
+
+        let masters = library.list_masters();
+        println!("{} Masters:", masters.len());
+        println!("| uuid | project | path |");
+        for master in masters {
+            if !master.is_valid() {
+                continue;
+            }
+            println!("| {} | {} | {} |",
+                     master.uuid, master.project_uuid, master.image_path);
+        }
+
+
+        let versions = library.list_versions();
+        println!("{} Versions:", versions.len());
+        println!("| uuid | master | project | name | original |");
+        for version in versions {
+            if !version.is_valid() {
+                continue;
+            }
+            println!("| {} | {} | {} | {} | {} |",
+                     version.uuid, version.master_uuid,
+                     version.project_uuid, version.name,
+                     version.is_original);
         }
     } else {
         println!("Argument required");

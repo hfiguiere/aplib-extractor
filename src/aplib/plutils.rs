@@ -7,17 +7,18 @@
 extern crate plist;
 
 use std::fs::File;
+use std::path::Path;
 use self::plist::Plist;
 use std::collections::BTreeMap;
 
-pub fn parse_plist(path : &str) -> Plist
+pub fn parse_plist(path : &Path) -> Plist
 {
     let f = File::open(&path).unwrap();
     let result = Plist::read(f);
     return match result {
         Ok(v) => v,
         Err(_) => {
-            println!("Error from plist::read with file {}", path);
+            println!("Error from plist::read with file {:?}", path);
             Plist::Dictionary(BTreeMap::new())
         }
     };

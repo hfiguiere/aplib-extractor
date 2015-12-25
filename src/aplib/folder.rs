@@ -7,6 +7,7 @@
 extern crate plist;
 
 use self::plist::Plist;
+use std::path::Path;
 
 pub enum FolderType {
     INVALID = 0,
@@ -28,7 +29,7 @@ pub struct Folder {
 
 impl Folder {
 
-    pub fn from(plist_path: &str) -> Folder
+    pub fn from(plist_path: &Path) -> Folder
     {
         use aplib::plutils::*;
 

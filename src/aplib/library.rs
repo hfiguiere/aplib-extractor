@@ -7,22 +7,28 @@
 extern crate plist;
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{PathBuf,Path};
 
 use self::plist::Plist;
 use aplib::folder::Folder;
 use aplib::album::Album;
+use aplib::version::Version;
+use aplib::master::Master;
 use aplib::plutils;
 
 // This is mostly from db_version = 110
 
-const BUNDLE_IDENTIFIER: &'static str = "com.apple.Aperture.library";
 const INFO_PLIST: &'static str = "Info.plist";
+
+const BUNDLE_IDENTIFIER: &'static str = "com.apple.Aperture.library";
+
 const DATABASE_DIR: &'static str = "Database";
 
+// in Database
 const DATAMODEL_VERSION_PLIST: &'static str = "DataModelVersion.plist";
 const ALBUMS_DIR: &'static str = "Albums";
 const FOLDERS_DIR: &'static str = "Folders";
+const VERSIONS_BASE_DIR: &'static str = "Versions";
 
 pub struct ModelInfo {
     pub is_iphoto_library: bool,
@@ -77,8 +83,8 @@ impl Library {
     {
         if self.version.is_empty()
         {
-            let plist = plutils::parse_plist(self.build_path(INFO_PLIST, false).
-                                             to_str().unwrap());
+            let plist = plutils::parse_plist(self.build_path(INFO_PLIST,
+                                                             false).as_ref());
 
             match plist {
                 Plist::Dictionary(ref dict) => {
@@ -110,10 +116,10 @@ impl Library {
         return ppath;
     }
 
-    fn list_items(&self, dir: &str, ext: &str) -> Vec<String>
+    fn list_items(&self, dir: &str, ext: &str) -> Vec<PathBuf>
     {
         let ppath = self.build_path(dir, true);
-        let mut list: Vec<String> = Vec::new();
+        let mut list: Vec<PathBuf> = Vec::new();
 
         if !fs::metadata(&ppath).unwrap().is_dir() {
             // XXX return a Result
@@ -124,7 +130,7 @@ impl Library {
             let entry = entry.unwrap();
             let p = entry.path();
             if p.extension().unwrap() == ext {
-                list.push(entry.path().to_str().unwrap().to_owned());
+                list.push(p.to_owned());
             }
         }
         return list;
@@ -152,7 +158,7 @@ impl Library {
     pub fn get_model_info(&self) -> ModelInfo
     {
         let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
-        let plist = plutils::parse_plist(ppath.to_str().unwrap());
+        let plist = plutils::parse_plist(ppath.as_ref());
 
         return ModelInfo::parse(&plist);
     }
@@ -167,7 +173,7 @@ impl Library {
         let file_list = self.list_items(ALBUMS_DIR, "apalbum");
         let mut albums: Vec<Album> = Vec::new();
         for file in file_list {
-            albums.push(Album::from(&file));
+            albums.push(Album::from(file.as_ref()));
         }
         return albums;
     }
@@ -182,9 +188,92 @@ impl Library {
         let file_list = self.list_items(FOLDERS_DIR, "apfolder");
         let mut folders: Vec<Folder> = Vec::new();
         for file in file_list {
-            folders.push(Folder::from(&file));
+            folders.push(Folder::from(file.as_ref()));
         }
         return folders;
+    }
+
+    pub fn count_versions(&self) -> u64
+    {
+        0
+    }
+
+    pub fn count_masters(&self) -> u64
+    {
+        0
+    }
+
+    fn recurse_list_directory(path: &PathBuf, level: i32) -> Vec<PathBuf>
+    {
+        let mut list: Vec<PathBuf> = Vec::new();
+        for entry in fs::read_dir(path).unwrap() {
+            let entry = entry.unwrap();
+            if entry.metadata().unwrap().is_dir() {
+                if level == 0 {
+                    list.push(entry.path());
+                } else {
+                    let mut sublist =
+                        Library::recurse_list_directory(&entry.path(),
+                                                        level - 1);
+                    list.append(&mut sublist)
+                }
+            }
+        }
+        return list;
+    }
+
+    fn list_versions_items_dirs(&self) -> Vec<PathBuf>
+    {
+        let ppath = self.build_path(VERSIONS_BASE_DIR, true);
+
+        if !fs::metadata(&ppath).unwrap().is_dir() {
+            // XXX return a Result
+            return Vec::new();
+        }
+
+        return Library::recurse_list_directory(&ppath, 4);
+    }
+
+    fn list_versions_items(&self, ext: &str) -> Vec<PathBuf>
+    {
+        let list = self.list_versions_items_dirs();
+        let mut items = Vec::new();
+
+        for dir in list {
+
+            if !fs::metadata(&dir).unwrap().is_dir() {
+                continue;
+            }
+
+            for entry in fs::read_dir(&dir).unwrap() {
+                let entry = entry.unwrap();
+                let p = entry.path();
+                if p.extension().unwrap() == ext {
+                    items.push(entry.path().to_owned());
+                }
+            }
+        }
+        return items;
+    }
+
+    pub fn list_versions(&self) -> Vec<Version>
+    {
+        let mut versions = Vec::new();
+        let list = self.list_versions_items("apversion");
+        for item in list {
+            versions.push(Version::from(item.as_ref()));
+        }
+        return versions;
+    }
+
+    pub fn list_masters(&self) -> Vec<Master>
+    {
+        let mut masters = Vec::new();
+        let list = self.list_versions_items("apmaster");
+        for item in list {
+            masters.push(Master::from(item.as_ref()));
+        }
+        return masters;
     }
 }
 

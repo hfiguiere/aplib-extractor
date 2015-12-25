@@ -7,6 +7,7 @@
 extern crate plist;
 
 use self::plist::Plist;
+use std::path::Path;
 
 pub enum AlbumSubclass {
     INVALID = 0,
@@ -29,7 +30,7 @@ pub struct Album {
 
 impl Album {
 
-    pub fn from(plist_path: &str) -> Album
+    pub fn from(plist_path: &Path) -> Album
     {
         use aplib::plutils::*;
 

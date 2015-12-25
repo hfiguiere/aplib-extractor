@@ -1,5 +1,4 @@
 Aperture Library format
-=======================
 
 
 
@@ -13,7 +12,7 @@ App version | DB version | DB minor | Project vers
 
 
 Bundle structure
-----------------
+================
 
 This is the file structure of the bundle for version 110. Between [ ]
 is the earliest DB minor we *saw* the file.
@@ -94,7 +93,10 @@ Aperture.aplibrary
 
 
 ApertureData.xml: seems to contain a dump of the whole data model but
-it seems to not be present everywhere.
+it seems to not be present everywhere. [IGNORE]
+
+Database
+========
 
 Database/Folders is all the containers, folders, project, etc.
 The .apfolder files are binary plists.
@@ -105,17 +107,18 @@ files are binary plists.
 Common plist properties
 -----------------------
 
-uuid: a string uuid.
-modelId: numeral id. Possibly unique library wide.
-folderUuid: uuid of the folder this is contained in
-parentFolderUuid: for Folders, the parent.
+* uuid: a string uuid.
+* modelId: numeral id. Possibly unique library wide.
+* folderUuid: uuid of the folder this is contained in
+* parentFolderUuid: for Folders, the parent.
 
 Folders
 -------
 
 All in top level.
-implicitAlbumUuid: the uuid of the album that is representing the view
-(Subclass 2 album)
+
+* implicitAlbumUuid: the uuid of the album that is representing the view
+  (Subclass 2 album)
 
 
 Albums
@@ -125,11 +128,44 @@ Subclass 2 Albums are attached to a folder. Linked via the folder
 "implicitAlbumUuid" property and back with albums "folderUuid".
 
 Top-level properties:
-UserQueryInfo
- - the query for smart album. DATA.
-InfoDictionary
- - these are the actual properties
-attachments
- - attachments like track path
-FilterInfo
- - display filter. DATA.
+
+* UserQueryInfo: the query for smart album. DATA.
+* InfoDictionary: these are the actual properties
+* attachments: attachments like track path
+* FilterInfo: display filter. DATA.
+
+
+Versions
+--------
+
+The stem of the filename is probably irrelevant.
+
+### Master.apmaster ###
+
+Description of the master. Each version has a master.
+* type: IMGT is image.
+* subtype: RAWST is RAW. JPGST is JPEG.
+* importGroupUuid: uuid for the import group. - apparently no other info.
+* alternateMasterUuid: the other master (for JPEG+RAW) - reciprocal
+* originalVersionUuid: the uuid of the original version.
+* modelId: numerical ID
+* fileVolumeUuid: the UUID of the volume (no idea how to cross ref - probably
+  referenced through the Alias data - trace of it in the sqlite database)
+* fileIsReference: true of no in library
+* projectUuid: the uuid of the project it is in (see Folders)
+
+### Version-n.apversion ###
+
+* isFlagged: version flagged
+* imageTimeZoneName: timezone name
+* nonRawMasterUuid: uuid of non-RAW master.
+* showInLibrary: whether to show. false likely to be implicit version of
+  master.
+* name: version name
+* fileName: filename for version
+* mainRating: rating
+* isOriginal: this is the original version.
+
+Masters
+=======
+
