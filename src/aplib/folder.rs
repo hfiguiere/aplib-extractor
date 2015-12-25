@@ -6,8 +6,6 @@
 
 extern crate plist;
 
-use std::fs::File;
-
 use self::plist::Plist;
 
 pub enum FolderType {
@@ -25,22 +23,17 @@ pub struct Folder {
     pub path: String,
     pub name: String,
     pub parent_uuid: String,
+    pub implicit_album_uuid: String,
 }
 
 impl Folder {
 
-    fn parse_plist(path : &str) -> Plist
-    {
-        let f = File::open(&path).unwrap();
-        Plist::read(f).unwrap()
-    }
-
     pub fn from(plist_path: &str) -> Folder
     {
-        use aplib::plutils::{get_int_value,get_str_value};
+        use aplib::plutils::*;
 
-        let plist = Folder::parse_plist(plist_path);
-        match plist {
+        let plist = parse_plist(plist_path);
+        return match plist {
             Plist::Dictionary(ref dict) => Folder {
                 path: get_str_value(dict, "folderPath"),
                 folder_type: get_int_value(dict, "folderType") as u64,
@@ -48,6 +41,7 @@ impl Folder {
                 name: get_str_value(dict, "name"),
                 parent_uuid: get_str_value(dict, "parentFolderUuid"),
                 uuid: get_str_value(dict, "uuid"),
+                implicit_album_uuid: get_str_value(dict, "implicitAlbumUuid"),
                 db_version: get_int_value(dict, "version"),
                 project_version: get_int_value(dict, "projectVersion")
             },
@@ -56,9 +50,13 @@ impl Folder {
                 model_id: 0, folder_type: 0,
                 db_version: 0, project_version: 0,
                 path: "".to_string(), name: "".to_string(),
-                parent_uuid: "".to_string()
+                parent_uuid: "".to_string(),
+                implicit_album_uuid: "".to_string()
             }
         }
     }
 
+    pub fn is_valid(&self) -> bool {
+        return !self.uuid.is_empty();
+    }
 }

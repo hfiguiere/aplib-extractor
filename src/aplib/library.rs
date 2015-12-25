@@ -6,12 +6,12 @@
 
 extern crate plist;
 
-use std::fs::File;
 use std::fs;
-use std::path::{Path,PathBuf};
+use std::path::PathBuf;
 
 use self::plist::Plist;
 use aplib::folder::Folder;
+use aplib::album::Album;
 use aplib::plutils;
 
 // This is mostly from db_version = 110
@@ -68,25 +68,17 @@ pub struct Library {
 
 impl Library {
 
-    pub fn new(p: String) -> Library
+    pub fn new(p: &String) -> Library
     {
-        Library { path: p, version: "".to_string() }
-    }
-
-    fn parse_plist(&self, path : &Path) -> Plist
-    {
-        let mut ppath = PathBuf::from(self.path.to_owned());
-        ppath.push(path);
-
-        let f = File::open(&ppath).unwrap();
-        Plist::read(f).unwrap()
+        Library { path: p.to_owned(), version: "".to_string() }
     }
 
     pub fn library_version(&mut self) -> &String
     {
         if self.version.is_empty()
         {
-            let plist = self.parse_plist(Path::new(INFO_PLIST));
+            let plist = plutils::parse_plist(self.build_path(INFO_PLIST, false).
+                                             to_str().unwrap());
 
             match plist {
                 Plist::Dictionary(ref dict) => {
@@ -104,15 +96,23 @@ impl Library {
                 _ => ()
             }
         }
-        &self.version
+        return &self.version;
+    }
+
+    fn build_path(&self, dir: &str, database: bool) -> PathBuf
+    {
+        let mut ppath = PathBuf::from(self.path.to_owned());
+        if database {
+            ppath.push(DATABASE_DIR);
+        }
+        ppath.push(dir);
+
+        return ppath;
     }
 
     fn list_items(&self, dir: &str, ext: &str) -> Vec<String>
     {
-        let mut ppath = PathBuf::from(self.path.to_owned());
-        ppath.push(DATABASE_DIR);
-        ppath.push(dir);
-
+        let ppath = self.build_path(dir, true);
         let mut list: Vec<String> = Vec::new();
 
         if !fs::metadata(&ppath).unwrap().is_dir() {
@@ -127,14 +127,12 @@ impl Library {
                 list.push(entry.path().to_str().unwrap().to_owned());
             }
         }
-        list
+        return list;
     }
 
     fn count_items(&self, dir: &str, ext: &str) -> u32
     {
-        let mut ppath = PathBuf::from(self.path.to_owned());
-        ppath.push(DATABASE_DIR);
-        ppath.push(dir);
+        let ppath = self.build_path(dir, true);
 
         let mut count = 0u32;
         if !fs::metadata(&ppath).unwrap().is_dir() {
@@ -148,30 +146,36 @@ impl Library {
                 count += 1;
             }
         }
-        count
-
+        return count;
     }
 
     pub fn get_model_info(&self) -> ModelInfo
     {
-        let mut ppath = PathBuf::from(DATABASE_DIR);
-        ppath.push(DATAMODEL_VERSION_PLIST);
+        let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
+        let plist = plutils::parse_plist(ppath.to_str().unwrap());
 
-        let plist = self.parse_plist(ppath.as_path());
-
-        ModelInfo::parse(&plist)
+        return ModelInfo::parse(&plist);
     }
 
     pub fn count_albums(&self) -> u32
     {
-        self.count_items(ALBUMS_DIR, "apalbum")
+        return self.count_items(ALBUMS_DIR, "apalbum");
+    }
+
+    pub fn list_albums(&self) -> Vec<Album>
+    {
+        let file_list = self.list_items(ALBUMS_DIR, "apalbum");
+        let mut albums: Vec<Album> = Vec::new();
+        for file in file_list {
+            albums.push(Album::from(&file));
+        }
+        return albums;
     }
 
     pub fn count_folders(&self) -> u32
     {
-        self.count_items(FOLDERS_DIR, "apfolder")
+        return self.count_items(FOLDERS_DIR, "apfolder");
     }
-
 
     pub fn list_folders(&self) -> Vec<Folder>
     {
@@ -180,7 +184,7 @@ impl Library {
         for file in file_list {
             folders.push(Folder::from(&file));
         }
-        folders
+        return folders;
     }
 }
 

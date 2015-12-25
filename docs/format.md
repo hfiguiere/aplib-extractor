@@ -99,8 +99,37 @@ it seems to not be present everywhere.
 Database/Folders is all the containers, folders, project, etc.
 The .apfolder files are binary plists.
 
+Database/Albums contain the albums from the library. The .apalbum
+files are binary plists.
 
+Common plist properties
+-----------------------
+
+uuid: a string uuid.
+modelId: numeral id. Possibly unique library wide.
+folderUuid: uuid of the folder this is contained in
+parentFolderUuid: for Folders, the parent.
 
 Folders
 -------
 
+All in top level.
+implicitAlbumUuid: the uuid of the album that is representing the view
+(Subclass 2 album)
+
+
+Albums
+------
+
+Subclass 2 Albums are attached to a folder. Linked via the folder
+"implicitAlbumUuid" property and back with albums "folderUuid".
+
+Top-level properties:
+UserQueryInfo
+ - the query for smart album. DATA.
+InfoDictionary
+ - these are the actual properties
+attachments
+ - attachments like track path
+FilterInfo
+ - display filter. DATA.

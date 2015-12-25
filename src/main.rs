@@ -8,14 +8,13 @@ mod aplib;
 
 use std::env;
 use aplib::library::Library;
-//use aplib::folder::Folder;
 
 fn main() {
 
     let args: Vec<String> = env::args().collect();
 
     if args.len() == 2 {
-        let mut library = Library::new(args[1].clone());
+        let mut library = Library::new(&args[1]);
 
         {
             let version = library.library_version();
@@ -29,9 +28,6 @@ fn main() {
         println!("\tDB minor version: {}", model_info.db_minor_version);
         println!("\tProject version: {}", model_info.project_version);
 
-        let count = library.count_albums();
-        println!("{} albums", count);
-
         let folder_count = library.count_folders();
         println!("{} folder", folder_count);
 
@@ -39,9 +35,28 @@ fn main() {
         println!("Folders:");
         println!("| Name | uuid | type | model id | path |");
         for folder in folders {
+            if !folder.is_valid() {
+                continue;
+            }
             println!("| {} | {} | {} | {} | {} |",
                      folder.name, folder.uuid, folder.folder_type,
                      folder.model_id, folder.path);
+        }
+
+        let count = library.count_albums();
+        println!("{} albums", count);
+
+        let albums = library.list_albums();
+        println!("Albums:");
+        println!("| name | uuid | folder | type | class | model id |");
+        for album in albums {
+            if !album.is_valid() {
+                continue;
+            }
+            println!("| {} | {} | {} | {} | {} | {} |",
+                     album.name,
+                     album.uuid, album.folder_uuid, album.album_type,
+                     album.subclass, album.model_id);
         }
     } else {
         println!("Argument required");

@@ -6,26 +6,48 @@
 
 extern crate plist;
 
+use std::fs::File;
 use self::plist::Plist;
 use std::collections::BTreeMap;
 
+pub fn parse_plist(path : &str) -> Plist
+{
+    let f = File::open(&path).unwrap();
+    let result = Plist::read(f);
+    return match result {
+        Ok(v) => v,
+        Err(_) => {
+            println!("Error from plist::read with file {}", path);
+            Plist::Dictionary(BTreeMap::new())
+        }
+    };
+}
+
 pub fn get_str_value(dict: &BTreeMap<String, Plist>, key: &str) -> String {
-    match dict.get(key) {
-        Some(&Plist::String(ref s)) => s.clone(),
+    return match dict.get(key) {
+        Some(&Plist::String(ref s)) => s.to_owned(),
         _ => "".to_string()
-    }
+    };
 }
 
 pub fn get_int_value(dict: &BTreeMap<String, Plist>, key: &str) -> i64 {
-    match dict.get(key) {
+    return match dict.get(key) {
         Some(&Plist::Integer(n)) => n,
         _ => 0
-    }
+    };
 }
 
 pub fn get_bool_value(dict: &BTreeMap<String, Plist>, key: &str) -> bool {
-    match dict.get(key) {
+    return match dict.get(key) {
         Some(&Plist::Boolean(b)) => b,
         _ => false
-    }
+    };
+}
+
+pub fn get_dict_value(dict: &BTreeMap<String, Plist>,
+                      key: &str) -> BTreeMap<String, Plist> {
+    return match dict.get(key) {
+        Some(&Plist::Dictionary(ref d)) => d.to_owned(),
+        _ => BTreeMap::new()
+    };
 }
