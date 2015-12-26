@@ -8,6 +8,24 @@ mod aplib;
 
 use std::env;
 use aplib::library::Library;
+use aplib::keyword::Keyword;
+
+/// print the keywords with indentation for the hierarchy
+fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
+    for keyword in keywords {
+        println!("| {}{} | {} | {} |", indent, keyword.name,
+                 keyword.uuid, keyword.parent_uuid);
+        if !keyword.children.is_empty() {
+            let new_indent;
+            if indent.is_empty() {
+                new_indent = "+- ".to_string() + indent;
+            } else {
+                new_indent = "\t".to_string() + indent;
+            }
+            print_keywords(&keyword.children, &new_indent);
+        }
+    }
+}
 
 fn main() {
 
@@ -54,6 +72,11 @@ fn main() {
                      album.uuid, album.folder_uuid, album.album_type,
                      album.subclass, album.model_id);
         }
+
+        let keywords = library.list_keywords();
+        println!("{} keywords:", keywords.len());
+        println!("| uuid | parent | name |");
+        print_keywords(&keywords, &"".to_string());
 
         let masters = library.list_masters();
         println!("{} Masters:", masters.len());

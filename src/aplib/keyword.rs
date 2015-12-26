@@ -1,0 +1,70 @@
+/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+extern crate plist;
+
+use std::path::Path;
+use aplib::plutils::*;
+use self::plist::Plist;
+use std::collections::BTreeMap;
+
+pub struct Keyword {
+    pub uuid: String,
+    pub model_id: i64,
+    pub parent_uuid: String,
+    pub name: String,
+    pub children: Vec<Keyword>,
+}
+
+/// Parse keywords from the .plist file
+pub fn parse_keywords(path: &Path) -> Vec<Keyword>
+{
+    let plist = parse_plist(path);
+
+    return match plist {
+        Plist::Dictionary(ref dict) => {
+            let version = get_int_value(dict, "keywords_version");
+            // XXX deal with proper errors here.
+            if version != 6 {
+                println!("Wrong keyword version !");
+            }
+
+            Keyword::from_array(get_array_value(dict, "keywords"))
+        },
+        _ => Vec::new()
+    }
+}
+
+impl Keyword {
+
+    /// convert a Plist array to a vec of keyword.
+    fn from_array(a: Vec<Plist>) -> Vec<Keyword>
+    {
+        let mut keywords = Vec::new();
+        for item in a {
+            match item {
+                Plist::Dictionary(ref kw) => {
+                    keywords.push(Keyword::from(kw));
+                },
+                _ => ()
+            }
+        }
+        return keywords;
+    }
+
+    /// create a new keyword from a plist dictionary
+    /// will recursively create the children
+    pub fn from(d: &BTreeMap<String, Plist>) -> Keyword
+    {
+        return Keyword {
+            uuid: get_str_value(d, "uuid"),
+            model_id: get_int_value(d, "modelId"),
+            parent_uuid: get_str_value(d, "parentUuid"),
+            name: get_str_value(d, "name"),
+            children: Keyword::from_array(get_array_value(d, "zChildren")),
+        };
+    }
+}

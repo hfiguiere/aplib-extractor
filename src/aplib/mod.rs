@@ -10,3 +10,4 @@ pub mod folder;
 pub mod album;
 pub mod master;
 pub mod version;
+pub mod keyword;

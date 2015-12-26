@@ -7,13 +7,14 @@
 extern crate plist;
 
 use std::fs;
-use std::path::{PathBuf,Path};
+use std::path::PathBuf;
 
 use self::plist::Plist;
 use aplib::folder::Folder;
 use aplib::album::Album;
 use aplib::version::Version;
 use aplib::master::Master;
+use aplib::keyword::{parse_keywords,Keyword};
 use aplib::plutils;
 
 // This is mostly from db_version = 110
@@ -26,6 +27,7 @@ const DATABASE_DIR: &'static str = "Database";
 
 // in Database
 const DATAMODEL_VERSION_PLIST: &'static str = "DataModelVersion.plist";
+const KEYWORDS_PLIST: &'static str = "Keywords.plist";
 const ALBUMS_DIR: &'static str = "Albums";
 const FOLDERS_DIR: &'static str = "Folders";
 const VERSIONS_BASE_DIR: &'static str = "Versions";
@@ -193,16 +195,6 @@ impl Library {
         return folders;
     }
 
-    pub fn count_versions(&self) -> u64
-    {
-        0
-    }
-
-    pub fn count_masters(&self) -> u64
-    {
-        0
-    }
-
     fn recurse_list_directory(path: &PathBuf, level: i32) -> Vec<PathBuf>
     {
         let mut list: Vec<PathBuf> = Vec::new();
@@ -274,6 +266,11 @@ impl Library {
             masters.push(Master::from(item.as_ref()));
         }
         return masters;
+    }
+
+    pub fn list_keywords(&self) -> Vec<Keyword>
+    {
+        return parse_keywords(self.build_path(KEYWORDS_PLIST, true).as_ref());
     }
 }
 

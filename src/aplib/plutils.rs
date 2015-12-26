@@ -52,3 +52,11 @@ pub fn get_dict_value(dict: &BTreeMap<String, Plist>,
         _ => BTreeMap::new()
     };
 }
+
+pub fn get_array_value(dict: &BTreeMap<String, Plist>,
+                       key: &str) -> Vec<Plist> {
+    return match dict.get(key) {
+        Some(&Plist::Array(ref a)) => a.to_owned(),
+        _ => Vec::new()
+    };
+}
