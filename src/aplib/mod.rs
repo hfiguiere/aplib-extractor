@@ -11,3 +11,21 @@ pub mod album;
 pub mod master;
 pub mod version;
 pub mod keyword;
+
+pub enum AplibType {
+    FOLDER,
+    ALBUM,
+    KEYWORD,
+    MASTER,
+    VERSION,
+}
+
+pub trait AplibObject {
+    fn obj_type(&self) -> AplibType;
+    fn is_valid(&self) -> bool;
+    fn uuid(&self) -> &String;
+    fn parent(&self) -> &String;
+    fn model_id(&self) -> i64;
+}
+
+

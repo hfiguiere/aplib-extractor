@@ -8,15 +8,36 @@ extern crate plist;
 
 use std::path::Path;
 use aplib::plutils::*;
+use aplib::{AplibObject,AplibType};
 use self::plist::Plist;
 use std::collections::BTreeMap;
 
 pub struct Keyword {
-    pub uuid: String,
-    pub model_id: i64,
-    pub parent_uuid: String,
+    uuid: String,
+    model_id: i64,
+    parent_uuid: String,
+
     pub name: String,
     pub children: Vec<Keyword>,
+}
+
+impl AplibObject for Keyword {
+    fn obj_type(&self) -> AplibType {
+        return AplibType::KEYWORD;
+    }
+    fn uuid(&self) -> &String {
+        return &self.uuid;
+    }
+    fn parent(&self) -> &String {
+        return &self.parent_uuid;
+    }
+    fn model_id(&self) -> i64 {
+        return self.model_id;
+    }
+    fn is_valid(&self) -> bool {
+        return !self.uuid.is_empty();
+    }
+
 }
 
 /// Parse keywords from the .plist file

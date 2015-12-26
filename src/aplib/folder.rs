@@ -7,24 +7,47 @@
 extern crate plist;
 
 use self::plist::Plist;
+use aplib::{AplibObject,AplibType};
 use std::path::Path;
 
+/*
 pub enum FolderType {
     INVALID = 0,
     FOLDER = 1,
     PROJECT = 2,
 }
+*/
 
 pub struct Folder {
-    pub uuid: String,
-    pub model_id: i64,
+    uuid: String,
+    parent_uuid: String,
+    model_id: i64,
+
     pub folder_type: u64,
     pub db_version: i64,
     pub project_version: i64,
     pub path: String,
     pub name: String,
-    pub parent_uuid: String,
     pub implicit_album_uuid: String,
+}
+
+impl AplibObject for Folder {
+    fn obj_type(&self) -> AplibType {
+        return AplibType::FOLDER;
+    }
+    fn uuid(&self) -> &String {
+        return &self.uuid;
+    }
+    fn parent(&self) -> &String {
+        return &self.parent_uuid;
+    }
+    fn model_id(&self) -> i64 {
+        return self.model_id;
+    }
+    fn is_valid(&self) -> bool {
+        return !self.uuid.is_empty();
+    }
+
 }
 
 impl Folder {
@@ -55,9 +78,5 @@ impl Folder {
                 implicit_album_uuid: "".to_string()
             }
         }
-    }
-
-    pub fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
     }
 }

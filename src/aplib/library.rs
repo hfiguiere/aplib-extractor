@@ -129,8 +129,7 @@ impl Library {
         }
 
         for entry in fs::read_dir(&ppath).unwrap() {
-            let entry = entry.unwrap();
-            let p = entry.path();
+            let p = entry.unwrap().path();
             if p.extension().unwrap() == ext {
                 list.push(p.to_owned());
             }
@@ -148,8 +147,7 @@ impl Library {
         }
 
         for entry in fs::read_dir(&ppath).unwrap() {
-            let entry = entry.unwrap();
-            let p = entry.path();
+            let p = entry.unwrap().path();
             if p.extension().unwrap() == ext {
                 count += 1;
             }

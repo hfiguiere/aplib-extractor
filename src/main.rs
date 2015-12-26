@@ -7,6 +7,7 @@
 mod aplib;
 
 use std::env;
+use aplib::AplibObject;
 use aplib::library::Library;
 use aplib::keyword::Keyword;
 
@@ -14,7 +15,7 @@ use aplib::keyword::Keyword;
 fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
     for keyword in keywords {
         println!("| {}{} | {} | {} |", indent, keyword.name,
-                 keyword.uuid, keyword.parent_uuid);
+                 keyword.uuid(), keyword.parent());
         if !keyword.children.is_empty() {
             let new_indent;
             if indent.is_empty() {
@@ -55,8 +56,8 @@ fn main() {
                 continue;
             }
             println!("| {} | {} | {} | {} | {} |",
-                     folder.name, folder.uuid, folder.folder_type,
-                     folder.model_id, folder.path);
+                     folder.name, folder.uuid(), folder.folder_type,
+                     folder.model_id(), folder.path);
         }
 
         let album_count = library.count_albums();
@@ -69,8 +70,8 @@ fn main() {
             }
             println!("| {} | {} | {} | {} | {} | {} |",
                      album.name,
-                     album.uuid, album.folder_uuid, album.album_type,
-                     album.subclass, album.model_id);
+                     album.uuid(), album.parent(), album.album_type,
+                     album.subclass, album.model_id());
         }
 
         let keywords = library.list_keywords();
@@ -86,7 +87,7 @@ fn main() {
                 continue;
             }
             println!("| {} | {} | {} |",
-                     master.uuid, master.project_uuid, master.image_path);
+                     master.uuid(), master.parent(), master.image_path);
         }
 
 
@@ -98,7 +99,7 @@ fn main() {
                 continue;
             }
             println!("| {} | {} | {} | {} | {} |",
-                     version.uuid, version.master_uuid,
+                     version.uuid(), version.parent(),
                      version.project_uuid, version.name,
                      version.is_original);
         }

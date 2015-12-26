@@ -8,23 +8,45 @@ extern crate plist;
 
 use self::plist::Plist;
 use std::path::Path;
+use aplib::{AplibObject,AplibType};
 
 pub struct Version {
-    pub uuid: String,
-    pub master_uuid: String,
-    pub project_uuid: String,
-    raw_master_uuid: String,
-    nonraw_master_uuid: String,
-    timezone_name: String,
-    version_number: i64,
-    db_version: i64,
-    db_minor_version: i64,
-    is_flagged: bool,
-    pub is_original: bool,
-    file_name: String,
-    pub name: String,
+    uuid: String,
     model_id: i64,
-    rating: i64,
+    master_uuid: String,
+
+    pub project_uuid: String,
+    pub raw_master_uuid: String,
+    pub nonraw_master_uuid: String,
+    pub timezone_name: String,
+    pub version_number: i64,
+    pub db_version: i64,
+    pub db_minor_version: i64,
+    pub is_flagged: bool,
+    pub is_original: bool,
+    pub file_name: String,
+    pub name: String,
+    pub rating: i64,
+}
+
+impl AplibObject for Version {
+
+    fn obj_type(&self) -> AplibType {
+        return AplibType::VERSION;
+    }
+    fn uuid(&self) -> &String {
+        return &self.uuid;
+    }
+    fn parent(&self) -> &String {
+        return &self.master_uuid;
+    }
+    fn model_id(&self) -> i64 {
+        return self.model_id;
+    }
+    fn is_valid(&self) -> bool {
+        return !self.uuid.is_empty();
+    }
+
 }
 
 impl Version {
