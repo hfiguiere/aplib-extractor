@@ -33,27 +33,7 @@ pub struct Album {
 }
 
 impl AplibObject for Album {
-    fn obj_type(&self) -> AplibType {
-        return AplibType::ALBUM;
-    }
-    fn uuid(&self) -> &String {
-        return &self.uuid;
-    }
-    fn parent(&self) -> &String {
-        return &self.folder_uuid;
-    }
-    fn model_id(&self) -> i64 {
-        return self.model_id;
-    }
-    fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
-    }
-
-}
-
-impl Album {
-
-    pub fn from(plist_path: &Path) -> Album
+    fn from_path(plist_path: &Path) -> Album
     {
         use aplib::plutils::*;
 
@@ -88,4 +68,23 @@ impl Album {
             }
         }
     }
+    fn obj_type(&self) -> AplibType {
+        return AplibType::ALBUM;
+    }
+    fn uuid(&self) -> &String {
+        return &self.uuid;
+    }
+    fn parent(&self) -> &String {
+        return &self.folder_uuid;
+    }
+    fn model_id(&self) -> i64 {
+        return self.model_id;
+    }
+    fn is_valid(&self) -> bool {
+        return !self.uuid.is_empty();
+    }
+
+}
+
+impl Album {
 }

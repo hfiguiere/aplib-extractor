@@ -12,6 +12,9 @@ pub mod master;
 pub mod version;
 pub mod keyword;
 
+use std::path::Path;
+use mopa::Any;
+
 pub enum AplibType {
     FOLDER,
     ALBUM,
@@ -20,7 +23,8 @@ pub enum AplibType {
     VERSION,
 }
 
-pub trait AplibObject {
+pub trait AplibObject: Any + 'static {
+    fn from_path(plist_path: &Path) -> Self where Self: Sized;
     fn obj_type(&self) -> AplibType;
     fn is_valid(&self) -> bool;
     fn uuid(&self) -> &String;
@@ -28,4 +32,4 @@ pub trait AplibObject {
     fn model_id(&self) -> i64;
 }
 
-
+mopafy!(AplibObject);

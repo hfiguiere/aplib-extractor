@@ -32,27 +32,7 @@ pub struct Folder {
 }
 
 impl AplibObject for Folder {
-    fn obj_type(&self) -> AplibType {
-        return AplibType::FOLDER;
-    }
-    fn uuid(&self) -> &String {
-        return &self.uuid;
-    }
-    fn parent(&self) -> &String {
-        return &self.parent_uuid;
-    }
-    fn model_id(&self) -> i64 {
-        return self.model_id;
-    }
-    fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
-    }
-
-}
-
-impl Folder {
-
-    pub fn from(plist_path: &Path) -> Folder
+    fn from_path(plist_path: &Path) -> Folder
     {
         use aplib::plutils::*;
 
@@ -79,4 +59,24 @@ impl Folder {
             }
         }
     }
+    fn obj_type(&self) -> AplibType {
+        return AplibType::FOLDER;
+    }
+    fn uuid(&self) -> &String {
+        return &self.uuid;
+    }
+    fn parent(&self) -> &String {
+        return &self.parent_uuid;
+    }
+    fn model_id(&self) -> i64 {
+        return self.model_id;
+    }
+    fn is_valid(&self) -> bool {
+        return !self.uuid.is_empty();
+    }
+
+}
+
+impl Folder {
+
 }

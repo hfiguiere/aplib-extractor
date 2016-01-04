@@ -8,6 +8,7 @@ extern crate plist;
 
 use std::fs;
 use std::path::PathBuf;
+use std::collections::{HashMap,HashSet};
 
 use self::plist::Plist;
 use aplib::folder::Folder;
@@ -15,6 +16,7 @@ use aplib::album::Album;
 use aplib::version::Version;
 use aplib::master::Master;
 use aplib::keyword::{parse_keywords,Keyword};
+use aplib::AplibObject;
 use aplib::plutils;
 
 // This is mostly from db_version = 110
@@ -72,13 +74,45 @@ pub struct Library {
     path: String,
 
     version: String,
+
+    folders: HashSet<String>,
+    albums: HashSet<String>,
+    keywords: HashSet<String>,
+    masters: HashSet<String>,
+    versions: HashSet<String>,
+
+    objects: HashMap<String, Box<AplibObject>>,
 }
 
 impl Library {
 
     pub fn new(p: &String) -> Library
     {
-        Library { path: p.to_owned(), version: "".to_string() }
+        Library {
+            path: p.to_owned(),
+            version: "".to_string(),
+
+            folders: HashSet::new(),
+            albums: HashSet::new(),
+            keywords: HashSet::new(),
+            masters: HashSet::new(),
+            versions: HashSet::new(),
+
+            objects: HashMap::new(),
+        }
+    }
+
+    pub fn store(&mut self, obj: Box<AplibObject>) -> bool
+    {
+        return match self.objects.insert(obj.uuid().to_owned(), obj) {
+            None => true,
+            _ => false,
+        };
+    }
+
+    pub fn get(&self, uuid: &String) -> Option<&Box<AplibObject>>
+    {
+        self.objects.get(uuid)
     }
 
     pub fn library_version(&mut self) -> &String
@@ -137,24 +171,6 @@ impl Library {
         return list;
     }
 
-    fn count_items(&self, dir: &str, ext: &str) -> u32
-    {
-        let ppath = self.build_path(dir, true);
-
-        let mut count = 0u32;
-        if !fs::metadata(&ppath).unwrap().is_dir() {
-            return 0;
-        }
-
-        for entry in fs::read_dir(&ppath).unwrap() {
-            let p = entry.unwrap().path();
-            if p.extension().unwrap() == ext {
-                count += 1;
-            }
-        }
-        return count;
-    }
-
     pub fn get_model_info(&self) -> ModelInfo
     {
         let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
@@ -163,34 +179,42 @@ impl Library {
         return ModelInfo::parse(&plist);
     }
 
-    pub fn count_albums(&self) -> u32
+    fn load_items<T: AplibObject>(&mut self, dir: &str, ext: &str, set: &mut HashSet<String>)
     {
-        return self.count_items(ALBUMS_DIR, "apalbum");
-    }
-
-    pub fn list_albums(&self) -> Vec<Album>
-    {
-        let file_list = self.list_items(ALBUMS_DIR, "apalbum");
-        let mut albums: Vec<Album> = Vec::new();
+        let file_list = self.list_items(dir, ext);
         for file in file_list {
-            albums.push(Album::from(file.as_ref()));
+            let obj = Box::new(T::from_path(file.as_ref()));
+            set.insert(obj.uuid().to_owned());
+            self.store(obj);
         }
-        return albums;
     }
 
-    pub fn count_folders(&self) -> u32
+    pub fn load_albums(&mut self)
     {
-        return self.count_items(FOLDERS_DIR, "apfolder");
+        if self.albums.is_empty() {
+            let mut albums : HashSet<String> = HashSet::new();
+            self.load_items::<Album>(ALBUMS_DIR, "apalbum", &mut albums);
+            self.albums = albums;
+        }
     }
 
-    pub fn list_folders(&self) -> Vec<Folder>
+    pub fn get_albums(&self) -> &HashSet<String>
     {
-        let file_list = self.list_items(FOLDERS_DIR, "apfolder");
-        let mut folders: Vec<Folder> = Vec::new();
-        for file in file_list {
-            folders.push(Folder::from(file.as_ref()));
+        return &self.albums;
+    }
+
+    pub fn load_folders(&mut self)
+    {
+        if self.folders.is_empty() {
+            let mut folders : HashSet<String> = HashSet::new();
+            self.load_items::<Folder>(FOLDERS_DIR, "apfolder", &mut folders);
+            self.folders = folders;
         }
-        return folders;
+    }
+
+    pub fn get_folders(&self) -> &HashSet<String>
+    {
+        return &self.folders;
     }
 
     fn recurse_list_directory(path: &PathBuf, level: i32) -> Vec<PathBuf>
@@ -251,7 +275,7 @@ impl Library {
         let mut versions = Vec::new();
         let list = self.list_versions_items("apversion");
         for item in list {
-            versions.push(Version::from(item.as_ref()));
+            versions.push(Version::from_path(item.as_ref()));
         }
         return versions;
     }
@@ -261,7 +285,7 @@ impl Library {
         let mut masters = Vec::new();
         let list = self.list_versions_items("apmaster");
         for item in list {
-            masters.push(Master::from(item.as_ref()));
+            masters.push(Master::from_path(item.as_ref()));
         }
         return masters;
     }

@@ -30,28 +30,7 @@ pub struct Version {
 }
 
 impl AplibObject for Version {
-
-    fn obj_type(&self) -> AplibType {
-        return AplibType::VERSION;
-    }
-    fn uuid(&self) -> &String {
-        return &self.uuid;
-    }
-    fn parent(&self) -> &String {
-        return &self.master_uuid;
-    }
-    fn model_id(&self) -> i64 {
-        return self.model_id;
-    }
-    fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
-    }
-
-}
-
-impl Version {
-
-    pub fn from(plist_path: &Path) -> Version
+    fn from_path(plist_path: &Path) -> Version
     {
         use aplib::plutils::*;
 
@@ -94,8 +73,23 @@ impl Version {
             }
         }
     }
-
-    pub fn is_valid(&self) -> bool {
+    fn obj_type(&self) -> AplibType {
+        return AplibType::VERSION;
+    }
+    fn uuid(&self) -> &String {
+        return &self.uuid;
+    }
+    fn parent(&self) -> &String {
+        return &self.master_uuid;
+    }
+    fn model_id(&self) -> i64 {
+        return self.model_id;
+    }
+    fn is_valid(&self) -> bool {
         return !self.uuid.is_empty();
     }
+}
+
+impl Version {
+
 }

@@ -30,28 +30,7 @@ pub struct Master {
 
 
 impl AplibObject for Master {
-
-    fn obj_type(&self) -> AplibType {
-        return AplibType::MASTER;
-    }
-    fn uuid(&self) -> &String {
-        return &self.uuid;
-    }
-    fn parent(&self) -> &String {
-        return &self.project_uuid;
-    }
-    fn model_id(&self) -> i64 {
-        return self.model_id;
-    }
-    fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
-    }
-
-}
-
-impl Master {
-
-    pub fn from(plist_path: &Path) -> Master
+    fn from_path(plist_path: &Path) -> Master
     {
         use aplib::plutils::*;
         let plist = parse_plist(plist_path);
@@ -92,8 +71,24 @@ impl Master {
             }
         }
     }
-
-    pub fn is_valid(&self) -> bool {
+    fn obj_type(&self) -> AplibType {
+        return AplibType::MASTER;
+    }
+    fn uuid(&self) -> &String {
+        return &self.uuid;
+    }
+    fn parent(&self) -> &String {
+        return &self.project_uuid;
+    }
+    fn model_id(&self) -> i64 {
+        return self.model_id;
+    }
+    fn is_valid(&self) -> bool {
         return !self.uuid.is_empty();
     }
+
+}
+
+impl Master {
+
 }

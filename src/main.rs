@@ -6,10 +6,15 @@
 
 mod aplib;
 
+#[macro_use]
+extern crate mopa;
+
 use std::env;
 use aplib::AplibObject;
 use aplib::library::Library;
 use aplib::keyword::Keyword;
+use aplib::album::Album;
+use aplib::folder::Folder;
 
 /// print the keywords with indentation for the hierarchy
 fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
@@ -47,33 +52,55 @@ fn main() {
         println!("\tDB minor version: {}", model_info.db_minor_version);
         println!("\tProject version: {}", model_info.project_version);
 
-        let folder_count = library.count_folders();
-        let folders = library.list_folders();
-        println!("{} Folders:", folder_count);
-        println!("| Name | uuid | type | model id | path |");
-        for folder in folders {
-            if !folder.is_valid() {
-                continue;
+        library.load_folders();
+        library.load_albums();
+        {
+            let folders = library.get_folders();
+            println!("{} Folders:", folders.len());
+            println!("| Name | uuid | type | model id | path |");
+            for folder_uuid in folders {
+                if folder_uuid.is_empty() {
+                    continue;
+                }
+                match library.get(folder_uuid) {
+                    Some(b) => {
+                        match b.downcast_ref::<Folder>() {
+                            Some(folder) =>
+                                println!("| {} | {} | {} | {} | {} |",
+                                         folder.name, folder.uuid(),
+                                         folder.folder_type,
+                                         folder.model_id(), folder.path),
+                            _ => println!("downcast failed"),
+                        }
+                    },
+                    _ => println!("folder {} not found", folder_uuid)
+                }
             }
-            println!("| {} | {} | {} | {} | {} |",
-                     folder.name, folder.uuid(), folder.folder_type,
-                     folder.model_id(), folder.path);
         }
-
-        let album_count = library.count_albums();
-        let albums = library.list_albums();
-        println!("{} Albums:", album_count);
-        println!("| name | uuid | folder | type | class | model id |");
-        for album in albums {
-            if !album.is_valid() {
-                continue;
+        {
+            let albums = library.get_albums();
+            println!("{} Albums:", albums.len());
+            println!("| name | uuid | folder | type | class | model id |");
+            for album_uuid in albums {
+                if album_uuid.is_empty() {
+                    continue;
+                }
+                match library.get(album_uuid) {
+                    Some(b) => {
+                        match b.downcast_ref::<Album>() {
+                            Some(album) =>
+                                println!("| {} | {} | {} | {} | {} | {} |",
+                                         album.name,
+                                         album.uuid(), album.parent(),
+                                         album.album_type,
+                                         album.subclass, album.model_id()),
+                            _ => println!("downcast failed"),
+                        }
+                    },
+                    _ => println!("album {} not found", album_uuid)
+                }
             }
-            println!("| {} | {} | {} | {} | {} | {} |",
-                     album.name,
-                     album.uuid(), album.parent(), album.album_type,
-                     album.subclass, album.model_id());
         }
-
         let keywords = library.list_keywords();
         println!("{} keywords:", keywords.len());
         println!("| uuid | parent | name |");
