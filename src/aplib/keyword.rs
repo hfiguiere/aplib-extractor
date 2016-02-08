@@ -22,6 +22,7 @@ pub struct Keyword {
 }
 
 impl AplibObject for Keyword {
+    #[warn(unused_variables)]
     fn from_path(plist_path: &Path) -> Keyword {
         assert!(false, "must not be called");
         Keyword { uuid: "".to_string(),
