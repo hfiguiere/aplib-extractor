@@ -15,6 +15,8 @@ use aplib::library::Library;
 use aplib::keyword::Keyword;
 use aplib::album::Album;
 use aplib::folder::Folder;
+use aplib::master::Master;
+use aplib::version::Version;
 
 /// print the keywords with indentation for the hierarchy
 fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
@@ -106,29 +108,51 @@ fn main() {
         println!("| uuid | parent | name |");
         print_keywords(&keywords, &"".to_string());
 
-        let masters = library.list_masters();
-        println!("{} Masters:", masters.len());
-        println!("| uuid | project | path |");
-        for master in masters {
-            if !master.is_valid() {
-                continue;
+        library.load_masters();
+        library.load_versions();
+        {
+            let masters = library.get_masters();
+            println!("{} Masters:", masters.len());
+            println!("| uuid | project | path |");
+            for master_uuid in masters {
+                if master_uuid.is_empty() {
+                    continue;
+                }
+                match library.get(master_uuid) {
+                    Some(b) =>
+                        match b.downcast_ref::<Master>() {
+                            Some(master) =>
+                                println!("| {} | {} | {} |",
+                                         master.uuid(), master.parent(),
+                                         master.image_path),
+                            _ => println!("downcast failed"),
+                        },
+                    _ => println!("master {} not found", master_uuid)
+                }
             }
-            println!("| {} | {} | {} |",
-                     master.uuid(), master.parent(), master.image_path);
+
         }
-
-
-        let versions = library.list_versions();
-        println!("{} Versions:", versions.len());
-        println!("| uuid | master | project | name | original |");
-        for version in versions {
-            if !version.is_valid() {
-                continue;
+        {
+            let versions = library.get_versions();
+            println!("{} Versions:", versions.len());
+            println!("| uuid | master | project | name | original |");
+            for version_uuid in versions {
+                if version_uuid.is_empty() {
+                    continue;
+                }
+                match library.get(version_uuid) {
+                    Some(b) =>
+                        match b.downcast_ref::<Version>() {
+                            Some(version) =>
+                                println!("| {} | {} | {} | {} | {} |",
+                                         version.uuid(), version.parent(),
+                                         version.project_uuid, version.name,
+                                         version.is_original),
+                            _ => println!("downcast failed"),
+                        },
+                    _=> println!("version {} not found", version_uuid)
+                }
             }
-            println!("| {} | {} | {} | {} | {} |",
-                     version.uuid(), version.parent(),
-                     version.project_uuid, version.name,
-                     version.is_original);
         }
     } else {
         println!("Argument required");

@@ -4,5 +4,5 @@ version = "0.1.0"
 authors = ["Hubert Figuière <hub@figuiere.net>"]
 
 [dependencies]
-plist = { git = "https://github.com/hfiguiere/rust-plist.git", rev = "e9ed328" }
-mopa = "0.2.0"
+plist = "0.0.12"
+mopa = "0.2.1"

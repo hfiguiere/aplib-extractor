@@ -77,7 +77,7 @@ pub struct Library {
 
     folders: HashSet<String>,
     albums: HashSet<String>,
-    keywords: HashSet<String>,
+//    keywords: HashSet<String>,
     masters: HashSet<String>,
     versions: HashSet<String>,
 
@@ -94,7 +94,7 @@ impl Library {
 
             folders: HashSet::new(),
             albums: HashSet::new(),
-            keywords: HashSet::new(),
+//            keywords: HashSet::new(),
             masters: HashSet::new(),
             versions: HashSet::new(),
 
@@ -270,24 +270,42 @@ impl Library {
         return items;
     }
 
-    pub fn list_versions(&self) -> Vec<Version>
+    fn load_versions_items<T: AplibObject>(&mut self, ext: &str,
+                                           set: &mut HashSet<String>)
     {
-        let mut versions = Vec::new();
-        let list = self.list_versions_items("apversion");
-        for item in list {
-            versions.push(Version::from_path(item.as_ref()));
+        let file_list = self.list_versions_items(ext);
+        for file in file_list {
+            let obj = Box::new(T::from_path(file.as_ref()));
+            set.insert(obj.uuid().to_owned());
+            self.store(obj);
         }
-        return versions;
     }
 
-    pub fn list_masters(&self) -> Vec<Master>
+    pub fn load_versions(&mut self)
     {
-        let mut masters = Vec::new();
-        let list = self.list_versions_items("apmaster");
-        for item in list {
-            masters.push(Master::from_path(item.as_ref()));
+        if self.versions.is_empty() {
+            let mut versions: HashSet<String> = HashSet::new();
+            self.load_versions_items::<Version>("apversion", &mut versions);
+            self.versions = versions;
         }
-        return masters;
+    }
+
+    pub fn load_masters(&mut self)
+    {
+        if self.masters.is_empty() {
+            let mut masters: HashSet<String> = HashSet::new();
+            self.load_versions_items::<Master>("apmaster", &mut masters);
+            self.masters = masters;
+        }
+    }
+
+    pub fn get_masters(&self) -> &HashSet<String>
+    {
+        &self.masters
+    }
+    pub fn get_versions(&self) -> &HashSet<String>
+    {
+        &self.versions
     }
 
     pub fn list_keywords(&self) -> Vec<Keyword>
