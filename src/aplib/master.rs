@@ -9,6 +9,7 @@ extern crate plist;
 use self::plist::Plist;
 use std::path::Path;
 use aplib::{AplibObject,AplibType};
+use aplib::wrapper::ObjectStoreWrapper;
 
 pub struct Master {
     uuid: String,
@@ -86,7 +87,9 @@ impl AplibObject for Master {
     fn is_valid(&self) -> bool {
         return !self.uuid.is_empty();
     }
-
+    fn wrap(obj: Master) -> ObjectStoreWrapper {
+        ObjectStoreWrapper::Master(Box::new(obj))
+    }
 }
 
 impl Master {

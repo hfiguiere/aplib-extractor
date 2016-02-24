@@ -11,9 +11,10 @@ pub mod album;
 pub mod master;
 pub mod version;
 pub mod keyword;
+pub mod wrapper;
 
 use std::path::Path;
-use mopa::Any;
+use aplib::wrapper::ObjectStoreWrapper;
 
 pub enum AplibType {
     FOLDER,
@@ -23,8 +24,9 @@ pub enum AplibType {
     VERSION,
 }
 
-pub trait AplibObject: Any + 'static {
+pub trait AplibObject {
     fn from_path(plist_path: &Path) -> Self where Self: Sized;
+    fn wrap(obj: Self) -> ObjectStoreWrapper;
     fn obj_type(&self) -> AplibType;
     fn is_valid(&self) -> bool;
     fn uuid(&self) -> &String;
@@ -32,4 +34,3 @@ pub trait AplibObject: Any + 'static {
     fn model_id(&self) -> i64;
 }
 
-mopafy!(AplibObject);

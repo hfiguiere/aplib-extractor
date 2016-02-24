@@ -9,6 +9,7 @@ extern crate plist;
 use std::path::Path;
 use aplib::plutils::*;
 use aplib::{AplibObject,AplibType};
+use aplib::wrapper::ObjectStoreWrapper;
 use self::plist::Plist;
 use std::collections::BTreeMap;
 
@@ -22,7 +23,7 @@ pub struct Keyword {
 }
 
 impl AplibObject for Keyword {
-    #[warn(unused_variables)]
+    #[allow(unused_variables)]
     fn from_path(plist_path: &Path) -> Keyword {
         assert!(false, "must not be called");
         Keyword { uuid: "".to_string(),
@@ -46,7 +47,10 @@ impl AplibObject for Keyword {
     fn is_valid(&self) -> bool {
         return !self.uuid.is_empty();
     }
-
+    #[allow(unused_variables)]
+    fn wrap(obj: Keyword) -> ObjectStoreWrapper {
+        ObjectStoreWrapper::None
+    }
 }
 
 /// Parse keywords from the .plist file

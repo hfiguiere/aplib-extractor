@@ -6,17 +6,11 @@
 
 mod aplib;
 
-#[macro_use]
-extern crate mopa;
-
 use std::env;
 use aplib::AplibObject;
 use aplib::library::Library;
 use aplib::keyword::Keyword;
-use aplib::album::Album;
-use aplib::folder::Folder;
-use aplib::master::Master;
-use aplib::version::Version;
+use aplib::wrapper::ObjectStoreWrapper;
 
 /// print the keywords with indentation for the hierarchy
 fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
@@ -65,16 +59,11 @@ fn main() {
                     continue;
                 }
                 match library.get(folder_uuid) {
-                    Some(b) => {
-                        match b.downcast_ref::<Folder>() {
-                            Some(folder) =>
-                                println!("| {} | {} | {} | {} | {} |",
-                                         folder.name, folder.uuid(),
-                                         folder.folder_type,
-                                         folder.model_id(), folder.path),
-                            _ => println!("downcast failed"),
-                        }
-                    },
+                    Some(&ObjectStoreWrapper::Folder(ref folder)) =>
+                        println!("| {} | {} | {} | {} | {} |",
+                                 folder.name, folder.uuid(),
+                                 folder.folder_type,
+                                 folder.model_id(), folder.path),
                     _ => println!("folder {} not found", folder_uuid)
                 }
             }
@@ -88,17 +77,12 @@ fn main() {
                     continue;
                 }
                 match library.get(album_uuid) {
-                    Some(b) => {
-                        match b.downcast_ref::<Album>() {
-                            Some(album) =>
-                                println!("| {} | {} | {} | {} | {} | {} |",
-                                         album.name,
-                                         album.uuid(), album.parent(),
-                                         album.album_type,
-                                         album.subclass, album.model_id()),
-                            _ => println!("downcast failed"),
-                        }
-                    },
+                    Some(&ObjectStoreWrapper::Album(ref album)) =>
+                        println!("| {} | {} | {} | {} | {} | {} |",
+                                 album.name,
+                                 album.uuid(), album.parent(),
+                                 album.album_type,
+                                 album.subclass, album.model_id()),
                     _ => println!("album {} not found", album_uuid)
                 }
             }
@@ -119,14 +103,10 @@ fn main() {
                     continue;
                 }
                 match library.get(master_uuid) {
-                    Some(b) =>
-                        match b.downcast_ref::<Master>() {
-                            Some(master) =>
-                                println!("| {} | {} | {} |",
-                                         master.uuid(), master.parent(),
-                                         master.image_path),
-                            _ => println!("downcast failed"),
-                        },
+                    Some(&ObjectStoreWrapper::Master(ref master)) =>
+                        println!("| {} | {} | {} |",
+                                 master.uuid(), master.parent(),
+                                 master.image_path),
                     _ => println!("master {} not found", master_uuid)
                 }
             }
@@ -141,16 +121,12 @@ fn main() {
                     continue;
                 }
                 match library.get(version_uuid) {
-                    Some(b) =>
-                        match b.downcast_ref::<Version>() {
-                            Some(version) =>
+                    Some(&ObjectStoreWrapper::Version(ref version)) =>
                                 println!("| {} | {} | {} | {} | {} |",
                                          version.uuid(), version.parent(),
                                          version.project_uuid, version.name,
                                          version.is_original),
-                            _ => println!("downcast failed"),
-                        },
-                    _=> println!("version {} not found", version_uuid)
+                    _ => println!("version {} not found", version_uuid)
                 }
             }
         }

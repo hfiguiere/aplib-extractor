@@ -9,6 +9,7 @@ extern crate plist;
 use std::path::Path;
 use self::plist::Plist;
 use aplib::{AplibObject,AplibType};
+use aplib::wrapper::ObjectStoreWrapper;
 
 /*
 pub enum AlbumSubclass {
@@ -83,7 +84,9 @@ impl AplibObject for Album {
     fn is_valid(&self) -> bool {
         return !self.uuid.is_empty();
     }
-
+    fn wrap(obj: Album) -> ObjectStoreWrapper {
+        ObjectStoreWrapper::Album(Box::new(obj))
+    }
 }
 
 impl Album {

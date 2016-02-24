@@ -17,6 +17,7 @@ use aplib::version::Version;
 use aplib::master::Master;
 use aplib::keyword::{parse_keywords,Keyword};
 use aplib::AplibObject;
+use aplib::wrapper::ObjectStoreWrapper;
 use aplib::plutils;
 
 // This is mostly from db_version = 110
@@ -81,7 +82,7 @@ pub struct Library {
     masters: HashSet<String>,
     versions: HashSet<String>,
 
-    objects: HashMap<String, Box<AplibObject>>,
+    objects: HashMap<String, ObjectStoreWrapper>,
 }
 
 impl Library {
@@ -102,15 +103,26 @@ impl Library {
         }
     }
 
-    pub fn store(&mut self, obj: Box<AplibObject>) -> bool
+    /// Store the wrapped object.
+    /// Return true if the object was stored
+    /// Return false if there already was an object with the same uuid
+    /// or if the uuid in invalid.
+    pub fn store(&mut self, obj: ObjectStoreWrapper) -> bool
     {
-        return match self.objects.insert(obj.uuid().to_owned(), obj) {
+        let uuid_str = {
+            let uuid = obj.uuid();
+            if uuid.is_none() {
+                return false;
+            }
+            uuid.unwrap().to_owned()
+        };
+        return match self.objects.insert(uuid_str, obj) {
             None => true,
             _ => false,
         };
     }
 
-    pub fn get(&self, uuid: &String) -> Option<&Box<AplibObject>>
+    pub fn get(&self, uuid: &String) -> Option<&ObjectStoreWrapper>
     {
         self.objects.get(uuid)
     }
@@ -179,13 +191,14 @@ impl Library {
         return ModelInfo::parse(&plist);
     }
 
-    fn load_items<T: AplibObject>(&mut self, dir: &str, ext: &str, set: &mut HashSet<String>)
+    fn load_items<T: AplibObject>(&mut self, dir: &str, ext: &str,
+                                  set: &mut HashSet<String>)
     {
         let file_list = self.list_items(dir, ext);
         for file in file_list {
-            let obj = Box::new(T::from_path(file.as_ref()));
+            let obj = T::from_path(file.as_ref());
             set.insert(obj.uuid().to_owned());
-            self.store(obj);
+            self.store(T::wrap(obj));
         }
     }
 
@@ -275,9 +288,9 @@ impl Library {
     {
         let file_list = self.list_versions_items(ext);
         for file in file_list {
-            let obj = Box::new(T::from_path(file.as_ref()));
+            let obj = T::from_path(file.as_ref());
             set.insert(obj.uuid().to_owned());
-            self.store(obj);
+            self.store(T::wrap(obj));
         }
     }
 

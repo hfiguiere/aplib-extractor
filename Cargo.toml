@@ -5,4 +5,3 @@ authors = ["Hubert Figuière <hub@figuiere.net>"]
 
 [dependencies]
 plist = "0.0.12"
-mopa = "0.2.1"
