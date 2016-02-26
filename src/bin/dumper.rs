@@ -5,12 +5,25 @@
  */
 
 extern crate aplib;
+extern crate docopt;
+extern crate rustc_serialize;
 
-use std::env;
+use docopt::Docopt;
+
 use aplib::AplibObject;
 use aplib::library::Library;
 use aplib::keyword::Keyword;
 use aplib::store::Wrapper;
+
+const USAGE: &'static str = "
+Usage:
+  dumper <path>
+";
+
+#[derive(Debug, RustcDecodable)]
+struct Args {
+    arg_path: String
+}
 
 /// print the keywords with indentation for the hierarchy
 fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
@@ -31,10 +44,12 @@ fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
 
 fn main() {
 
-    let args: Vec<String> = env::args().collect();
+    let args: Args = Docopt::new(USAGE)
+        .and_then(|d| d.decode())
+        .unwrap_or_else(|e| e.exit());
 
-    if args.len() == 2 {
-        let mut library = Library::new(&args[1]);
+    {
+        let mut library = Library::new(&args.arg_path);
 
         {
             let version = library.library_version();
@@ -130,7 +145,5 @@ fn main() {
                 }
             }
         }
-    } else {
-        println!("Argument required");
     }
 }

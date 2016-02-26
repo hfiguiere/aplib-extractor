@@ -5,6 +5,8 @@ authors = ["Hubert Figuière <hub@figuiere.net>"]
 
 [dependencies]
 plist = "0.0.12"
+docopt = "0.6"
+rustc-serialize = "0.3"  # if you're using `derive(RustcDecodable)`
 
 [lib]
 name = "aplib"
