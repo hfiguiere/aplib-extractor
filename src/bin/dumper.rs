@@ -11,9 +11,9 @@ extern crate rustc_serialize;
 use docopt::Docopt;
 
 use aplib::AplibObject;
-use aplib::library::Library;
-use aplib::keyword::Keyword;
-use aplib::store::Wrapper;
+use aplib::Library;
+use aplib::Keyword;
+use aplib::StoreWrapper;
 
 const USAGE: &'static str = "
 Usage:
@@ -74,7 +74,7 @@ fn main() {
                     continue;
                 }
                 match library.get(folder_uuid) {
-                    Some(&Wrapper::Folder(ref folder)) =>
+                    Some(&StoreWrapper::Folder(ref folder)) =>
                         println!("| {} | {} | {} | {} | {} |",
                                  folder.name, folder.uuid(),
                                  folder.folder_type,
@@ -92,7 +92,7 @@ fn main() {
                     continue;
                 }
                 match library.get(album_uuid) {
-                    Some(&Wrapper::Album(ref album)) =>
+                    Some(&StoreWrapper::Album(ref album)) =>
                         println!("| {} | {} | {} | {} | {} | {} |",
                                  album.name,
                                  album.uuid(), album.parent(),
@@ -118,7 +118,7 @@ fn main() {
                     continue;
                 }
                 match library.get(master_uuid) {
-                    Some(&Wrapper::Master(ref master)) =>
+                    Some(&StoreWrapper::Master(ref master)) =>
                         println!("| {} | {} | {} |",
                                  master.uuid(), master.parent(),
                                  master.image_path),
@@ -136,7 +136,7 @@ fn main() {
                     continue;
                 }
                 match library.get(version_uuid) {
-                    Some(&Wrapper::Version(ref version)) =>
+                    Some(&StoreWrapper::Version(ref version)) =>
                                 println!("| {} | {} | {} | {} | {} |",
                                          version.uuid(), version.parent(),
                                          version.project_uuid, version.name,

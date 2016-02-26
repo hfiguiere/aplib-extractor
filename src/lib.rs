@@ -5,15 +5,23 @@
  */
 
 pub mod plutils;
-pub mod library;
-pub mod folder;
-pub mod album;
-pub mod master;
-pub mod version;
-pub mod keyword;
-pub mod store;
+mod library;
+mod folder;
+mod album;
+mod master;
+mod version;
+mod keyword;
+mod store;
 
 use std::path::Path;
+
+pub use library::Library as Library;
+pub use folder::Folder as Folder;
+pub use album::Album as Album;
+pub use master::Master as Master;
+pub use version::Version as Version;
+pub use keyword::Keyword as Keyword;
+pub use store::Wrapper as StoreWrapper;
 
 pub enum AplibType {
     FOLDER,
