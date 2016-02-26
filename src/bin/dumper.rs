@@ -17,12 +17,18 @@ use aplib::StoreWrapper;
 
 const USAGE: &'static str = "
 Usage:
-  dumper <path>
+  dumper ([--all] | [--albums] [--versions] [--masters] [--folders] [--keywords]) <path>
 ";
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-    arg_path: String
+    arg_path: String,
+    flag_all: bool,
+    flag_albums: bool,
+    flag_versions: bool,
+    flag_masters: bool,
+    flag_folders: bool,
+    flag_keywords: bool
 }
 
 /// print the keywords with indentation for the hierarchy
@@ -65,7 +71,7 @@ fn main() {
 
         library.load_folders();
         library.load_albums();
-        {
+        if args.flag_all || args.flag_folders {
             let folders = library.get_folders();
             println!("{} Folders:", folders.len());
             println!("| Name | uuid | type | model id | path |");
@@ -83,7 +89,7 @@ fn main() {
                 }
             }
         }
-        {
+        if args.flag_all || args.flag_albums {
             let albums = library.get_albums();
             println!("{} Albums:", albums.len());
             println!("| name | uuid | folder | type | class | model id |");
@@ -102,14 +108,16 @@ fn main() {
                 }
             }
         }
-        let keywords = library.list_keywords();
-        println!("{} keywords:", keywords.len());
-        println!("| uuid | parent | name |");
-        print_keywords(&keywords, &"".to_string());
+        if args.flag_all || args.flag_keywords {
+            let keywords = library.list_keywords();
+            println!("{} keywords:", keywords.len());
+            println!("| uuid | parent | name |");
+            print_keywords(&keywords, &"".to_string());
+        }
 
         library.load_masters();
         library.load_versions();
-        {
+        if args.flag_all || args.flag_masters  {
             let masters = library.get_masters();
             println!("{} Masters:", masters.len());
             println!("| uuid | project | path |");
@@ -127,7 +135,7 @@ fn main() {
             }
 
         }
-        {
+        if args.flag_all || args.flag_versions  {
             let versions = library.get_versions();
             println!("{} Versions:", versions.len());
             println!("| uuid | master | project | name | original |");
