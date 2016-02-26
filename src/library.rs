@@ -11,14 +11,14 @@ use std::path::PathBuf;
 use std::collections::{HashMap,HashSet};
 
 use self::plist::Plist;
-use aplib::folder::Folder;
-use aplib::album::Album;
-use aplib::version::Version;
-use aplib::master::Master;
-use aplib::keyword::{parse_keywords,Keyword};
-use aplib::AplibObject;
-use aplib::store;
-use aplib::plutils;
+use folder::Folder;
+use album::Album;
+use version::Version;
+use master::Master;
+use keyword::{parse_keywords,Keyword};
+use store;
+use plutils;
+use ::AplibObject;
 
 // This is mostly from db_version = 110
 
@@ -47,7 +47,7 @@ pub struct ModelInfo {
 impl ModelInfo {
     fn parse(plist : &Plist) -> ModelInfo
     {
-        use aplib::plutils::{get_int_value,get_bool_value};
+        use plutils::{get_int_value,get_bool_value};
 
         match *plist {
             Plist::Dictionary(ref dict) => ModelInfo {

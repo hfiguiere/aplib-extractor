@@ -1,11 +1,11 @@
 
 
 
-use aplib::folder::Folder;
-use aplib::album::Album;
-use aplib::version::Version;
-use aplib::master::Master;
-use aplib::AplibObject;
+use folder::Folder;
+use album::Album;
+use version::Version;
+use master::Master;
+use ::AplibObject;
 
 pub enum Wrapper {
     Album(Box<Album>),

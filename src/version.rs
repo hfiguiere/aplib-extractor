@@ -8,8 +8,9 @@ extern crate plist;
 
 use self::plist::Plist;
 use std::path::Path;
-use aplib::{AplibObject,AplibType};
-use aplib::store;
+use store;
+use ::AplibObject;
+use ::AplibType;
 
 pub struct Version {
     uuid: String,
@@ -33,7 +34,7 @@ pub struct Version {
 impl AplibObject for Version {
     fn from_path(plist_path: &Path) -> Version
     {
-        use aplib::plutils::*;
+        use plutils::*;
 
         let plist = parse_plist(plist_path);
         return match plist {

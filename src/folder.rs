@@ -7,9 +7,10 @@
 extern crate plist;
 
 use self::plist::Plist;
-use aplib::{AplibObject,AplibType};
-use aplib::store;
+use store;
 use std::path::Path;
+use ::AplibObject;
+use ::AplibType;
 
 /*
 pub enum FolderType {
@@ -35,7 +36,7 @@ pub struct Folder {
 impl AplibObject for Folder {
     fn from_path(plist_path: &Path) -> Folder
     {
-        use aplib::plutils::*;
+        use plutils::*;
 
         let plist = parse_plist(plist_path);
         return match plist {

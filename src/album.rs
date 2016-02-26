@@ -8,8 +8,9 @@ extern crate plist;
 
 use std::path::Path;
 use self::plist::Plist;
-use aplib::{AplibObject,AplibType};
-use aplib::store;
+use store;
+use ::AplibObject;
+use ::AplibType;
 
 /*
 pub enum AlbumSubclass {
@@ -36,7 +37,7 @@ pub struct Album {
 impl AplibObject for Album {
     fn from_path(plist_path: &Path) -> Album
     {
-        use aplib::plutils::*;
+        use plutils::*;
 
         let plist = parse_plist(plist_path);
         return match plist {

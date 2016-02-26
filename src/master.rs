@@ -8,8 +8,9 @@ extern crate plist;
 
 use self::plist::Plist;
 use std::path::Path;
-use aplib::{AplibObject,AplibType};
-use aplib::store;
+use store;
+use ::AplibObject;
+use ::AplibType;
 
 pub struct Master {
     uuid: String,
@@ -33,7 +34,7 @@ pub struct Master {
 impl AplibObject for Master {
     fn from_path(plist_path: &Path) -> Master
     {
-        use aplib::plutils::*;
+        use plutils::*;
         let plist = parse_plist(plist_path);
         return match plist {
             Plist::Dictionary(ref dict) => Master {

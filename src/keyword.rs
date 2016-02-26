@@ -7,11 +7,13 @@
 extern crate plist;
 
 use std::path::Path;
-use aplib::plutils::*;
-use aplib::{AplibObject,AplibType};
-use aplib::store;
-use self::plist::Plist;
 use std::collections::BTreeMap;
+
+use plutils::*;
+use store;
+use self::plist::Plist;
+use ::AplibObject;
+use ::AplibType;
 
 pub struct Keyword {
     uuid: String,

@@ -5,3 +5,9 @@ authors = ["Hubert Figuière <hub@figuiere.net>"]
 
 [dependencies]
 plist = "0.0.12"
+
+[lib]
+name = "aplib"
+
+[[bin]]
+name = "dumper"

@@ -4,7 +4,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-mod aplib;
+extern crate aplib;
 
 use std::env;
 use aplib::AplibObject;
