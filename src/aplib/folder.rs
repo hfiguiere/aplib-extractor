@@ -8,7 +8,7 @@ extern crate plist;
 
 use self::plist::Plist;
 use aplib::{AplibObject,AplibType};
-use aplib::wrapper::ObjectStoreWrapper;
+use aplib::store;
 use std::path::Path;
 
 /*
@@ -75,8 +75,8 @@ impl AplibObject for Folder {
     fn is_valid(&self) -> bool {
         return !self.uuid.is_empty();
     }
-    fn wrap(obj: Folder) -> ObjectStoreWrapper {
-        ObjectStoreWrapper::Folder(Box::new(obj))
+    fn wrap(obj: Folder) -> store::Wrapper {
+        store::Wrapper::Folder(Box::new(obj))
     }
 }
 

@@ -9,7 +9,7 @@ extern crate plist;
 use std::path::Path;
 use aplib::plutils::*;
 use aplib::{AplibObject,AplibType};
-use aplib::wrapper::ObjectStoreWrapper;
+use aplib::store;
 use self::plist::Plist;
 use std::collections::BTreeMap;
 
@@ -48,8 +48,8 @@ impl AplibObject for Keyword {
         return !self.uuid.is_empty();
     }
     #[allow(unused_variables)]
-    fn wrap(obj: Keyword) -> ObjectStoreWrapper {
-        ObjectStoreWrapper::None
+    fn wrap(obj: Keyword) -> store::Wrapper {
+        store::Wrapper::None
     }
 }
 

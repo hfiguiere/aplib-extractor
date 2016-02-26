@@ -9,7 +9,7 @@ extern crate plist;
 use self::plist::Plist;
 use std::path::Path;
 use aplib::{AplibObject,AplibType};
-use aplib::wrapper::ObjectStoreWrapper;
+use aplib::store;
 
 pub struct Version {
     uuid: String,
@@ -89,8 +89,8 @@ impl AplibObject for Version {
     fn is_valid(&self) -> bool {
         return !self.uuid.is_empty();
     }
-    fn wrap(obj: Version) -> ObjectStoreWrapper {
-        ObjectStoreWrapper::Version(Box::new(obj))
+    fn wrap(obj: Version) -> store::Wrapper {
+        store::Wrapper::Version(Box::new(obj))
     }
 }
 

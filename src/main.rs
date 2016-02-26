@@ -10,7 +10,7 @@ use std::env;
 use aplib::AplibObject;
 use aplib::library::Library;
 use aplib::keyword::Keyword;
-use aplib::wrapper::ObjectStoreWrapper;
+use aplib::store::Wrapper;
 
 /// print the keywords with indentation for the hierarchy
 fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
@@ -59,7 +59,7 @@ fn main() {
                     continue;
                 }
                 match library.get(folder_uuid) {
-                    Some(&ObjectStoreWrapper::Folder(ref folder)) =>
+                    Some(&Wrapper::Folder(ref folder)) =>
                         println!("| {} | {} | {} | {} | {} |",
                                  folder.name, folder.uuid(),
                                  folder.folder_type,
@@ -77,7 +77,7 @@ fn main() {
                     continue;
                 }
                 match library.get(album_uuid) {
-                    Some(&ObjectStoreWrapper::Album(ref album)) =>
+                    Some(&Wrapper::Album(ref album)) =>
                         println!("| {} | {} | {} | {} | {} | {} |",
                                  album.name,
                                  album.uuid(), album.parent(),
@@ -103,7 +103,7 @@ fn main() {
                     continue;
                 }
                 match library.get(master_uuid) {
-                    Some(&ObjectStoreWrapper::Master(ref master)) =>
+                    Some(&Wrapper::Master(ref master)) =>
                         println!("| {} | {} | {} |",
                                  master.uuid(), master.parent(),
                                  master.image_path),
@@ -121,7 +121,7 @@ fn main() {
                     continue;
                 }
                 match library.get(version_uuid) {
-                    Some(&ObjectStoreWrapper::Version(ref version)) =>
+                    Some(&Wrapper::Version(ref version)) =>
                                 println!("| {} | {} | {} | {} | {} |",
                                          version.uuid(), version.parent(),
                                          version.project_uuid, version.name,

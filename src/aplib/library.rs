@@ -17,7 +17,7 @@ use aplib::version::Version;
 use aplib::master::Master;
 use aplib::keyword::{parse_keywords,Keyword};
 use aplib::AplibObject;
-use aplib::wrapper::ObjectStoreWrapper;
+use aplib::store;
 use aplib::plutils;
 
 // This is mostly from db_version = 110
@@ -82,7 +82,7 @@ pub struct Library {
     masters: HashSet<String>,
     versions: HashSet<String>,
 
-    objects: HashMap<String, ObjectStoreWrapper>,
+    objects: HashMap<String, store::Wrapper>,
 }
 
 impl Library {
@@ -107,7 +107,7 @@ impl Library {
     /// Return true if the object was stored
     /// Return false if there already was an object with the same uuid
     /// or if the uuid in invalid.
-    pub fn store(&mut self, obj: ObjectStoreWrapper) -> bool
+    pub fn store(&mut self, obj: store::Wrapper) -> bool
     {
         let uuid_str = {
             let uuid = obj.uuid();
@@ -122,7 +122,7 @@ impl Library {
         };
     }
 
-    pub fn get(&self, uuid: &String) -> Option<&ObjectStoreWrapper>
+    pub fn get(&self, uuid: &String) -> Option<&store::Wrapper>
     {
         self.objects.get(uuid)
     }
