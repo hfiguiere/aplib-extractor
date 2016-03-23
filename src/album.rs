@@ -41,15 +41,15 @@ pub struct Album {
 }
 
 impl AplibObject for Album {
-    fn from_path(plist_path: &Path) -> Album
+    fn from_path(plist_path: &Path) -> Option<Album>
     {
         use plutils::*;
 
         let plist = parse_plist(plist_path);
-        return match plist {
+        match plist {
             Plist::Dictionary(ref dict) => {
                 let dict = get_dict_value(dict, "InfoDictionary");
-                Album {
+                Some(Album {
                     uuid: get_str_value(&dict, "uuid"),
                     folder_uuid: get_str_value(&dict, "folderUuid"),
                     subclass: get_int_value(&dict, "albumSubclass"),
@@ -60,20 +60,10 @@ impl AplibObject for Album {
                     sort_key: get_str_value(&dict, "sortKeyPath"),
                     name: get_str_value(&dict, "name"),
                     query_folder_uuid: get_str_value(&dict, "queryFolderUuid"),
-                }
+                })
             },
-            _ => Album {
-                name: "".to_string(),
-                uuid: "".to_string(),
-                folder_uuid: "".to_string(),
-                query_folder_uuid: "".to_string(),
-                subclass: 0,
-                album_type: 0,
-                db_version: 0,
-                model_id: 0,
-                sort_asc: true,
-                sort_key: "".to_string()
-            }
+            _ =>
+                None
         }
     }
     fn obj_type(&self) -> AplibType {

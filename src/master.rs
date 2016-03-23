@@ -7,8 +7,8 @@
 use plist::Plist;
 use std::path::Path;
 use store;
-use ::AplibObject;
-use ::AplibType;
+use AplibObject;
+use AplibType;
 
 pub struct Master {
     uuid: String,
@@ -30,12 +30,12 @@ pub struct Master {
 
 
 impl AplibObject for Master {
-    fn from_path(plist_path: &Path) -> Master
+    fn from_path(plist_path: &Path) -> Option<Master>
     {
         use plutils::*;
         let plist = parse_plist(plist_path);
-        return match plist {
-            Plist::Dictionary(ref dict) => Master {
+        match plist {
+            Plist::Dictionary(ref dict) => Some(Master {
                 uuid: get_str_value(dict, "uuid"),
                 alternate_master: get_str_value(dict, "alternateMasterUuid"),
                 original_version_uuid: get_str_value(dict,
@@ -52,23 +52,9 @@ impl AplibObject for Master {
                 model_id: get_int_value(dict, "modelId"),
                 image_path: get_str_value(dict, "imagePath"),
                 is_reference: get_bool_value(dict, "fileIsReference"),
-            },
-            _ => Master {
-                uuid: "".to_string(),
-                alternate_master: "".to_string(),
-                original_version_uuid: "".to_string(),
-                project_uuid: "".to_string(),
-                import_group_uuid: "".to_string(),
-                filename: "".to_string(),
-                name: "".to_string(),
-                original_version_name: "".to_string(),
-                db_version: 0,
-                master_type: "".to_string(),
-                subtype: "".to_string(),
-                model_id: 0,
-                image_path: "".to_string(),
-                is_reference: false,
-            }
+            }),
+            _ =>
+                None
         }
     }
     fn obj_type(&self) -> AplibType {

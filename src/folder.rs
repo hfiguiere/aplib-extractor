@@ -43,13 +43,13 @@ pub struct Folder {
 }
 
 impl AplibObject for Folder {
-    fn from_path(plist_path: &Path) -> Folder
+    fn from_path(plist_path: &Path) -> Option<Folder>
     {
         use plutils::*;
 
         let plist = parse_plist(plist_path);
-        return match plist {
-            Plist::Dictionary(ref dict) => Folder {
+        match plist {
+            Plist::Dictionary(ref dict) => Some(Folder {
                 path: get_str_value(dict, "folderPath"),
                 folder_type: get_int_value(dict, "folderType") as u64,
                 model_id: get_int_value(dict, "modelId"),
@@ -59,15 +59,9 @@ impl AplibObject for Folder {
                 implicit_album_uuid: get_str_value(dict, "implicitAlbumUuid"),
                 db_version: get_int_value(dict, "version"),
                 project_version: get_int_value(dict, "projectVersion")
-            },
-            _ => Folder {
-                uuid: "".to_string(),
-                model_id: 0, folder_type: 0,
-                db_version: 0, project_version: 0,
-                path: "".to_string(), name: "".to_string(),
-                parent_uuid: "".to_string(),
-                implicit_album_uuid: "".to_string()
-            }
+            }),
+            _ =>
+                None
         }
     }
     fn obj_type(&self) -> AplibType {

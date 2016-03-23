@@ -116,8 +116,7 @@ fn process_dump(args: &Args) {
         println!("Version {}", version);
     }
 
-    let model_info = library.get_model_info();
-
+    let model_info = library.get_model_info().unwrap();
     println!("model info");
     println!("\tDB version: {}", model_info.db_version);
     println!("\tDB minor version: {}", model_info.db_minor_version);

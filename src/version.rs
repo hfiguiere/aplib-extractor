@@ -32,13 +32,13 @@ pub struct Version {
 
 impl AplibObject for Version {
     /// Load the version object from the plist at plist_path.
-    fn from_path(plist_path: &Path) -> Version
+    fn from_path(plist_path: &Path) -> Option<Version>
     {
         use plutils::*;
 
         let plist = parse_plist(plist_path);
-        return match plist {
-            Plist::Dictionary(ref dict) => Version {
+        match plist {
+            Plist::Dictionary(ref dict) => Some(Version {
                 uuid: get_str_value(dict, "uuid"),
                 master_uuid: get_str_value(dict, "masterUuid"),
                 project_uuid: get_str_value(dict, "projectUuid"),
@@ -54,25 +54,9 @@ impl AplibObject for Version {
                 name: get_str_value(dict, "name"),
                 model_id: get_int_value(dict, "modelId"),
                 rating: get_int_value(dict, "mainRating"),
-            },
-            _ => Version {
-                uuid: "".to_string(),
-                master_uuid: "".to_string(),
-                project_uuid: "".to_string(),
-                raw_master_uuid: "".to_string(),
-                nonraw_master_uuid: "".to_string(),
-                timezone_name: "".to_string(),
-                version_number: 0,
-                db_version: 0,
-                db_minor_version: 0,
-                is_flagged: false,
-                is_original: false,
-                file_name: "".to_string(),
-                name: "".to_string(),
-                model_id: 0,
-                rating: 0,
-
-            }
+            }),
+            _ =>
+                None
         }
     }
     fn obj_type(&self) -> AplibType {

@@ -34,7 +34,8 @@ pub enum AplibType {
 }
 
 pub trait AplibObject {
-    fn from_path(plist_path: &Path) -> Self where Self: Sized;
+    fn from_path(plist_path: &Path) -> Option<Self>
+        where Self: Sized;
     fn wrap(obj: Self) -> store::Wrapper;
     fn obj_type(&self) -> AplibType;
     fn is_valid(&self) -> bool;

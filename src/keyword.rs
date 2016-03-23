@@ -31,13 +31,9 @@ pub struct Keyword {
 impl AplibObject for Keyword {
     #[allow(unused_variables)]
     #[doc(hidden)]
-    fn from_path(plist_path: &Path) -> Keyword {
+    fn from_path(plist_path: &Path) -> Option<Keyword> {
         assert!(false, "must not be called");
-        Keyword { uuid: "".to_string(),
-                  model_id: 0,
-                  parent_uuid: "".to_string(),
-                  name: "".to_string(),
-                  children: Vec::new() }
+        None
     }
     fn obj_type(&self) -> AplibType {
         return AplibType::Keyword;

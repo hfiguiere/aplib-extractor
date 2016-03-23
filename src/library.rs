@@ -44,12 +44,12 @@ pub struct ModelInfo {
 }
 
 impl ModelInfo {
-    fn parse(plist : &Plist) -> ModelInfo
+    fn parse(plist : &Plist) -> Option<ModelInfo>
     {
         use plutils::{get_int_value,get_bool_value};
 
         match *plist {
-            Plist::Dictionary(ref dict) => ModelInfo {
+            Plist::Dictionary(ref dict) => Some(ModelInfo {
                 db_minor_version: get_int_value(dict,
                                                 "DatabaseMinorVersion"),
                 db_version: get_int_value(dict, "DatabaseVersion"),
@@ -57,15 +57,8 @@ impl ModelInfo {
                 master_count: get_int_value(dict, "masterCount"),
                 version_count: get_int_value(dict, "versionCount"),
                 project_version: get_int_value(dict, "projectVersion")
-            },
-            _ => ModelInfo {
-                is_iphoto_library: false,
-                db_version: 0,
-                db_minor_version: 0,
-                master_count: 0,
-                version_count: 0,
-                project_version: 0
-            }
+            }),
+            _ => None
         }
     }
 }
@@ -182,7 +175,7 @@ impl Library {
         return list;
     }
 
-    pub fn get_model_info(&self) -> ModelInfo
+    pub fn get_model_info(&self) -> Option<ModelInfo>
     {
         let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
         let plist = plutils::parse_plist(ppath.as_ref());
@@ -195,9 +188,12 @@ impl Library {
     {
         let file_list = self.list_items(dir, ext);
         for file in file_list {
-            let obj = T::from_path(file.as_ref());
-            set.insert(obj.uuid().to_owned());
-            self.store(T::wrap(obj));
+            if let Some(obj) = T::from_path(file.as_ref()) {
+                set.insert(obj.uuid().to_owned());
+                self.store(T::wrap(obj));
+            } else {
+                println!("Failed to decode object from {:?}", file);
+            }
         }
     }
 
@@ -287,9 +283,12 @@ impl Library {
     {
         let file_list = self.list_versions_items(ext);
         for file in file_list {
-            let obj = T::from_path(file.as_ref());
-            set.insert(obj.uuid().to_owned());
-            self.store(T::wrap(obj));
+            if let Some(obj) = T::from_path(file.as_ref()) {
+                set.insert(obj.uuid().to_owned());
+                self.store(T::wrap(obj));
+            } else {
+                println!("Error decoding object from {:?}", file);
+            }
         }
     }
 
