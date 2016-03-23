@@ -8,8 +8,8 @@
 use plist::Plist;
 use std::path::Path;
 use store;
-use ::AplibObject;
-use ::AplibType;
+use AplibObject;
+use AplibType;
 
 pub struct Version {
     uuid: String,
@@ -31,6 +31,7 @@ pub struct Version {
 }
 
 impl AplibObject for Version {
+    /// Load the version object from the plist at plist_path.
     fn from_path(plist_path: &Path) -> Version
     {
         use plutils::*;
@@ -75,7 +76,7 @@ impl AplibObject for Version {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::VERSION;
+        return AplibType::Version;
     }
     fn uuid(&self) -> &String {
         return &self.uuid;
@@ -92,8 +93,4 @@ impl AplibObject for Version {
     fn wrap(obj: Version) -> store::Wrapper {
         store::Wrapper::Version(Box::new(obj))
     }
-}
-
-impl Version {
-
 }

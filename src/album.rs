@@ -7,28 +7,36 @@
 use std::path::Path;
 use plist::Plist;
 use store;
-use ::AplibObject;
-use ::AplibType;
+use AplibObject;
+use AplibType;
 
-/*
-pub enum AlbumSubclass {
-    INVALID = 0,
-    IMPLICIT = 1,
-    EXPLICIT = 2,
+pub enum Subclass {
+    Invalid = 0,
+    Normal = 1,
+    Smart = 2,
 }
-*/
 
+/// Album object.
 pub struct Album {
+    /// uuid
     uuid: String,
+    /// Folder uuid it represents.
     folder_uuid: String,
     model_id: i64,
 
+    /// Subclass. See ``Subclass`` enum. (Normal, Smart)
     pub subclass: i64,
+    /// ```Type```. Seems to always be 1
     pub album_type: i64,
+    /// UUID of folder it is querying content of (smart only)
     pub query_folder_uuid: String,
+    /// Version of db
     pub db_version: i64,
+    /// Sort ascending
     pub sort_asc: bool,
+    /// Date key for sort
     pub sort_key: String,
+    /// Name of the album.
     pub name: String,
 }
 
@@ -69,7 +77,7 @@ impl AplibObject for Album {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::ALBUM;
+        return AplibType::Album;
     }
     fn uuid(&self) -> &String {
         return &self.uuid;

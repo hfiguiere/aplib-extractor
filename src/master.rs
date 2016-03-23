@@ -72,7 +72,7 @@ impl AplibObject for Master {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::MASTER;
+        return AplibType::Master;
     }
     fn uuid(&self) -> &String {
         return &self.uuid;

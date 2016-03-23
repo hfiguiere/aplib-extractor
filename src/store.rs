@@ -8,8 +8,9 @@ use folder::Folder;
 use album::Album;
 use version::Version;
 use master::Master;
-use ::AplibObject;
+use AplibObject;
 
+/// Wrap an AplibObject to key it into the store.
 pub enum Wrapper {
     Album(Box<Album>),
     Folder(Box<Folder>),
@@ -19,6 +20,7 @@ pub enum Wrapper {
 }
 
 impl Wrapper {
+    /// Extract the uuid from the wrapper
     pub fn uuid(&self) -> Option<&String> {
         return match *self {
             Wrapper::Album(ref o) => {

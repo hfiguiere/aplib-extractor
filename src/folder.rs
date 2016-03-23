@@ -7,27 +7,38 @@
 use plist::Plist;
 use store;
 use std::path::Path;
-use ::AplibObject;
-use ::AplibType;
+use AplibObject;
+use AplibType;
 
-/*
-pub enum FolderType {
-    INVALID = 0,
-    FOLDER = 1,
-    PROJECT = 2,
+/// Type of folder: folder or project
+/// Only these are known.
+pub enum Type {
+    Invalid = 0,
+    Folder = 1,
+    Project = 2,
 }
-*/
 
+
+/// Folder object. This is a container of things in the library.
 pub struct Folder {
+    /// object uuid
     uuid: String,
+    /// parent uuid
     parent_uuid: String,
+    /// id in model
     model_id: i64,
 
+    /// Folder type. (Project, Folder)
     pub folder_type: u64,
+    /// Db model version
     pub db_version: i64,
+    /// Project model version - expected 8
     pub project_version: i64,
+    /// Path in the tree (using model_id for each components.
     pub path: String,
+    /// Name
     pub name: String,
+    /// UUID of the album object that compose this.
     pub implicit_album_uuid: String,
 }
 
@@ -60,7 +71,7 @@ impl AplibObject for Folder {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::FOLDER;
+        return AplibType::Folder;
     }
     fn uuid(&self) -> &String {
         return &self.uuid;

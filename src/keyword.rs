@@ -10,20 +10,27 @@ use std::collections::BTreeMap;
 use plutils::*;
 use store;
 use plist::Plist;
-use ::AplibObject;
-use ::AplibType;
+use AplibObject;
+use AplibType;
 
+/// A Keyword
 pub struct Keyword {
+    /// The uuid
     uuid: String,
+    /// The numeric id in the model
     model_id: i64,
+    /// The parent uuid
     parent_uuid: String,
 
+    /// Name of the keyword
     pub name: String,
+    /// Children keywords. Their parent_uuid will be self.uuid
     pub children: Vec<Keyword>,
 }
 
 impl AplibObject for Keyword {
     #[allow(unused_variables)]
+    #[doc(hidden)]
     fn from_path(plist_path: &Path) -> Keyword {
         assert!(false, "must not be called");
         Keyword { uuid: "".to_string(),
@@ -33,7 +40,7 @@ impl AplibObject for Keyword {
                   children: Vec::new() }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::KEYWORD;
+        return AplibType::Keyword;
     }
     fn uuid(&self) -> &String {
         return &self.uuid;
@@ -48,6 +55,7 @@ impl AplibObject for Keyword {
         return !self.uuid.is_empty();
     }
     #[allow(unused_variables)]
+    #[doc(hidden)]
     fn wrap(obj: Keyword) -> store::Wrapper {
         store::Wrapper::None
     }

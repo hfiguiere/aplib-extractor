@@ -26,11 +26,11 @@ pub use keyword::Keyword as Keyword;
 pub use store::Wrapper as StoreWrapper;
 
 pub enum AplibType {
-    FOLDER,
-    ALBUM,
-    KEYWORD,
-    MASTER,
-    VERSION,
+    Album,
+    Folder,
+    Keyword,
+    Master,
+    Version,
 }
 
 pub trait AplibObject {
