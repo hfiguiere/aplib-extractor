@@ -4,11 +4,9 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-extern crate plist;
-
 use std::fs::File;
 use std::path::Path;
-use self::plist::Plist;
+use plist::Plist;
 use std::collections::BTreeMap;
 
 pub fn parse_plist(path : &Path) -> Plist

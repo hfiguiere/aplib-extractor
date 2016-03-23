@@ -4,13 +4,11 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-extern crate plist;
-
 use std::fs;
 use std::path::PathBuf;
 use std::collections::{HashMap,HashSet};
 
-use self::plist::Plist;
+use plist::Plist;
 use folder::Folder;
 use album::Album;
 use version::Version;
@@ -35,6 +33,7 @@ const ALBUMS_DIR: &'static str = "Albums";
 const FOLDERS_DIR: &'static str = "Folders";
 const VERSIONS_BASE_DIR: &'static str = "Versions";
 
+/// Info of the library data model
 pub struct ModelInfo {
     pub is_iphoto_library: bool,
     pub db_version: i64,
@@ -122,7 +121,7 @@ impl Library {
         };
     }
 
-    pub fn get(&self, uuid: &String) -> Option<&store::Wrapper>
+    pub fn get(&self, uuid: &str) -> Option<&store::Wrapper>
     {
         self.objects.get(uuid)
     }
@@ -316,6 +315,7 @@ impl Library {
     {
         &self.masters
     }
+
     pub fn get_versions(&self) -> &HashSet<String>
     {
         &self.versions

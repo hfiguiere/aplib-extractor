@@ -4,14 +4,12 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-extern crate plist;
-
 use std::path::Path;
 use std::collections::BTreeMap;
 
 use plutils::*;
 use store;
-use self::plist::Plist;
+use plist::Plist;
 use ::AplibObject;
 use ::AplibType;
 
