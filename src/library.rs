@@ -5,7 +5,7 @@
  */
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::collections::{HashMap,HashSet};
 
 use plist::Plist;
@@ -16,7 +16,7 @@ use master::Master;
 use keyword::{parse_keywords,Keyword};
 use store;
 use plutils;
-use ::AplibObject;
+use AplibObject;
 
 // This is mostly from db_version = 110
 
@@ -79,7 +79,7 @@ pub struct Library {
 
 impl Library {
 
-    pub fn new(p: &String) -> Library
+    pub fn new(p: &str) -> Library
     {
         Library {
             path: p.to_owned(),
@@ -225,7 +225,7 @@ impl Library {
         return &self.folders;
     }
 
-    fn recurse_list_directory(path: &PathBuf, level: i32) -> Vec<PathBuf>
+    fn recurse_list_directory(path: &Path, level: i32) -> Vec<PathBuf>
     {
         let mut list: Vec<PathBuf> = Vec::new();
         for entry in fs::read_dir(path).unwrap() {

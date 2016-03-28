@@ -92,7 +92,7 @@ fn process_audit(args: &Args) {
 }
 
 /// print the keywords with indentation for the hierarchy
-fn print_keywords(keywords: &Vec<Keyword>, indent: &String) {
+fn print_keywords(keywords: &Vec<Keyword>, indent: &str) {
     for keyword in keywords {
         println!("| {}{} | {} | {} |", indent, keyword.name,
                  keyword.uuid(), keyword.parent());
