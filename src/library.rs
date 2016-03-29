@@ -108,10 +108,10 @@ impl Library {
             }
             uuid.unwrap().to_owned()
         };
-        return match self.objects.insert(uuid_str, obj) {
+        match self.objects.insert(uuid_str, obj) {
             None => true,
             _ => false,
-        };
+        }
     }
 
     pub fn get(&self, uuid: &str) -> Option<&store::Wrapper>
@@ -142,7 +142,7 @@ impl Library {
                 _ => ()
             }
         }
-        return &self.version;
+        &self.version
     }
 
     fn build_path(&self, dir: &str, database: bool) -> PathBuf
@@ -153,7 +153,7 @@ impl Library {
         }
         ppath.push(dir);
 
-        return ppath;
+        ppath
     }
 
     fn list_items(&self, dir: &str, ext: &str) -> Vec<PathBuf>
@@ -172,7 +172,8 @@ impl Library {
                 list.push(p.to_owned());
             }
         }
-        return list;
+
+        list
     }
 
     pub fn get_model_info(&self) -> Option<ModelInfo>
@@ -180,7 +181,7 @@ impl Library {
         let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
         let plist = plutils::parse_plist(ppath.as_ref());
 
-        return ModelInfo::parse(&plist);
+        ModelInfo::parse(&plist)
     }
 
     fn load_items<T: AplibObject>(&mut self, dir: &str, ext: &str,
@@ -208,7 +209,7 @@ impl Library {
 
     pub fn get_albums(&self) -> &HashSet<String>
     {
-        return &self.albums;
+        &self.albums
     }
 
     pub fn load_folders(&mut self)
@@ -222,7 +223,7 @@ impl Library {
 
     pub fn get_folders(&self) -> &HashSet<String>
     {
-        return &self.folders;
+        &self.folders
     }
 
     fn recurse_list_directory(path: &Path, level: i32) -> Vec<PathBuf>
@@ -241,7 +242,8 @@ impl Library {
                 }
             }
         }
-        return list;
+
+        list
     }
 
     fn list_versions_items_dirs(&self) -> Vec<PathBuf>
@@ -253,7 +255,7 @@ impl Library {
             return Vec::new();
         }
 
-        return Library::recurse_list_directory(&ppath, 4);
+        Library::recurse_list_directory(&ppath, 4)
     }
 
     fn list_versions_items(&self, ext: &str) -> Vec<PathBuf>
@@ -275,7 +277,8 @@ impl Library {
                 }
             }
         }
-        return items;
+
+        items
     }
 
     fn load_versions_items<T: AplibObject>(&mut self, ext: &str,
@@ -322,7 +325,7 @@ impl Library {
 
     pub fn list_keywords(&self) -> Vec<Keyword>
     {
-        return parse_keywords(self.build_path(KEYWORDS_PLIST, true).as_ref());
+        parse_keywords(self.build_path(KEYWORDS_PLIST, true).as_ref())
     }
 }
 
