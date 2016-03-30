@@ -25,7 +25,7 @@ pub fn parse_plist(path : &Path) -> Plist
 pub fn get_str_value(dict: &BTreeMap<String, Plist>, key: &str) -> String {
     return match dict.get(key) {
         Some(&Plist::String(ref s)) => s.to_owned(),
-        _ => "".to_string()
+        _ => "".to_owned()
     };
 }
 

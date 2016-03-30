@@ -6,7 +6,6 @@
 
 extern crate plist;
 
-pub mod plutils;
 mod library;
 mod folder;
 mod album;
@@ -14,6 +13,8 @@ mod master;
 mod version;
 mod keyword;
 mod store;
+pub mod audit;
+pub mod plutils;
 
 use std::path::Path;
 

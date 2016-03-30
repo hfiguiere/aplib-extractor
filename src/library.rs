@@ -13,6 +13,7 @@ use folder::Folder;
 use album::Album;
 use version::Version;
 use master::Master;
+use audit::Reporter;
 use keyword::{parse_keywords,Keyword};
 use store;
 use plutils;
@@ -75,6 +76,7 @@ pub struct Library {
     versions: HashSet<String>,
 
     objects: HashMap<String, store::Wrapper>,
+    auditor: Option<Reporter>,
 }
 
 impl Library {
@@ -83,7 +85,7 @@ impl Library {
     {
         Library {
             path: p.to_owned(),
-            version: "".to_string(),
+            version: "".to_owned(),
 
             folders: HashSet::new(),
             albums: HashSet::new(),
@@ -92,7 +94,13 @@ impl Library {
             versions: HashSet::new(),
 
             objects: HashMap::new(),
+            auditor: None,
         }
+    }
+
+    /// Set an auditor.
+    pub fn set_auditor(&mut self, auditor: Option<Reporter>) {
+        self.auditor = auditor;
     }
 
     /// Store the wrapped object.
@@ -132,7 +140,7 @@ impl Library {
                                                            "CFBundleIdentifier");
                     if bundle_id != BUNDLE_IDENTIFIER {
                         println!("FATAL not a library");
-                        self.version = "".to_string();
+                        self.version = "".to_owned();
                         return &self.version;
                     }
                     self.version =

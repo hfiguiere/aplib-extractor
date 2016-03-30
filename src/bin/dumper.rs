@@ -15,6 +15,7 @@ use aplib::AplibObject;
 use aplib::Library;
 use aplib::Keyword;
 use aplib::StoreWrapper;
+use aplib::audit::Reporter;
 
 const USAGE: &'static str = "
 Usage:
@@ -57,7 +58,7 @@ impl Decodable for Command {
         Ok(match &*s {
             "dump" => Command::Dump,
             "audit" => Command::Audit,
-            s => Command::Unknown(s.to_string()),
+            s => Command::Unknown(s.to_owned()),
         })
     }
 }
@@ -84,6 +85,9 @@ fn process_audit(args: &Args) {
 
     let mut library = Library::new(&args.arg_path);
 
+    let auditor = Reporter::new();
+    library.set_auditor(Some(auditor));
+
     library.load_folders();
     library.load_albums();
     library.load_masters();
@@ -99,9 +103,9 @@ fn print_keywords(keywords: &Vec<Keyword>, indent: &str) {
         if !keyword.children.is_empty() {
             let new_indent;
             if indent.is_empty() {
-                new_indent = "+- ".to_string() + indent;
+                new_indent = "+- ".to_owned() + indent;
             } else {
-                new_indent = "\t".to_string() + indent;
+                new_indent = "\t".to_owned() + indent;
             }
             print_keywords(&keyword.children, &new_indent);
         }
@@ -167,7 +171,7 @@ fn process_dump(args: &Args) {
         let keywords = library.list_keywords();
         println!("{} keywords:", keywords.len());
         println!("| uuid | parent | name |");
-        print_keywords(&keywords, &"".to_string());
+        print_keywords(&keywords, &"".to_owned());
     }
 
     library.load_masters();
