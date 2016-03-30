@@ -9,6 +9,7 @@ use plist::Plist;
 use store;
 use AplibObject;
 use AplibType;
+use audit::{Auditable,Report};
 
 pub enum Subclass {
     Invalid = 0,
@@ -38,6 +39,12 @@ pub struct Album {
     pub sort_key: String,
     /// Name of the album.
     pub name: String,
+}
+
+impl Auditable for Album {
+    fn audit(&self) -> Report {
+        Report::new()
+    }
 }
 
 impl AplibObject for Album {

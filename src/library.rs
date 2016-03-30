@@ -13,7 +13,7 @@ use folder::Folder;
 use album::Album;
 use version::Version;
 use master::Master;
-use audit::Reporter;
+use audit::{Reporter,Report,SkipReason,Auditable};
 use keyword::{parse_keywords,Keyword};
 use store;
 use plutils;
@@ -103,6 +103,10 @@ impl Library {
         self.auditor = auditor;
     }
 
+    pub fn get_auditor(&self) -> Option<&Reporter> {
+        self.auditor.as_ref()
+    }
+
     /// Store the wrapped object.
     /// Return true if the object was stored
     /// Return false if there already was an object with the same uuid
@@ -131,24 +135,65 @@ impl Library {
     {
         if self.version.is_empty()
         {
-            let plist = plutils::parse_plist(self.build_path(INFO_PLIST,
-                                                             false).as_ref());
+            let plist_path = self.build_path(INFO_PLIST, false);
+            let plist = plutils::parse_plist(&plist_path);
+            let mut report = Report::new();
+            let audit = self.auditor.is_some();
+
 
             match plist {
                 Plist::Dictionary(ref dict) => {
-                    let bundle_id = plutils::get_str_value(dict,
-                                                           "CFBundleIdentifier");
-                    if bundle_id != BUNDLE_IDENTIFIER {
-                        println!("FATAL not a library");
-                        self.version = "".to_owned();
-                        return &self.version;
+                    for (key, value) in dict.iter() {
+
+                        match key.as_ref() {
+                            "CFBundleIdentifier" => {
+                                if let &Plist::String(ref s) = value {
+                                    let bundle_id = s.to_owned();
+                                    if bundle_id != BUNDLE_IDENTIFIER {
+                                        report.skip(key,
+                                                    SkipReason::InvalidData);
+                                        println!("FATAL not a library");
+                                        return &self.version;
+                                    }
+                                    if audit {
+                                        report.parsed(key);
+                                    }
+                                } else if audit {
+                                    report.skip(key, SkipReason::InvalidType);
+                                }
+                            },
+                            "CFBundleShortVersionString" => {
+                                if let &Plist::String(ref s) = value {
+                                    self.version = s.to_owned();
+                                    if audit {
+                                        report.parsed(key);
+                                    }
+                                } else if audit {
+                                    report.skip(key, SkipReason::InvalidType);
+                                }
+                            },
+                            _ => {
+                                if audit {
+                                    report.ignore(key);
+                                }
+                            },
+                        }
                     }
-                    self.version =
-                        plutils::get_str_value(dict,
-                                               "CFBundleShortVersionString");
+                    if audit {
+                        self.auditor.as_mut().unwrap().parsed(
+                            &plist_path.to_string_lossy(), report);
+                    }
+
                 },
-                _ => ()
+                _ => {
+                    if audit {
+                        self.auditor.as_mut().unwrap().skip(
+                            &plist_path.to_string_lossy(),
+                            SkipReason::InvalidType);
+                    }
+                }
             }
+
         }
         &self.version
     }
@@ -192,7 +237,7 @@ impl Library {
         ModelInfo::parse(&plist)
     }
 
-    fn load_items<T: AplibObject>(&mut self, dir: &str, ext: &str,
+    fn load_items<T: AplibObject + Auditable>(&mut self, dir: &str, ext: &str,
                                   set: &mut HashSet<String>)
     {
         let file_list = self.list_items(dir, ext);

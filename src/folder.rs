@@ -9,6 +9,7 @@ use store;
 use std::path::Path;
 use AplibObject;
 use AplibType;
+use audit::{Auditable,Report};
 
 /// Type of folder: folder or project
 /// Only these are known.
@@ -40,6 +41,12 @@ pub struct Folder {
     pub name: String,
     /// UUID of the album object that compose this.
     pub implicit_album_uuid: String,
+}
+
+impl Auditable for Folder {
+    fn audit(&self) -> Report {
+        Report::new()
+    }
 }
 
 impl AplibObject for Folder {

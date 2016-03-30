@@ -88,11 +88,13 @@ fn process_audit(args: &Args) {
     let auditor = Reporter::new();
     library.set_auditor(Some(auditor));
 
+    library.library_version();
     library.load_folders();
     library.load_albums();
     library.load_masters();
     library.load_versions();
 
+    println!("Audit: {:?}", library.get_auditor().unwrap());
 }
 
 /// print the keywords with indentation for the hierarchy

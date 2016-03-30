@@ -7,10 +7,21 @@
 
 use std::collections::{ HashMap, HashSet };
 
-/// The audit reporter.
+
+#[derive(Debug)]
+pub enum SkipReason {
+    None,
+    InvalidType,
+    InvalidData,
+}
+
+/// The audit reporter.  The idea it too list the properties that are
+/// ignored, skipped or parsed.  In order to establish what we are
+/// missing.
+#[derive(Debug)]
 pub struct Reporter {
     ignored: HashSet<String>,
-    skipped: HashSet<String>,
+    skipped: HashMap<String, SkipReason>,
     parsed: HashMap<String, Report>,
 }
 
@@ -19,7 +30,7 @@ impl Reporter {
     pub fn new() -> Reporter {
         Reporter {
             ignored: HashSet::new(),
-            skipped: HashSet::new(),
+            skipped: HashMap::new(),
             parsed: HashMap::new(),
         }
     }
@@ -27,8 +38,8 @@ impl Reporter {
     pub fn ignore(&mut self, key: &str) {
         self.ignored.insert(key.to_owned());
     }
-    pub fn skip(&mut self, key: &str) {
-        self.skipped.insert(key.to_owned());
+    pub fn skip(&mut self, key: &str, reason: SkipReason) {
+        self.skipped.insert(key.to_owned(), reason);
     }
     pub fn parsed(&mut self, key: &str, report: Report) {
         self.parsed.insert(key.to_owned(), report);
@@ -37,9 +48,10 @@ impl Reporter {
 }
 
 /// Individual report for an object
+#[derive(Debug)]
 pub struct Report {
     ignored: HashSet<String>,
-    skipped: HashSet<String>,
+    skipped: HashMap<String, SkipReason>,
     parsed: HashSet<String>,
 }
 
@@ -47,7 +59,7 @@ impl Report {
     pub fn new() -> Report {
         Report {
             ignored: HashSet::new(),
-            skipped: HashSet::new(),
+            skipped: HashMap::new(),
             parsed: HashSet::new(),
         }
     }
@@ -55,14 +67,14 @@ impl Report {
     pub fn ignore(&mut self, key: &str) {
         self.ignored.insert(key.to_owned());
     }
-    pub fn skip(&mut self, key: &str) {
-        self.skipped.insert(key.to_owned());
+    pub fn skip(&mut self, key: &str, reason: SkipReason) {
+        self.skipped.insert(key.to_owned(), reason);
     }
     pub fn parsed(&mut self, key: &str) {
         self.parsed.insert(key.to_owned());
     }
 }
 
-trait Auditable {
+pub trait Auditable {
     fn audit(&self) -> Report;
 }
