@@ -241,11 +241,22 @@ impl Library {
                                   set: &mut HashSet<String>)
     {
         let file_list = self.list_items(dir, ext);
+        let audit = self.auditor.is_some();
         for file in file_list {
             if let Some(obj) = T::from_path(file.as_ref()) {
                 set.insert(obj.uuid().to_owned());
+                if audit {
+                    let report = obj.audit();
+                    self.auditor.as_mut().unwrap().parsed(
+                        &file.to_string_lossy(), report);
+                }
                 self.store(T::wrap(obj));
             } else {
+                if audit {
+                    self.auditor.as_mut().unwrap().skip(
+                        &file.to_string_lossy(),
+                        SkipReason::ParseFailed);
+                }
                 println!("Failed to decode object from {:?}", file);
             }
         }

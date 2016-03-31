@@ -13,6 +13,7 @@ pub enum SkipReason {
     None,
     InvalidType,
     InvalidData,
+    ParseFailed,
 }
 
 /// The audit reporter.  The idea it too list the properties that are
