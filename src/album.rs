@@ -18,6 +18,7 @@ pub enum Subclass {
 }
 
 /// Album object.
+#[derive(Debug)]
 pub struct Album {
     /// uuid
     uuid: String,
@@ -94,4 +95,32 @@ impl AplibObject for Album {
 }
 
 impl Album {
+}
+
+
+#[cfg(test)]
+#[test]
+fn test_album_parse() {
+    use testutils;
+
+    let album = Album::from_path(
+        testutils::get_test_file_path("gOnttfpzQoOxcwLpFS9DQg.apalbum")
+            .as_path());
+    assert!(album.is_some());
+    let album = album.unwrap();
+
+    assert_eq!(album.uuid, "gOnttfpzQoOxcwLpFS9DQg");
+    assert_eq!(album.folder_uuid, "TopLevelAlbums");
+    assert_eq!(album.model_id, 601);
+    assert_eq!(album.subclass, 1);
+    assert_eq!(album.album_type, 1);
+    assert_eq!(album.query_folder_uuid, "");
+    assert_eq!(album.db_version, 110);
+    assert_eq!(album.sort_asc, true);
+    assert_eq!(album.sort_key, "exifProperties.ImageDate");
+    assert_eq!(album.name, "");
+
+    let report = album.audit();
+    // XXX fix when have actual audit.
+    println!("report {:?}", report);
 }

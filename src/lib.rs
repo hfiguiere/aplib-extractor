@@ -16,6 +16,9 @@ mod store;
 pub mod audit;
 pub mod plutils;
 
+#[cfg(test)]
+mod testutils;
+
 use std::path::Path;
 
 pub use library::Library as Library;
