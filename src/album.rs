@@ -75,19 +75,19 @@ impl AplibObject for Album {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::Album;
+        AplibType::Album
     }
     fn uuid(&self) -> &String {
-        return &self.uuid;
+        &self.uuid
     }
     fn parent(&self) -> &String {
-        return &self.folder_uuid;
+        &self.folder_uuid
     }
     fn model_id(&self) -> i64 {
-        return self.model_id;
+        self.model_id
     }
     fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
+        !self.uuid.is_empty()
     }
     fn wrap(obj: Album) -> store::Wrapper {
         store::Wrapper::Album(Box::new(obj))

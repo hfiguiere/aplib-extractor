@@ -22,7 +22,7 @@ pub enum Wrapper {
 impl Wrapper {
     /// Extract the uuid from the wrapper
     pub fn uuid(&self) -> Option<&String> {
-        return match *self {
+        match *self {
             Wrapper::Album(ref o) => {
                 Some(o.uuid())
             },
@@ -36,6 +36,6 @@ impl Wrapper {
                 Some(o.uuid())
             },
             Wrapper::None => Option::None
-        };
+        }
     }
 }

@@ -60,19 +60,19 @@ impl AplibObject for Version {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::Version;
+        AplibType::Version
     }
     fn uuid(&self) -> &String {
-        return &self.uuid;
+        &self.uuid
     }
     fn parent(&self) -> &String {
-        return &self.master_uuid;
+        &self.master_uuid
     }
     fn model_id(&self) -> i64 {
-        return self.model_id;
+        self.model_id
     }
     fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
+        !self.uuid.is_empty()
     }
     fn wrap(obj: Version) -> store::Wrapper {
         store::Wrapper::Version(Box::new(obj))

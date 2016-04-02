@@ -36,19 +36,19 @@ impl AplibObject for Keyword {
         None
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::Keyword;
+        AplibType::Keyword
     }
     fn uuid(&self) -> &String {
-        return &self.uuid;
+        &self.uuid
     }
     fn parent(&self) -> &String {
-        return &self.parent_uuid;
+        &self.parent_uuid
     }
     fn model_id(&self) -> i64 {
-        return self.model_id;
+        self.model_id
     }
     fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
+        !self.uuid.is_empty()
     }
     #[allow(unused_variables)]
     #[doc(hidden)]
@@ -62,7 +62,7 @@ pub fn parse_keywords(path: &Path) -> Vec<Keyword>
 {
     let plist = parse_plist(path);
 
-    return match plist {
+    match plist {
         Plist::Dictionary(ref dict) => {
             let version = get_int_value(dict, "keywords_version");
             // XXX deal with proper errors here.
@@ -90,19 +90,19 @@ impl Keyword {
                 _ => ()
             }
         }
-        return keywords;
+        keywords
     }
 
     /// create a new keyword from a plist dictionary
     /// will recursively create the children
     pub fn from(d: &BTreeMap<String, Plist>) -> Keyword
     {
-        return Keyword {
+        Keyword {
             uuid: get_str_value(d, "uuid"),
             model_id: get_int_value(d, "modelId"),
             parent_uuid: get_str_value(d, "parentUuid"),
             name: get_str_value(d, "name"),
             children: Keyword::from_array(get_array_value(d, "zChildren")),
-        };
+        }
     }
 }

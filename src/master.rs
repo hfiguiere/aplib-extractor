@@ -58,19 +58,19 @@ impl AplibObject for Master {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::Master;
+        AplibType::Master
     }
     fn uuid(&self) -> &String {
-        return &self.uuid;
+        &self.uuid
     }
     fn parent(&self) -> &String {
-        return &self.project_uuid;
+        &self.project_uuid
     }
     fn model_id(&self) -> i64 {
-        return self.model_id;
+        self.model_id
     }
     fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
+        !self.uuid.is_empty()
     }
     fn wrap(obj: Master) -> store::Wrapper {
         store::Wrapper::Master(Box::new(obj))

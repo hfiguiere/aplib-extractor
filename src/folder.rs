@@ -73,19 +73,19 @@ impl AplibObject for Folder {
         }
     }
     fn obj_type(&self) -> AplibType {
-        return AplibType::Folder;
+        AplibType::Folder
     }
     fn uuid(&self) -> &String {
-        return &self.uuid;
+        &self.uuid
     }
     fn parent(&self) -> &String {
-        return &self.parent_uuid;
+        &self.parent_uuid
     }
     fn model_id(&self) -> i64 {
-        return self.model_id;
+        self.model_id
     }
     fn is_valid(&self) -> bool {
-        return !self.uuid.is_empty();
+        !self.uuid.is_empty()
     }
     fn wrap(obj: Folder) -> store::Wrapper {
         store::Wrapper::Folder(Box::new(obj))
