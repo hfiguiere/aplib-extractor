@@ -39,25 +39,37 @@ pub struct ModelInfo {
     pub is_iphoto_library: bool,
     pub db_version: i64,
     pub db_minor_version: i64,
+    pub db_uuid: String,
+    pub create_date: String,
+    pub image_io_version: String,
+    pub raw_camera_bundle_version: String,
     pub master_count: i64,
     pub version_count: i64,
+    pub project_compat_back_to_version: i64,
     pub project_version: i64,
 }
 
 impl ModelInfo {
     fn parse(plist : &Plist) -> Option<ModelInfo>
     {
-        use plutils::{get_int_value,get_bool_value};
+        use plutils::{get_int_value,get_bool_value,get_str_value};
 
         match *plist {
             Plist::Dictionary(ref dict) => Some(ModelInfo {
+                db_uuid: get_str_value(dict, "databaseUuid"),
                 db_minor_version: get_int_value(dict,
                                                 "DatabaseMinorVersion"),
                 db_version: get_int_value(dict, "DatabaseVersion"),
                 is_iphoto_library: get_bool_value(dict, "isIPhotoLibrary"),
+                create_date: get_str_value(dict, "createDate"),
+                image_io_version: get_str_value(dict, "imageIOVersion"),
+                raw_camera_bundle_version: get_str_value(
+                    dict, "rawCameraBundleVersion"),
                 master_count: get_int_value(dict, "masterCount"),
                 version_count: get_int_value(dict, "versionCount"),
-                project_version: get_int_value(dict, "projectVersion")
+                project_version: get_int_value(dict, "projectVersion"),
+                project_compat_back_to_version: get_int_value(
+                    dict, "projectCompatibleBackToVersion"),
             }),
             _ => None
         }

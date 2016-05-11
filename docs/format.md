@@ -2,11 +2,13 @@ Aperture Library format
 
 
 
+Table 1:
 
 App version | DB version | DB minor | Project vers
 ------------+------------+----------+-------------
 3.1.3       | 110        | 122      | 6
 3.2.2       | 110        | 131      | 7
+3.2.4       | 110        | 131      | 7
 3.3.2       | 110        | 207 (203)| 8
 3.4.5       | 110        | 219 (208)| 8
 
@@ -28,7 +30,7 @@ Aperture.aplibrary
 +- Database
 |  +- ActiveWebPublishingAccounts.plist [207]
 |  +- Albums
-|  |  +- *.aplbum
+|  |  +- *.apalbum
 |  |  +-
 |  |
 |  +- apdb
@@ -74,9 +76,12 @@ Aperture.aplibrary
 |  |                 +- Version-1.apversion
 |  |
 |  +- Volumes
+|  +- tmSync.plist
 |
 +- iLifeShared
 |  +- ApertureDatabaseTimestamp
++- iMovie-Thumbnails [optional?]
++- iPod Photo Cache [optional?]
 |
 +- Info.plist
 +- Masks
@@ -94,6 +99,33 @@ Aperture.aplibrary
 
 ApertureData.xml: seems to contain a dump of the whole data model but
 it seems to not be present everywhere. [IGNORE]
+
+Aperture.aplib
+==============
+
+This seems to have only one file.
+
+DataModelVersion.plist
+----------------------
+
+It specifies the datamodel, the version for projects and a few other
+details
+
+Properties:
+
+* DatabaseMinorVersion (integer): DB minor version. See Table 1.
+* DatabaseVersion (integer): DB version. See Table 1.
+* createDate (date):
+* databaseUuid (string):
+* imageIOVersion (string):
+* isIPhotoLibrary (bool): false
+* masterCount (integer): count of masters
+* migratedMobileMeAccounts (array):
+* projectVersion (integer): project version. See Table 1.
+* projectCompatibleBackToVersion (integer): See 'projectVersion'
+* rawCameraBundleVersion (string):
+* versionCount (integer): count of versions
+
 
 Database
 ========

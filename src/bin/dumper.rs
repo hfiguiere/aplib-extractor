@@ -127,10 +127,12 @@ fn process_dump(args: &Args) {
     println!("\tDB version: {}", model_info.db_version);
     println!("\tDB minor version: {}", model_info.db_minor_version);
     println!("\tProject version: {}", model_info.project_version);
+    println!("\tProject creation date: {}", model_info.create_date);
+    println!("\tImageIO: {} Camera RAW: {}", model_info.image_io_version,
+             model_info.raw_camera_bundle_version);
 
-    library.load_folders();
-    library.load_albums();
     if args.flag_all || args.flag_folders {
+        library.load_folders();
         let folders = library.get_folders();
         println!("{} Folders:", folders.len());
         println!("| Name | uuid | impl album | type | model id | path |");
@@ -150,6 +152,7 @@ fn process_dump(args: &Args) {
         }
     }
     if args.flag_all || args.flag_albums {
+        library.load_albums();
         let albums = library.get_albums();
         println!("{} Albums:", albums.len());
         println!("| name | uuid | parent (fldr) | query (fldr) | type | class | model id |");
@@ -176,9 +179,8 @@ fn process_dump(args: &Args) {
         print_keywords(&keywords, &"".to_owned());
     }
 
-    library.load_masters();
-    library.load_versions();
     if args.flag_all || args.flag_masters  {
+        library.load_masters();
         let masters = library.get_masters();
         println!("{} Masters:", masters.len());
         println!("| uuid | project | path |");
@@ -196,6 +198,7 @@ fn process_dump(args: &Args) {
         }
     }
     if args.flag_all || args.flag_versions  {
+        library.load_versions();
         let versions = library.get_versions();
         println!("{} Versions:", versions.len());
         println!("| uuid | master | project | name | original |");
