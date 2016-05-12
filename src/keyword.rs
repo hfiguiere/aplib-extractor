@@ -66,8 +66,9 @@ pub fn parse_keywords(path: &Path) -> Vec<Keyword>
         Plist::Dictionary(ref dict) => {
             let version = get_int_value(dict, "keywords_version");
             // XXX deal with proper errors here.
-            if version != 6 {
-                println!("Wrong keyword version !");
+            // Version 3.4.5 has version 7.
+            if version != 6 && version != 7 {
+                println!("Wrong keyword version {} !", version);
             }
 
             Keyword::from_array(get_array_value(dict, "keywords"))

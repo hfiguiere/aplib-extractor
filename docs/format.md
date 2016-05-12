@@ -166,6 +166,15 @@ Top-level properties:
 * attachments: attachments like track path
 * FilterInfo: display filter. DATA.
 
+Keywords.plist
+--------------
+
+Define the keywords in the database. A plist with hierarchial keywords.
+
+Properties:
+* keywords_verions (integer): 6 or 7. Not sure which is what, I don't
+see difference otherwise.
+
 
 Versions
 --------
