@@ -249,8 +249,8 @@ impl Library {
         ModelInfo::parse(&plist)
     }
 
-    fn load_items<T: AplibObject + Auditable>(&mut self, dir: &str, ext: &str,
-                                  set: &mut HashSet<String>)
+    fn load_items<T: AplibObject + Auditable, F: FnMut(u64) -> bool>(
+        &mut self, dir: &str, ext: &str, set: &mut HashSet<String>, pg: &mut F)
     {
         let file_list = self.list_items(dir, ext);
         let audit = self.auditor.is_some();
@@ -271,14 +271,18 @@ impl Library {
                 }
                 println!("Failed to decode object from {:?}", file);
             }
+            if !pg(1) {
+                println!("Cancelled");
+                return;
+            }
         }
     }
 
-    pub fn load_albums(&mut self)
+    pub fn load_albums<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.albums.is_empty() {
             let mut albums : HashSet<String> = HashSet::new();
-            self.load_items::<Album>(ALBUMS_DIR, "apalbum", &mut albums);
+            self.load_items::<Album, F>(ALBUMS_DIR, "apalbum", &mut albums, pg);
             self.albums = albums;
         }
     }
@@ -288,11 +292,12 @@ impl Library {
         &self.albums
     }
 
-    pub fn load_folders(&mut self)
+    pub fn load_folders<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.folders.is_empty() {
             let mut folders : HashSet<String> = HashSet::new();
-            self.load_items::<Folder>(FOLDERS_DIR, "apfolder", &mut folders);
+            self.load_items::<Folder, F>(FOLDERS_DIR, "apfolder",
+                                         &mut folders, pg);
             self.folders = folders;
         }
     }
@@ -357,8 +362,9 @@ impl Library {
         items
     }
 
-    fn load_versions_items<T: AplibObject>(&mut self, ext: &str,
-                                           set: &mut HashSet<String>)
+    fn load_versions_items<T: AplibObject, F: FnMut(u64) -> bool>(
+        &mut self, ext: &str,
+        set: &mut HashSet<String>, pg: &mut F)
     {
         let file_list = self.list_versions_items(ext);
         for file in file_list {
@@ -368,23 +374,29 @@ impl Library {
             } else {
                 println!("Error decoding object from {:?}", file);
             }
+            if !pg(1) {
+                println!("Cancelled!");
+                break;
+            }
         }
     }
 
-    pub fn load_versions(&mut self)
+    pub fn load_versions<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.versions.is_empty() {
             let mut versions: HashSet<String> = HashSet::new();
-            self.load_versions_items::<Version>("apversion", &mut versions);
+            self.load_versions_items::<Version, F>(
+                "apversion", &mut versions, pg);
             self.versions = versions;
         }
     }
 
-    pub fn load_masters(&mut self)
+    pub fn load_masters<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.masters.is_empty() {
             let mut masters: HashSet<String> = HashSet::new();
-            self.load_versions_items::<Master>("apmaster", &mut masters);
+            self.load_versions_items::<Master, F>(
+                "apmaster", &mut masters, pg);
             self.masters = masters;
         }
     }

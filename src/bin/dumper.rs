@@ -7,9 +7,11 @@
 extern crate aplib;
 extern crate docopt;
 extern crate rustc_serialize;
+extern crate pbr;
 
 use docopt::Docopt;
 use rustc_serialize::{Decodable, Decoder};
+use pbr::ProgressBar;
 
 use aplib::AplibObject;
 use aplib::Library;
@@ -89,10 +91,10 @@ fn process_audit(args: &Args) {
     library.set_auditor(Some(auditor));
 
     library.library_version();
-    library.load_folders();
-    library.load_albums();
-    library.load_masters();
-    library.load_versions();
+    library.load_folders(&mut |_: u64| true);
+    library.load_albums(&mut |_: u64| true);
+    library.load_masters(&mut |_: u64| true);
+    library.load_versions(&mut |_: u64| true);
 
     println!("Audit: {:?}", library.get_auditor().unwrap());
 }
@@ -127,12 +129,21 @@ fn process_dump(args: &Args) {
     println!("\tDB version: {}", model_info.db_version);
     println!("\tDB minor version: {}", model_info.db_minor_version);
     println!("\tProject version: {}", model_info.project_version);
-    println!("\tProject creation date: {}", model_info.create_date);
+    println!("\tCreation date: {}", model_info.create_date);
     println!("\tImageIO: {} Camera RAW: {}", model_info.image_io_version,
              model_info.raw_camera_bundle_version);
 
     if args.flag_all || args.flag_folders {
-        library.load_folders();
+
+        let mut pb = ProgressBar::new(1);
+        pb.tick_format("|/-\\");
+
+        library.load_folders(&mut |_: u64| {
+            pb.tick();
+            true
+        });
+        pb.finish();
+
         let folders = library.get_folders();
         println!("{} Folders:", folders.len());
         println!("| Name | uuid | impl album | type | model id | path |");
@@ -152,7 +163,16 @@ fn process_dump(args: &Args) {
         }
     }
     if args.flag_all || args.flag_albums {
-        library.load_albums();
+
+        let mut pb = ProgressBar::new(1);
+        pb.tick_format("|/-\\");
+
+        library.load_albums(&mut |_: u64| {
+            pb.tick();
+            true
+        });
+        pb.finish();
+
         let albums = library.get_albums();
         println!("{} Albums:", albums.len());
         println!("| name | uuid | parent (fldr) | query (fldr) | type | class | model id |");
@@ -180,7 +200,15 @@ fn process_dump(args: &Args) {
     }
 
     if args.flag_all || args.flag_masters  {
-        library.load_masters();
+
+        let mut pb = ProgressBar::new(model_info.master_count as u64);
+
+        library.load_masters(&mut |inc: u64| {
+            pb.add(inc);
+            true
+        });
+        pb.finish();
+
         let masters = library.get_masters();
         println!("{} Masters:", masters.len());
         println!("| uuid | project | path |");
@@ -198,7 +226,15 @@ fn process_dump(args: &Args) {
         }
     }
     if args.flag_all || args.flag_versions  {
-        library.load_versions();
+
+        let mut pb = ProgressBar::new(model_info.version_count as u64);
+
+        library.load_versions(&mut |inc: u64| {
+            pb.add(inc);
+            true
+        });
+        pb.finish();
+
         let versions = library.get_versions();
         println!("{} Versions:", versions.len());
         println!("| uuid | master | project | name | original |");
@@ -215,5 +251,6 @@ fn process_dump(args: &Args) {
                 _ => println!("version {} not found", version_uuid)
             }
         }
+
     }
 }
