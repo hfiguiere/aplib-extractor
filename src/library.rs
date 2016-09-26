@@ -76,23 +76,34 @@ impl ModelInfo {
     }
 }
 
+/// Library is the Aperture library.
 pub struct Library {
+    /// The path to the .aplib bundle (the directory)
     path: String,
 
+    /// It's version string (displayed by get info in the Finder)
     version: String,
 
+    /// All the folders UUID
     folders: HashSet<String>,
+    /// All the albums UUID
     albums: HashSet<String>,
-//    keywords: HashSet<String>,
+    //    keywords: HashSet<String>,
+    /// All the masters UUID
     masters: HashSet<String>,
+    /// All the version UUID
     versions: HashSet<String>,
 
+    /// The object store. The key is the UUID
     objects: HashMap<String, store::Wrapper>,
+    /// Auditor for the audit mode.
     auditor: Option<Reporter>,
 }
 
 impl Library {
 
+    /// Create a new library object from the exist path to
+    /// the bundle directory.
     pub fn new(p: &str) -> Library
     {
         Library {
@@ -114,7 +125,7 @@ impl Library {
     pub fn set_auditor(&mut self, auditor: Option<Reporter>) {
         self.auditor = auditor;
     }
-
+    /// Get the auditor
     pub fn get_auditor(&self) -> Option<&Reporter> {
         self.auditor.as_ref()
     }
@@ -138,11 +149,14 @@ impl Library {
         }
     }
 
+    /// Get an object out of the store by UUID
     pub fn get(&self, uuid: &str) -> Option<&store::Wrapper>
     {
         self.objects.get(uuid)
     }
 
+    /// Get the library version. Will parse the plist for that
+    /// if needed.
     pub fn library_version(&mut self) -> &String
     {
         if self.version.is_empty()
@@ -210,6 +224,8 @@ impl Library {
         &self.version
     }
 
+    /// Build a path from the bundle root.
+    /// If database is true, will be from the Database subdirectory.
     fn build_path(&self, dir: &str, database: bool) -> PathBuf
     {
         let mut ppath = PathBuf::from(self.path.to_owned());
@@ -221,6 +237,8 @@ impl Library {
         ppath
     }
 
+    /// list items in dir with extension ext.
+    /// Return a vector with full path for each.
     fn list_items(&self, dir: &str, ext: &str) -> Vec<PathBuf>
     {
         let ppath = self.build_path(dir, true);
