@@ -7,7 +7,7 @@ authors = ["Hubert Figuière <hub@figuiere.net>"]
 plist = "0.0.12"
 docopt = "0.6"
 rustc-serialize = "0.3"  # if you're using `derive(RustcDecodable)`
-pbr = { git="https://github.com/a8m/pb.git", rev="b403d6b" }
+pbr = "0.3.1"
 
 [lib]
 name = "aplib"
