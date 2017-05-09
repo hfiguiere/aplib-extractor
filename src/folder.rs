@@ -24,24 +24,24 @@ pub enum Type {
 #[derive(Debug)]
 pub struct Folder {
     /// object uuid
-    uuid: String,
+    uuid: Option<String>,
     /// parent uuid
-    parent_uuid: String,
+    parent_uuid: Option<String>,
     /// id in model
-    model_id: i64,
+    model_id: Option<i64>,
 
     /// Folder type. (Project, Folder)
-    pub folder_type: u64,
+    pub folder_type: Option<u64>,
     /// Db model version
-    pub db_version: i64,
+    pub db_version: Option<i64>,
     /// Project model version - expected 8
-    pub project_version: i64,
+    pub project_version: Option<i64>,
     /// Path in the tree (using model_id for each components.
-    pub path: String,
+    pub path: Option<String>,
     /// Name
-    pub name: String,
+    pub name: Option<String>,
     /// UUID of the album object that compose this.
-    pub implicit_album_uuid: String,
+    pub implicit_album_uuid: Option<String>,
 }
 
 impl Auditable for Folder {
@@ -59,7 +59,7 @@ impl AplibObject for Folder {
         match plist {
             Plist::Dictionary(ref dict) => Some(Folder {
                 path: get_str_value(dict, "folderPath"),
-                folder_type: get_int_value(dict, "folderType") as u64,
+                folder_type: get_uint_value(dict, "folderType"),
                 model_id: get_int_value(dict, "modelId"),
                 name: get_str_value(dict, "name"),
                 parent_uuid: get_str_value(dict, "parentFolderUuid"),
@@ -75,17 +75,17 @@ impl AplibObject for Folder {
     fn obj_type(&self) -> AplibType {
         AplibType::Folder
     }
-    fn uuid(&self) -> &String {
+    fn uuid(&self) -> &Option<String> {
         &self.uuid
     }
-    fn parent(&self) -> &String {
+    fn parent(&self) -> &Option<String> {
         &self.parent_uuid
     }
     fn model_id(&self) -> i64 {
-        self.model_id
+        self.model_id.unwrap_or(0)
     }
     fn is_valid(&self) -> bool {
-        !self.uuid.is_empty()
+        self.uuid.is_some()
     }
     fn wrap(obj: Folder) -> store::Wrapper {
         store::Wrapper::Folder(Box::new(obj))
@@ -109,15 +109,15 @@ fn test_folder_parse() {
     assert!(folder.is_some());
     let folder = folder.unwrap();
 
-    assert_eq!(folder.uuid, "a%TX9lmjQVWvuK9u6RNhGQ");
-    assert_eq!(folder.parent_uuid, "AllProjectsItem");
-    assert_eq!(folder.model_id, 333);
-    assert_eq!(folder.folder_type, 1);
-    assert_eq!(folder.db_version, 110);
-    assert_eq!(folder.project_version, 0); //XXX is it right???
-    assert_eq!(folder.path, "1/3/333/");
-    assert_eq!(folder.name, "2011");
-    assert_eq!(folder.implicit_album_uuid, "J0+f3AmESPer4GHGv4BgAQ");
+    assert_eq!(folder.uuid.as_ref().unwrap(), "a%TX9lmjQVWvuK9u6RNhGQ");
+    assert_eq!(folder.parent_uuid.as_ref().unwrap(), "AllProjectsItem");
+    assert_eq!(folder.model_id.unwrap(), 333);
+    assert_eq!(folder.folder_type.unwrap(), 1);
+    assert_eq!(folder.db_version.unwrap(), 110);
+    assert!(folder.project_version.is_none());
+    assert_eq!(folder.path.as_ref().unwrap(), "1/3/333/");
+    assert_eq!(folder.name.as_ref().unwrap(), "2011");
+    assert_eq!(folder.implicit_album_uuid.as_ref().unwrap(), "J0+f3AmESPer4GHGv4BgAQ");
 
     let report = folder.audit();
     // XXX fix when have actual audit.

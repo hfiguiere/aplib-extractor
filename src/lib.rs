@@ -43,8 +43,8 @@ pub trait AplibObject {
     fn wrap(obj: Self) -> store::Wrapper;
     fn obj_type(&self) -> AplibType;
     fn is_valid(&self) -> bool;
-    fn uuid(&self) -> &String;
-    fn parent(&self) -> &String;
+    fn uuid(&self) -> &Option<String>;
+    fn parent(&self) -> &Option<String>;
     fn model_id(&self) -> i64;
 }
 

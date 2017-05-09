@@ -12,22 +12,22 @@ use AplibObject;
 use AplibType;
 
 pub struct Version {
-    uuid: String,
-    model_id: i64,
-    master_uuid: String,
+    uuid: Option<String>,
+    model_id: Option<i64>,
+    master_uuid: Option<String>,
 
-    pub project_uuid: String,
-    pub raw_master_uuid: String,
-    pub nonraw_master_uuid: String,
-    pub timezone_name: String,
-    pub version_number: i64,
-    pub db_version: i64,
-    pub db_minor_version: i64,
-    pub is_flagged: bool,
-    pub is_original: bool,
-    pub file_name: String,
-    pub name: String,
-    pub rating: i64,
+    pub project_uuid: Option<String>,
+    pub raw_master_uuid: Option<String>,
+    pub nonraw_master_uuid: Option<String>,
+    pub timezone_name: Option<String>,
+    pub version_number: Option<i64>,
+    pub db_version: Option<i64>,
+    pub db_minor_version: Option<i64>,
+    pub is_flagged: Option<bool>,
+    pub is_original: Option<bool>,
+    pub file_name: Option<String>,
+    pub name: Option<String>,
+    pub rating: Option<i64>,
 }
 
 impl AplibObject for Version {
@@ -62,17 +62,17 @@ impl AplibObject for Version {
     fn obj_type(&self) -> AplibType {
         AplibType::Version
     }
-    fn uuid(&self) -> &String {
+    fn uuid(&self) -> &Option<String> {
         &self.uuid
     }
-    fn parent(&self) -> &String {
+    fn parent(&self) -> &Option<String> {
         &self.master_uuid
     }
     fn model_id(&self) -> i64 {
-        self.model_id
+        self.model_id.unwrap_or(0)
     }
     fn is_valid(&self) -> bool {
-        !self.uuid.is_empty()
+        self.uuid.is_some()
     }
     fn wrap(obj: Version) -> store::Wrapper {
         store::Wrapper::Version(Box::new(obj))

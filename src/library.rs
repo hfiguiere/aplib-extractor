@@ -36,17 +36,19 @@ const VERSIONS_BASE_DIR: &'static str = "Versions";
 
 /// Info of the library data model
 pub struct ModelInfo {
-    pub is_iphoto_library: bool,
-    pub db_version: i64,
-    pub db_minor_version: i64,
-    pub db_uuid: String,
-    pub create_date: String,
-    pub image_io_version: String,
-    pub raw_camera_bundle_version: String,
-    pub master_count: i64,
-    pub version_count: i64,
-    pub project_compat_back_to_version: i64,
-    pub project_version: i64,
+    pub is_iphoto_library: Option<bool>,
+    pub db_version: Option<i64>,
+    pub db_minor_back_compatible_version: Option<i64>,
+    pub db_minor_version: Option<i64>,
+    pub db_uuid: Option<String>,
+    pub create_date: Option<String>,
+    pub image_io_version: Option<String>,
+    pub raw_camera_bundle_version: Option<String>,
+    pub touched_by_aperture: Option<bool>,
+    pub master_count: Option<i64>,
+    pub version_count: Option<i64>,
+    pub project_compat_back_to_version: Option<i64>,
+    pub project_version: Option<i64>,
 }
 
 impl ModelInfo {
@@ -57,14 +59,18 @@ impl ModelInfo {
         match *plist {
             Plist::Dictionary(ref dict) => Some(ModelInfo {
                 db_uuid: get_str_value(dict, "databaseUuid"),
-                db_minor_version: get_int_value(dict,
-                                                "DatabaseMinorVersion"),
+                db_minor_back_compatible_version: get_int_value(
+                    dict, "DatabaseCompatibleBackToMinorVersion"),
+                db_minor_version: get_int_value(
+                    dict, "DatabaseMinorVersion"),
                 db_version: get_int_value(dict, "DatabaseVersion"),
                 is_iphoto_library: get_bool_value(dict, "isIPhotoLibrary"),
                 create_date: get_str_value(dict, "createDate"),
                 image_io_version: get_str_value(dict, "imageIOVersion"),
                 raw_camera_bundle_version: get_str_value(
                     dict, "rawCameraBundleVersion"),
+                touched_by_aperture: get_bool_value(
+                    dict, "touchedByAperture"),
                 master_count: get_int_value(dict, "masterCount"),
                 version_count: get_int_value(dict, "versionCount"),
                 project_version: get_int_value(dict, "projectVersion"),
@@ -274,13 +280,19 @@ impl Library {
         let audit = self.auditor.is_some();
         for file in file_list {
             if let Some(obj) = T::from_path(file.as_ref()) {
-                set.insert(obj.uuid().to_owned());
-                if audit {
-                    let report = obj.audit();
-                    self.auditor.as_mut().unwrap().parsed(
-                        &file.to_string_lossy(), report);
+                let mut store = false;
+                if let Some(ref uuid) = *obj.uuid() {
+                    set.insert(uuid.to_owned());
+                    if audit {
+                        let report = obj.audit();
+                        self.auditor.as_mut().unwrap().parsed(
+                            &file.to_string_lossy(), report);
+                    }
+                    store = true;
                 }
-                self.store(T::wrap(obj));
+                if store {
+                    self.store(T::wrap(obj));
+                }
             } else {
                 if audit {
                     self.auditor.as_mut().unwrap().skip(
@@ -387,8 +399,14 @@ impl Library {
         let file_list = self.list_versions_items(ext);
         for file in file_list {
             if let Some(obj) = T::from_path(file.as_ref()) {
-                set.insert(obj.uuid().to_owned());
-                self.store(T::wrap(obj));
+                let mut store = false;
+                if let Some(ref uuid) = *obj.uuid() {
+                    set.insert(uuid.to_owned());
+                    store = true;
+                }
+                if store {
+                    self.store(T::wrap(obj));
+                }
             } else {
                 println!("Error decoding object from {:?}", file);
             }
@@ -429,7 +447,7 @@ impl Library {
         &self.versions
     }
 
-    pub fn list_keywords(&self) -> Vec<Keyword>
+    pub fn list_keywords(&self) -> Option<Vec<Keyword>>
     {
         parse_keywords(self.build_path(KEYWORDS_PLIST, true).as_ref())
     }

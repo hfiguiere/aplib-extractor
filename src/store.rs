@@ -21,21 +21,21 @@ pub enum Wrapper {
 
 impl Wrapper {
     /// Extract the uuid from the wrapper
-    pub fn uuid(&self) -> Option<&String> {
+    pub fn uuid(&self) -> Option<String> {
         match *self {
             Wrapper::Album(ref o) => {
-                Some(o.uuid())
+                o.uuid().clone()
             },
             Wrapper::Folder(ref o) => {
-                Some(o.uuid())
+                o.uuid().clone()
             },
             Wrapper::Version(ref o) => {
-                Some(o.uuid())
+                o.uuid().clone()
             },
             Wrapper::Master(ref o) => {
-                Some(o.uuid())
+                o.uuid().clone()
             },
-            Wrapper::None => Option::None
+            Wrapper::None => None
         }
     }
 }

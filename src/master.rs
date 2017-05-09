@@ -11,21 +11,21 @@ use AplibObject;
 use AplibType;
 
 pub struct Master {
-    uuid: String,
-    model_id: i64,
-    project_uuid: String,
+    uuid: Option<String>,
+    model_id: Option<i64>,
+    project_uuid: Option<String>,
 
-    pub alternate_master: String,
-    pub original_version_uuid: String,
-    pub import_group_uuid: String,
-    pub filename: String,
-    pub name: String,
-    pub original_version_name: String,
-    pub db_version: i64,
-    pub master_type: String,
-    pub subtype: String,
-    pub image_path: String,
-    pub is_reference: bool,
+    pub alternate_master: Option<String>,
+    pub original_version_uuid: Option<String>,
+    pub import_group_uuid: Option<String>,
+    pub filename: Option<String>,
+    pub name: Option<String>,
+    pub original_version_name: Option<String>,
+    pub db_version: Option<i64>,
+    pub master_type: Option<String>,
+    pub subtype: Option<String>,
+    pub image_path: Option<String>,
+    pub is_reference: Option<bool>,
 }
 
 
@@ -60,17 +60,17 @@ impl AplibObject for Master {
     fn obj_type(&self) -> AplibType {
         AplibType::Master
     }
-    fn uuid(&self) -> &String {
+    fn uuid(&self) -> &Option<String> {
         &self.uuid
     }
-    fn parent(&self) -> &String {
+    fn parent(&self) -> &Option<String> {
         &self.project_uuid
     }
     fn model_id(&self) -> i64 {
-        self.model_id
+        self.model_id.unwrap_or(0)
     }
     fn is_valid(&self) -> bool {
-        !self.uuid.is_empty()
+        self.uuid.is_some()
     }
     fn wrap(obj: Master) -> store::Wrapper {
         store::Wrapper::Master(Box::new(obj))

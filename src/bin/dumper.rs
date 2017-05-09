@@ -102,16 +102,26 @@ fn process_audit(args: &Args) {
 /// print the keywords with indentation for the hierarchy
 fn print_keywords(keywords: &Vec<Keyword>, indent: &str) {
     for keyword in keywords {
-        println!("| {}{} | {} | {} |", indent, keyword.name,
-                 keyword.uuid(), keyword.parent());
-        if !keyword.children.is_empty() {
+        if !keyword.is_valid() {
+            continue;
+        }
+        let name = keyword.name.as_ref().unwrap();
+        let uuid = keyword.uuid().as_ref().unwrap();
+        let parent = if let &Some(ref p) = keyword.parent() {
+            p.clone()
+        } else {
+            "".to_owned()
+        };
+        println!("| {}{} | {} | {} |", indent, name,
+                 uuid, parent);
+        if keyword.children.is_some() {
             let new_indent;
             if indent.is_empty() {
                 new_indent = "+- ".to_owned() + indent;
             } else {
                 new_indent = "\t".to_owned() + indent;
             }
-            print_keywords(&keyword.children, &new_indent);
+            print_keywords(keyword.children.as_ref().unwrap(), &new_indent);
         }
     }
 }
@@ -126,12 +136,14 @@ fn process_dump(args: &Args) {
 
     let model_info = library.get_model_info().unwrap();
     println!("model info");
-    println!("\tDB version: {}", model_info.db_version);
-    println!("\tDB minor version: {}", model_info.db_minor_version);
-    println!("\tProject version: {}", model_info.project_version);
-    println!("\tCreation date: {}", model_info.create_date);
-    println!("\tImageIO: {} Camera RAW: {}", model_info.image_io_version,
-             model_info.raw_camera_bundle_version);
+    println!("\tDB version: {}", model_info.db_version.unwrap_or(0));
+    println!("\tDB minor version: {}", model_info.db_minor_version.unwrap_or(0));
+    println!("\tDB back compat: {}", model_info.db_minor_back_compatible_version.unwrap_or(0));
+    println!("\tProject version: {}", model_info.project_version.unwrap_or(0));
+    println!("\tCreation date: {}", model_info.create_date.unwrap_or("NONE".to_owned()));
+    println!("\tImageIO: {} Camera RAW: {}",
+             model_info.image_io_version.unwrap_or("NONE".to_owned()),
+             model_info.raw_camera_bundle_version.unwrap_or("NONE".to_owned()));
 
     if args.flag_all || args.flag_folders {
 
@@ -152,12 +164,21 @@ fn process_dump(args: &Args) {
                 continue;
             }
             match library.get(folder_uuid) {
-                Some(&StoreWrapper::Folder(ref folder)) =>
+                Some(&StoreWrapper::Folder(ref folder)) => {
+                    let name = folder.name.as_ref().unwrap();
+                    let uuid = folder.uuid().as_ref().unwrap();
+                    let implicit_album_uuid = if let Some(value) =
+                        folder.implicit_album_uuid.as_ref() {
+                            value
+                        } else {
+                            ""
+                        };
+                    let path = folder.path.as_ref().unwrap();
                     println!("| {} | {} | {} | {} | {} | {} |",
-                             folder.name, folder.uuid(),
-                             folder.implicit_album_uuid,
-                             folder.folder_type,
-                             folder.model_id(), folder.path),
+                             name, uuid, implicit_album_uuid,
+                             folder.folder_type.unwrap_or(0),
+                             folder.model_id(), path)
+                },
                 _ => println!("folder {} not found", folder_uuid)
             }
         }
@@ -181,27 +202,45 @@ fn process_dump(args: &Args) {
                 continue;
             }
             match library.get(album_uuid) {
-                Some(&StoreWrapper::Album(ref album)) =>
+                Some(&StoreWrapper::Album(ref album)) => {
+                    let name = if let Some(ref n) = album.name {
+                        n.clone()
+                    } else {
+                        "".to_owned()
+                    };
+                    let uuid = album.uuid().as_ref().unwrap();
+                    let parent = if let &Some(ref p) = album.parent() {
+                        p.clone()
+                    } else {
+                        "".to_owned()
+                    };
+                    let query_folder_uuid = if let Some(ref qf) =
+                        album.query_folder_uuid {
+                            qf.clone()
+                        } else {
+                            "".to_owned()
+                        };
                     println!("| {} | {} | {} | {} | {} | {} | {} |",
-                             album.name,
-                             album.uuid(), album.parent(),
-                             album.query_folder_uuid,
-                             album.album_type,
-                             album.subclass, album.model_id()),
+                             name, uuid, parent, query_folder_uuid,
+                             album.album_type.unwrap_or(0),
+                             album.subclass.unwrap_or(0), album.model_id())
+                },
                 _ => println!("album {} not found", album_uuid)
             }
         }
     }
     if args.flag_all || args.flag_keywords {
-        let keywords = library.list_keywords();
-        println!("{} keywords:", keywords.len());
-        println!("| uuid | parent | name |");
-        print_keywords(&keywords, &"".to_owned());
+        if let Some(ref keywords) = library.list_keywords() {
+            println!("{} keywords:", keywords.len());
+            println!("| name | uuid | parent |");
+            print_keywords(keywords, &"".to_owned());
+        }
     }
 
     if args.flag_all || args.flag_masters  {
 
-        let mut pb = ProgressBar::new(model_info.master_count as u64);
+        let count = model_info.master_count.unwrap_or(0) as u64;
+        let mut pb = ProgressBar::new(count);
 
         library.load_masters(&mut |inc: u64| {
             pb.add(inc);
@@ -217,17 +256,20 @@ fn process_dump(args: &Args) {
                 continue;
             }
             match library.get(master_uuid) {
-                Some(&StoreWrapper::Master(ref master)) =>
-                    println!("| {} | {} | {} |",
-                             master.uuid(), master.parent(),
-                             master.image_path),
+                Some(&StoreWrapper::Master(ref master)) => {
+                    let uuid = master.uuid().as_ref().unwrap();
+                    let parent = master.parent().as_ref().unwrap();
+                    let image_path = master.image_path.as_ref().unwrap();
+                    println!("| {} | {} | {} |", uuid, parent, image_path)
+                },
                 _ => println!("master {} not found", master_uuid)
             }
         }
     }
     if args.flag_all || args.flag_versions  {
 
-        let mut pb = ProgressBar::new(model_info.version_count as u64);
+        let count = model_info.version_count.unwrap_or(0) as u64;
+        let mut pb = ProgressBar::new(count);
 
         library.load_versions(&mut |inc: u64| {
             pb.add(inc);
@@ -243,11 +285,16 @@ fn process_dump(args: &Args) {
                 continue;
             }
             match library.get(version_uuid) {
-                Some(&StoreWrapper::Version(ref version)) =>
+                Some(&StoreWrapper::Version(ref version)) => {
+                    let uuid = version.uuid().as_ref().unwrap();
+                    let parent = version.parent().as_ref().unwrap();
+                    let project_uuid = version.project_uuid.as_ref().unwrap();
+                    let name = version.name.as_ref().unwrap();
+
                     println!("| {} | {} | {} | {} | {} |",
-                             version.uuid(), version.parent(),
-                             version.project_uuid, version.name,
-                             version.is_original),
+                             uuid, parent, project_uuid, name,
+                             version.is_original.unwrap_or(false))
+                },
                 _ => println!("version {} not found", version_uuid)
             }
         }

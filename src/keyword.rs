@@ -16,16 +16,16 @@ use AplibType;
 /// A Keyword
 pub struct Keyword {
     /// The uuid
-    uuid: String,
+    uuid: Option<String>,
     /// The numeric id in the model
-    model_id: i64,
+    model_id: Option<i64>,
     /// The parent uuid
-    parent_uuid: String,
+    parent_uuid: Option<String>,
 
     /// Name of the keyword
-    pub name: String,
+    pub name: Option<String>,
     /// Children keywords. Their parent_uuid will be self.uuid
-    pub children: Vec<Keyword>,
+    pub children: Option<Vec<Keyword>>,
 }
 
 impl AplibObject for Keyword {
@@ -38,17 +38,17 @@ impl AplibObject for Keyword {
     fn obj_type(&self) -> AplibType {
         AplibType::Keyword
     }
-    fn uuid(&self) -> &String {
+    fn uuid(&self) -> &Option<String> {
         &self.uuid
     }
-    fn parent(&self) -> &String {
+    fn parent(&self) -> &Option<String> {
         &self.parent_uuid
     }
     fn model_id(&self) -> i64 {
-        self.model_id
+        self.model_id.unwrap_or(0)
     }
     fn is_valid(&self) -> bool {
-        !self.uuid.is_empty()
+        self.uuid.is_some()
     }
     #[allow(unused_variables)]
     #[doc(hidden)]
@@ -58,40 +58,46 @@ impl AplibObject for Keyword {
 }
 
 /// Parse keywords from the .plist file
-pub fn parse_keywords(path: &Path) -> Vec<Keyword>
+pub fn parse_keywords(path: &Path) -> Option<Vec<Keyword>>
 {
     let plist = parse_plist(path);
 
     match plist {
         Plist::Dictionary(ref dict) => {
-            let version = get_int_value(dict, "keywords_version");
-            // XXX deal with proper errors here.
-            // Version 3.4.5 has version 7.
-            if version != 6 && version != 7 {
-                println!("Wrong keyword version {} !", version);
+            if let Some(version) = get_int_value(dict, "keywords_version") {
+                // XXX deal with proper errors here.
+                // Version 3.4.5 has version 7.
+                if version != 6 && version != 7 {
+                    println!("Wrong keyword version {} !", version);
+                }
+                Keyword::from_array(get_array_value(dict, "keywords"))
+            } else {
+                None
             }
-
-            Keyword::from_array(get_array_value(dict, "keywords"))
         },
-        _ => Vec::new()
+        _ => None
     }
 }
 
 impl Keyword {
 
     /// convert a Plist array to a vec of keyword.
-    fn from_array(a: Vec<Plist>) -> Vec<Keyword>
+    fn from_array(oa: Option<Vec<Plist>>) -> Option<Vec<Keyword>>
     {
-        let mut keywords = Vec::new();
-        for item in a {
-            match item {
-                Plist::Dictionary(ref kw) => {
-                    keywords.push(Keyword::from(kw));
-                },
-                _ => ()
+        if let Some(a) = oa {
+            let mut keywords = Vec::new();
+            for item in a {
+                match item {
+                    Plist::Dictionary(ref kw) => {
+                        keywords.push(Keyword::from(kw));
+                    },
+                    _ => ()
+                }
             }
+            Some(keywords)
+        } else {
+            None
         }
-        keywords
     }
 
     /// create a new keyword from a plist dictionary
