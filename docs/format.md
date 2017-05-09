@@ -11,6 +11,7 @@ App version | DB version | DB minor | Project vers
 3.2.4       | 110        | 131      | 7
 3.3.2       | 110        | 207 (203)| 8
 3.4.5       | 110        | 219 (208)| 8
+3.6         | 110        | 226 (220)| 8
 
 
 Bundle structure
@@ -113,18 +114,21 @@ details
 
 Properties:
 
-* DatabaseMinorVersion (integer): DB minor version. See Table 1.
-* DatabaseVersion (integer): DB version. See Table 1.
-* createDate (date):
-* databaseUuid (string):
-* imageIOVersion (string):
-* isIPhotoLibrary (bool): false
-* masterCount (integer): count of masters
-* migratedMobileMeAccounts (array):
+* DatabaseCompatibleBackToMinorVersion: DB minor version back compatible. (-226)
+* DatabaseMinorVersion (integer): DB minor version. See Table 1. (-226)
+* DatabaseVersion (integer): DB version. See Table 1. (-226)
+* adminProperties (dict): various properties / settings. (226)
+* createDate (date): creation date (-226)
+* databaseUuid (string): UUID (-226)
+* imageIOVersion (string): ? (!226)
+* isIPhotoLibrary (bool): false (-226)
+* masterCount (integer): count of masters (-226)
+* migratedMobileMeAccounts (array): ? (!226)
 * projectVersion (integer): project version. See Table 1.
 * projectCompatibleBackToVersion (integer): See 'projectVersion'
-* rawCameraBundleVersion (string):
-* versionCount (integer): count of versions
+* rawCameraBundleVersion (string): ? (!226)
+* touchedByAperture (bool): true ? (226)
+* versionCount (integer): count of versions (-226)
 
 
 Database
