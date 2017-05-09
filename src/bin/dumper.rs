@@ -19,6 +19,7 @@ use aplib::Keyword;
 use aplib::StoreWrapper;
 use aplib::audit::Reporter;
 use aplib::AlbumSubclass;
+use aplib::FolderType;
 
 const USAGE: &'static str = "
 Usage:
@@ -175,10 +176,14 @@ fn process_dump(args: &Args) {
                             ""
                         };
                     let path = folder.path.as_ref().unwrap();
+                    let folder_type = if let Some(ref ft) = folder.folder_type {
+                        FolderType::to_int(ft)
+                    } else {
+                        0
+                    };
                     println!("| {} | {} | {} | {} | {} | {} |",
                              name, uuid, implicit_album_uuid,
-                             folder.folder_type.unwrap_or(0),
-                             folder.model_id(), path)
+                             folder_type, folder.model_id(), path)
                 },
                 _ => println!("folder {} not found", folder_uuid)
             }

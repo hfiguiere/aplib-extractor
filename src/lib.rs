@@ -23,6 +23,7 @@ use std::path::Path;
 
 pub use library::Library as Library;
 pub use folder::Folder as Folder;
+pub use folder::Type as FolderType;
 pub use album::Album as Album;
 pub use album::Subclass as AlbumSubclass;
 pub use master::Master as Master;

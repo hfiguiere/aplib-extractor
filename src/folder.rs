@@ -13,10 +13,41 @@ use audit::{Auditable,Report};
 
 /// Type of folder: folder or project
 /// Only these are known.
+#[derive(Debug)]
 pub enum Type {
     Invalid = 0,
     Folder = 1,
     Project = 2,
+}
+
+impl Type {
+    fn from(v: i64) -> Self {
+        match v {
+            0 => Type::Invalid,
+            1 => Type::Folder,
+            2 => Type::Project,
+            _ => {
+                println!("Unknown folder type {}", v);
+                Type::Invalid
+            }
+        }
+    }
+
+    fn from_option(o: Option<i64>) -> Option<Self> {
+        if let Some(v) = o {
+            Some(Self::from(v))
+        } else {
+            None
+        }
+    }
+
+    pub fn to_int(v: &Self) -> i64 {
+        match *v {
+            Type::Invalid => 0,
+            Type::Folder => 1,
+            Type::Project => 2,
+        }
+    }
 }
 
 
@@ -31,7 +62,7 @@ pub struct Folder {
     model_id: Option<i64>,
 
     /// Folder type. (Project, Folder)
-    pub folder_type: Option<u64>,
+    pub folder_type: Option<Type>,
     /// Db model version
     pub db_version: Option<i64>,
     /// Project model version - expected 8
@@ -59,7 +90,7 @@ impl AplibObject for Folder {
         match plist {
             Plist::Dictionary(ref dict) => Some(Folder {
                 path: get_str_value(dict, "folderPath"),
-                folder_type: get_uint_value(dict, "folderType"),
+                folder_type: Type::from_option(get_int_value(dict, "folderType")),
                 model_id: get_int_value(dict, "modelId"),
                 name: get_str_value(dict, "name"),
                 parent_uuid: get_str_value(dict, "parentFolderUuid"),
