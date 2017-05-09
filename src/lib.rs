@@ -24,6 +24,7 @@ use std::path::Path;
 pub use library::Library as Library;
 pub use folder::Folder as Folder;
 pub use album::Album as Album;
+pub use album::Subclass as AlbumSubclass;
 pub use master::Master as Master;
 pub use version::Version as Version;
 pub use keyword::Keyword as Keyword;

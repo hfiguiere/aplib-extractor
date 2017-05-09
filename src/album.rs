@@ -11,10 +11,42 @@ use AplibObject;
 use AplibType;
 use audit::{Auditable,Report};
 
+#[derive(Debug)]
 pub enum Subclass {
-    Invalid = 0,
-    Normal = 1,
-    Smart = 2,
+    Invalid,
+    Normal,
+    Smart,
+}
+
+impl Subclass {
+
+    fn from(v: i64) -> Self {
+        match v {
+            0 => Subclass::Invalid,
+            1 => Subclass::Normal,
+            2 => Subclass::Smart,
+            _ => {
+                println!("Unknown subclass value {}", v);
+                Subclass::Invalid
+            }
+        }
+    }
+
+    fn from_option(o: Option<i64>) -> Option<Self> {
+        if let Some(v) = o {
+            Some(Self::from(v))
+        } else {
+            None
+        }
+    }
+
+    pub fn to_int(v: &Self) -> i64 {
+        match *v {
+            Subclass::Invalid => 0,
+            Subclass::Normal => 1,
+            Subclass::Smart => 2
+        }
+    }
 }
 
 /// Album object.
@@ -27,7 +59,7 @@ pub struct Album {
     model_id: Option<i64>,
 
     /// Subclass. See ``Subclass`` enum. (Normal, Smart)
-    pub subclass: Option<i64>,
+    pub subclass: Option<Subclass>,
     /// ```Type```. Seems to always be 1
     pub album_type: Option<i64>,
     /// UUID of folder it is querying content of (smart only)
@@ -60,7 +92,7 @@ impl AplibObject for Album {
                     Some(Album {
                         uuid: get_str_value(&dict, "uuid"),
                         folder_uuid: get_str_value(&dict, "folderUuid"),
-                        subclass: get_int_value(&dict, "albumSubclass"),
+                        subclass: Subclass::from_option(get_int_value(&dict, "albumSubclass")),
                         album_type: get_int_value(&dict, "albumType"),
                         db_version: get_int_value(&dict, "version"),
                         model_id: get_int_value(&dict, "modelId"),

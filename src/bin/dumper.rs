@@ -18,6 +18,7 @@ use aplib::Library;
 use aplib::Keyword;
 use aplib::StoreWrapper;
 use aplib::audit::Reporter;
+use aplib::AlbumSubclass;
 
 const USAGE: &'static str = "
 Usage:
@@ -220,10 +221,15 @@ fn process_dump(args: &Args) {
                         } else {
                             "".to_owned()
                         };
+                    let album_class = if let Some(ref c) = album.subclass {
+                        AlbumSubclass::to_int(c)
+                    } else {
+                        0
+                    };
                     println!("| {} | {} | {} | {} | {} | {} | {} |",
                              name, uuid, parent, query_folder_uuid,
                              album.album_type.unwrap_or(0),
-                             album.subclass.unwrap_or(0), album.model_id())
+                             album_class, album.model_id())
                 },
                 _ => println!("album {} not found", album_uuid)
             }
