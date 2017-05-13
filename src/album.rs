@@ -11,7 +11,7 @@ use AplibObject;
 use AplibType;
 use audit::{Auditable,Report};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Subclass {
     Invalid,
     Normal,
@@ -147,7 +147,7 @@ fn test_album_parse() {
     assert_eq!(album.uuid.as_ref().unwrap(), "gOnttfpzQoOxcwLpFS9DQg");
     assert_eq!(album.folder_uuid.as_ref().unwrap(), "TopLevelAlbums");
     assert_eq!(album.model_id.unwrap(), 601);
-    assert_eq!(album.subclass.unwrap(), 1);
+    assert_eq!(*album.subclass.as_ref().unwrap(), Subclass::Normal);
     assert_eq!(album.album_type.unwrap(), 1);
     assert!(album.query_folder_uuid.is_none());
     assert_eq!(album.db_version.unwrap(), 110);
