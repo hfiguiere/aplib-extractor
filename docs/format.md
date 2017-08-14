@@ -160,8 +160,12 @@ All in top level.
 Albums
 ------
 
-Subclass 2 Albums are attached to a folder. Linked via the folder
-"implicitAlbumUuid" property and back with albums "folderUuid".
+Subclass 1 Albums are attached to a folder. Linked via the folder
+"implicitAlbumUuid" property and back with albums "folderUuid". They
+represent the view of the folder.
+Sublclass 2 Albums are "smart", they are backed by a query.
+Sublclass 3 Albums are "user", ie created by the user to contain versions.
+See the "versionUuids" array for the list of albums it contains.
 
 Top-level properties:
 
@@ -169,6 +173,7 @@ Top-level properties:
 * InfoDictionary: these are the actual properties
 * attachments: attachments like track path
 * FilterInfo: display filter. DATA.
+* versionUuids: An array of uuid: the versions it contains. (Subclass 3)
 
 Keywords.plist
 --------------
