@@ -11,6 +11,7 @@ extern crate pbr;
 
 use docopt::Docopt;
 use rustc_serialize::{Decodable, Decoder};
+use std::io::stderr;
 use pbr::ProgressBar;
 
 use aplib::AplibObject;
@@ -114,8 +115,8 @@ fn print_keywords(keywords: &Vec<Keyword>, indent: &str) {
         } else {
             "".to_owned()
         };
-        println!("| {}{} | {} | {} |", indent, name,
-                 uuid, parent);
+        println!("| {:<26} | {:<26} | {}{}",
+                 uuid, parent, indent, name);
         if keyword.children.is_some() {
             let new_indent;
             if indent.is_empty() {
@@ -149,7 +150,7 @@ fn process_dump(args: &Args) {
 
     if args.flag_all || args.flag_folders {
 
-        let mut pb = ProgressBar::new(1);
+        let mut pb = ProgressBar::on(stderr(), 1);
         pb.tick_format("|/-\\");
 
         library.load_folders(&mut |_: u64| {
@@ -160,7 +161,8 @@ fn process_dump(args: &Args) {
 
         let folders = library.get_folders();
         println!("{} Folders:", folders.len());
-        println!("| Name | uuid | impl album | type | model id | path |");
+        println!("| Name                       | uuid                       | impl album                 | type | model id | path");
+        println!("+----------------------------+----------------------------+----------------------------+------+----------+----------");
         for folder_uuid in folders {
             if folder_uuid.is_empty() {
                 continue;
@@ -181,7 +183,7 @@ fn process_dump(args: &Args) {
                     } else {
                         0
                     };
-                    println!("| {} | {} | {} | {} | {} | {} |",
+                    println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>8} | {}",
                              name, uuid, implicit_album_uuid,
                              folder_type, folder.model_id(), path)
                 },
@@ -191,7 +193,7 @@ fn process_dump(args: &Args) {
     }
     if args.flag_all || args.flag_albums {
 
-        let mut pb = ProgressBar::new(1);
+        let mut pb = ProgressBar::on(stderr(), 1);
         pb.tick_format("|/-\\");
 
         library.load_albums(&mut |_: u64| {
@@ -202,7 +204,8 @@ fn process_dump(args: &Args) {
 
         let albums = library.get_albums();
         println!("{} Albums:", albums.len());
-        println!("| name | uuid | parent (fldr) | query (fldr) | type | class | model id |");
+        println!("| uuid                       | parent (fldr)              | query (fldr)               | type | class | model id | name");
+        println!("+----------------------------+----------------------------+----------------------------+------+-------+----------+-----");
         for album_uuid in albums {
             if album_uuid.is_empty() {
                 continue;
@@ -231,10 +234,10 @@ fn process_dump(args: &Args) {
                     } else {
                         0
                     };
-                    println!("| {} | {} | {} | {} | {} | {} | {} |",
-                             name, uuid, parent, query_folder_uuid,
+                    println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>5} | {:>8} | {}",
+                             uuid, parent, query_folder_uuid,
                              album.album_type.unwrap_or(0),
-                             album_class, album.model_id())
+                             album_class, album.model_id(), name)
                 },
                 _ => println!("album {} not found", album_uuid)
             }
@@ -243,7 +246,8 @@ fn process_dump(args: &Args) {
     if args.flag_all || args.flag_keywords {
         if let Some(ref keywords) = library.list_keywords() {
             println!("{} keywords:", keywords.len());
-            println!("| name | uuid | parent |");
+            println!("| uuid                       | parent                     | name");
+            println!("+----------------------------+----------------------------+-----------");
             print_keywords(keywords, &"".to_owned());
         }
     }
@@ -251,7 +255,7 @@ fn process_dump(args: &Args) {
     if args.flag_all || args.flag_masters  {
 
         let count = model_info.master_count.unwrap_or(0) as u64;
-        let mut pb = ProgressBar::new(count);
+        let mut pb = ProgressBar::on(stderr(), count);
 
         library.load_masters(&mut |inc: u64| {
             pb.add(inc);
@@ -261,7 +265,8 @@ fn process_dump(args: &Args) {
 
         let masters = library.get_masters();
         println!("{} Masters:", masters.len());
-        println!("| uuid | project | path |");
+        println!("| uuid                       | project                    | path");
+        println!("+----------------------------+----------------------------+-----------------------");
         for master_uuid in masters {
             if master_uuid.is_empty() {
                 continue;
@@ -271,7 +276,7 @@ fn process_dump(args: &Args) {
                     let uuid = master.uuid().as_ref().unwrap();
                     let parent = master.parent().as_ref().unwrap();
                     let image_path = master.image_path.as_ref().unwrap();
-                    println!("| {} | {} | {} |", uuid, parent, image_path)
+                    println!("| {:<26} | {:<26} | {}", uuid, parent, image_path)
                 },
                 _ => println!("master {} not found", master_uuid)
             }
@@ -280,7 +285,7 @@ fn process_dump(args: &Args) {
     if args.flag_all || args.flag_versions  {
 
         let count = model_info.version_count.unwrap_or(0) as u64;
-        let mut pb = ProgressBar::new(count);
+        let mut pb = ProgressBar::on(stderr(), count);
 
         library.load_versions(&mut |inc: u64| {
             pb.add(inc);
@@ -290,7 +295,8 @@ fn process_dump(args: &Args) {
 
         let versions = library.get_versions();
         println!("{} Versions:", versions.len());
-        println!("| uuid | master | project | name | original |");
+        println!("| uuid                       | master                     | project                    | original | name");
+        println!("+----------------------------+----------------------------+----------------------------+----------+------------");
         for version_uuid in versions {
             if version_uuid.is_empty() {
                 continue;
@@ -302,9 +308,10 @@ fn process_dump(args: &Args) {
                     let project_uuid = version.project_uuid.as_ref().unwrap();
                     let name = version.name.as_ref().unwrap();
 
-                    println!("| {} | {} | {} | {} | {} |",
-                             uuid, parent, project_uuid, name,
-                             version.is_original.unwrap_or(false))
+                    println!("| {:<26} | {:<26} | {:<26} | {:>8} | {}",
+                             uuid, parent, project_uuid,
+                             version.is_original.unwrap_or(false),
+                             name)
                 },
                 _ => println!("version {} not found", version_uuid)
             }
