@@ -22,6 +22,7 @@ mod testutils;
 use std::path::Path;
 
 pub use library::Library as Library;
+pub use library::ModelInfo as ModelInfo;
 pub use folder::Folder as Folder;
 pub use folder::Type as FolderType;
 pub use album::Album as Album;

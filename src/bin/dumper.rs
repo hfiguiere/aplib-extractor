@@ -16,6 +16,7 @@ use pbr::ProgressBar;
 
 use aplib::AplibObject;
 use aplib::Library;
+use aplib::ModelInfo;
 use aplib::Keyword;
 use aplib::StoreWrapper;
 use aplib::audit::Reporter;
@@ -143,179 +144,195 @@ fn process_dump(args: &Args) {
     println!("\tDB minor version: {}", model_info.db_minor_version.unwrap_or(0));
     println!("\tDB back compat: {}", model_info.db_minor_back_compatible_version.unwrap_or(0));
     println!("\tProject version: {}", model_info.project_version.unwrap_or(0));
-    println!("\tCreation date: {}", model_info.create_date.unwrap_or("NONE".to_owned()));
+    println!("\tCreation date: {}", model_info.create_date.as_ref().unwrap_or(&"NONE".to_owned()));
     println!("\tImageIO: {} Camera RAW: {}",
-             model_info.image_io_version.unwrap_or("NONE".to_owned()),
-             model_info.raw_camera_bundle_version.unwrap_or("NONE".to_owned()));
+             model_info.image_io_version.as_ref().unwrap_or(&"NONE".to_owned()),
+             model_info.raw_camera_bundle_version.as_ref().unwrap_or(&"NONE".to_owned()));
 
     if args.flag_all || args.flag_folders {
-
-        let mut pb = ProgressBar::on(stderr(), 1);
-        pb.tick_format("|/-\\");
-
-        library.load_folders(&mut |_: u64| {
-            pb.tick();
-            true
-        });
-        pb.finish();
-
-        let folders = library.get_folders();
-        println!("{} Folders:", folders.len());
-        println!("| Name                       | uuid                       | impl album                 | type | model id | path");
-        println!("+----------------------------+----------------------------+----------------------------+------+----------+----------");
-        for folder_uuid in folders {
-            if folder_uuid.is_empty() {
-                continue;
-            }
-            match library.get(folder_uuid) {
-                Some(&StoreWrapper::Folder(ref folder)) => {
-                    let name = folder.name.as_ref().unwrap();
-                    let uuid = folder.uuid().as_ref().unwrap();
-                    let implicit_album_uuid = if let Some(value) =
-                        folder.implicit_album_uuid.as_ref() {
-                            value
-                        } else {
-                            ""
-                        };
-                    let path = folder.path.as_ref().unwrap();
-                    let folder_type = if let Some(ref ft) = folder.folder_type {
-                        FolderType::to_int(ft)
-                    } else {
-                        0
-                    };
-                    println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>8} | {}",
-                             name, uuid, implicit_album_uuid,
-                             folder_type, folder.model_id(), path)
-                },
-                _ => println!("folder {} not found", folder_uuid)
-            }
-        }
+        dump_folders(&mut library);
     }
     if args.flag_all || args.flag_albums {
-
-        let mut pb = ProgressBar::on(stderr(), 1);
-        pb.tick_format("|/-\\");
-
-        library.load_albums(&mut |_: u64| {
-            pb.tick();
-            true
-        });
-        pb.finish();
-
-        let albums = library.get_albums();
-        println!("{} Albums:", albums.len());
-        println!("| uuid                       | parent (fldr)              | query (fldr)               | type | class | model id | name");
-        println!("+----------------------------+----------------------------+----------------------------+------+-------+----------+-----");
-        for album_uuid in albums {
-            if album_uuid.is_empty() {
-                continue;
-            }
-            match library.get(album_uuid) {
-                Some(&StoreWrapper::Album(ref album)) => {
-                    let name = if let Some(ref n) = album.name {
-                        n.clone()
-                    } else {
-                        "".to_owned()
-                    };
-                    let uuid = album.uuid().as_ref().unwrap();
-                    let parent = if let &Some(ref p) = album.parent() {
-                        p.clone()
-                    } else {
-                        "".to_owned()
-                    };
-                    let query_folder_uuid = if let Some(ref qf) =
-                        album.query_folder_uuid {
-                            qf.clone()
-                        } else {
-                            "".to_owned()
-                        };
-                    let album_class = if let Some(ref c) = album.subclass {
-                        AlbumSubclass::to_int(c)
-                    } else {
-                        0
-                    };
-                    println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>5} | {:>8} | {}",
-                             uuid, parent, query_folder_uuid,
-                             album.album_type.unwrap_or(0),
-                             album_class, album.model_id(), name)
-                },
-                _ => println!("album {} not found", album_uuid)
-            }
-        }
+        dump_albums(&mut library);
     }
     if args.flag_all || args.flag_keywords {
-        if let Some(ref keywords) = library.list_keywords() {
-            println!("{} keywords:", keywords.len());
-            println!("| uuid                       | parent                     | name");
-            println!("+----------------------------+----------------------------+-----------");
-            print_keywords(keywords, &"".to_owned());
-        }
+        dump_keywords(&mut library);
     }
 
     if args.flag_all || args.flag_masters  {
-
-        let count = model_info.master_count.unwrap_or(0) as u64;
-        let mut pb = ProgressBar::on(stderr(), count);
-
-        library.load_masters(&mut |inc: u64| {
-            pb.add(inc);
-            true
-        });
-        pb.finish();
-
-        let masters = library.get_masters();
-        println!("{} Masters:", masters.len());
-        println!("| uuid                       | project                    | path");
-        println!("+----------------------------+----------------------------+-----------------------");
-        for master_uuid in masters {
-            if master_uuid.is_empty() {
-                continue;
-            }
-            match library.get(master_uuid) {
-                Some(&StoreWrapper::Master(ref master)) => {
-                    let uuid = master.uuid().as_ref().unwrap();
-                    let parent = master.parent().as_ref().unwrap();
-                    let image_path = master.image_path.as_ref().unwrap();
-                    println!("| {:<26} | {:<26} | {}", uuid, parent, image_path)
-                },
-                _ => println!("master {} not found", master_uuid)
-            }
-        }
+        dump_masters(&model_info, &mut library);
     }
     if args.flag_all || args.flag_versions  {
+        dump_versions(&model_info, &mut library);
+    }
+}
 
-        let count = model_info.version_count.unwrap_or(0) as u64;
-        let mut pb = ProgressBar::on(stderr(), count);
+fn dump_folders(library: &mut Library) {
+    let mut pb = ProgressBar::on(stderr(), 1);
+    pb.tick_format("|/-\\");
 
-        library.load_versions(&mut |inc: u64| {
-            pb.add(inc);
-            true
-        });
-        pb.finish();
+    library.load_folders(&mut |_: u64| {
+        pb.tick();
+        true
+    });
+    pb.finish();
 
-        let versions = library.get_versions();
-        println!("{} Versions:", versions.len());
-        println!("| uuid                       | master                     | project                    | original | name");
-        println!("+----------------------------+----------------------------+----------------------------+----------+------------");
-        for version_uuid in versions {
-            if version_uuid.is_empty() {
-                continue;
-            }
-            match library.get(version_uuid) {
-                Some(&StoreWrapper::Version(ref version)) => {
-                    let uuid = version.uuid().as_ref().unwrap();
-                    let parent = version.parent().as_ref().unwrap();
-                    let project_uuid = version.project_uuid.as_ref().unwrap();
-                    let name = version.name.as_ref().unwrap();
-
-                    println!("| {:<26} | {:<26} | {:<26} | {:>8} | {}",
-                             uuid, parent, project_uuid,
-                             version.is_original.unwrap_or(false),
-                             name)
-                },
-                _ => println!("version {} not found", version_uuid)
-            }
+    let folders = library.get_folders();
+    println!("{} Folders:", folders.len());
+    println!("| Name                       | uuid                       | impl album                 | type | model id | path");
+    println!("+----------------------------+----------------------------+----------------------------+------+----------+----------");
+    for folder_uuid in folders {
+        if folder_uuid.is_empty() {
+            continue;
         }
+        match library.get(folder_uuid) {
+            Some(&StoreWrapper::Folder(ref folder)) => {
+                let name = folder.name.as_ref().unwrap();
+                let uuid = folder.uuid().as_ref().unwrap();
+                let implicit_album_uuid = if let Some(value) =
+                    folder.implicit_album_uuid.as_ref() {
+                        value
+                    } else {
+                        ""
+                    };
+                let path = folder.path.as_ref().unwrap();
+                let folder_type = if let Some(ref ft) = folder.folder_type {
+                    FolderType::to_int(ft)
+                } else {
+                    0
+                };
+                println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>8} | {}",
+                         name, uuid, implicit_album_uuid,
+                         folder_type, folder.model_id(), path)
+            },
+            _ => println!("folder {} not found", folder_uuid)
+        }
+    }
+}
 
+fn dump_albums(library: &mut Library) {
+    let mut pb = ProgressBar::on(stderr(), 1);
+    pb.tick_format("|/-\\");
+
+    library.load_albums(&mut |_: u64| {
+        pb.tick();
+        true
+    });
+    pb.finish();
+
+    let albums = library.get_albums();
+    println!("{} Albums:", albums.len());
+    println!("| uuid                       | parent (fldr)              | query (fldr)               | type | class | model id | name");
+    println!("+----------------------------+----------------------------+----------------------------+------+-------+----------+-----");
+    for album_uuid in albums {
+        if album_uuid.is_empty() {
+            continue;
+        }
+        match library.get(album_uuid) {
+            Some(&StoreWrapper::Album(ref album)) => {
+                let name = if let Some(ref n) = album.name {
+                    n.clone()
+                } else {
+                    "".to_owned()
+                };
+                let uuid = album.uuid().as_ref().unwrap();
+                let parent = if let &Some(ref p) = album.parent() {
+                    p.clone()
+                } else {
+                    "".to_owned()
+                };
+                let query_folder_uuid = if let Some(ref qf) =
+                    album.query_folder_uuid {
+                        qf.clone()
+                    } else {
+                        "".to_owned()
+                    };
+                let album_class = if let Some(ref c) = album.subclass {
+                    AlbumSubclass::to_int(c)
+                } else {
+                    0
+                };
+                println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>5} | {:>8} | {}",
+                         uuid, parent, query_folder_uuid,
+                         album.album_type.unwrap_or(0),
+                         album_class, album.model_id(), name)
+            },
+            _ => println!("album {} not found", album_uuid)
+        }
+    }
+}
+
+fn dump_keywords(library: &mut Library) {
+    if let Some(ref keywords) = library.list_keywords() {
+        println!("{} keywords:", keywords.len());
+        println!("| uuid                       | parent                     | name");
+        println!("+----------------------------+----------------------------+-----------");
+        print_keywords(keywords, &"".to_owned());
+    }
+}
+
+fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
+    let count = model_info.master_count.unwrap_or(0) as u64;
+    let mut pb = ProgressBar::on(stderr(), count);
+
+    library.load_masters(&mut |inc: u64| {
+        pb.add(inc);
+        true
+    });
+    pb.finish();
+
+    let masters = library.get_masters();
+    println!("{} Masters:", masters.len());
+    println!("| uuid                       | project                    | path");
+    println!("+----------------------------+----------------------------+-----------------------");
+    for master_uuid in masters {
+        if master_uuid.is_empty() {
+            continue;
+        }
+        match library.get(master_uuid) {
+            Some(&StoreWrapper::Master(ref master)) => {
+                let uuid = master.uuid().as_ref().unwrap();
+                let parent = master.parent().as_ref().unwrap();
+                let image_path = master.image_path.as_ref().unwrap();
+                println!("| {:<26} | {:<26} | {}", uuid, parent, image_path)
+            },
+            _ => println!("master {} not found", master_uuid)
+        }
+    }
+}
+
+fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
+
+    let count = model_info.version_count.unwrap_or(0) as u64;
+    let mut pb = ProgressBar::on(stderr(), count);
+
+    library.load_versions(&mut |inc: u64| {
+        pb.add(inc);
+        true
+    });
+    pb.finish();
+
+    let versions = library.get_versions();
+    println!("{} Versions:", versions.len());
+    println!("| uuid                       | master                     | project                    | original | name");
+    println!("+----------------------------+----------------------------+----------------------------+----------+------------");
+    for version_uuid in versions {
+        if version_uuid.is_empty() {
+            continue;
+        }
+        match library.get(version_uuid) {
+            Some(&StoreWrapper::Version(ref version)) => {
+                let uuid = version.uuid().as_ref().unwrap();
+                let parent = version.parent().as_ref().unwrap();
+                let project_uuid = version.project_uuid.as_ref().unwrap();
+                let name = version.name.as_ref().unwrap();
+
+                println!("| {:<26} | {:<26} | {:<26} | {:>8} | {}",
+                         uuid, parent, project_uuid,
+                         version.is_original.unwrap_or(false),
+                         name)
+                },
+            _ => println!("version {} not found", version_uuid)
+        }
     }
 }
