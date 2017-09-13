@@ -77,6 +77,7 @@ Aperture.aplibrary
 |  |                 +- Version-1.apversion
 |  |
 |  +- Volumes
+|     +- *.apvolume
 |  +- tmSync.plist
 |
 +- iLifeShared
@@ -199,14 +200,17 @@ Description of the master. Each version has a master.
 * alternateMasterUuid: the other master (for JPEG+RAW) - reciprocal
 * originalVersionUuid: the uuid of the original version.
 * modelId: numerical ID
-* fileVolumeUuid: the UUID of the volume (no idea how to cross ref - probably
-  referenced through the Alias data - trace of it in the sqlite database)
-* fileIsReference: true of no in library
+* fileVolumeUuid: the UUID of the volume. See Volumes
+* fileIsReference: true if not physically in library (referenced file in UI)
 * projectUuid: the uuid of the project it is in (see Folders)
 
 ### Version-n.apversion ###
 
 * isFlagged: version flagged
+* isOriginal: this is the original version.
+* isEditable
+* isHidden
+* isInTrash
 * imageTimeZoneName: timezone name
 * rawMasterUuid: uuid of RAW master
 * nonRawMasterUuid: uuid of non-RAW master.

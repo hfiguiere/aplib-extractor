@@ -82,17 +82,29 @@ impl AplibObject for Folder {
 
         let plist = parse_plist(plist_path);
         match plist {
-            Plist::Dictionary(ref dict) => Some(Folder {
-                path: audit_get_str_value(dict, "folderPath", &mut auditor),
-                folder_type: Type::from_option(audit_get_int_value(dict, "folderType", &mut auditor)),
-                model_id: audit_get_int_value(dict, "modelId", &mut auditor),
-                name: audit_get_str_value(dict, "name", &mut auditor),
-                parent_uuid: audit_get_str_value(dict, "parentFolderUuid", &mut auditor),
-                uuid: audit_get_str_value(dict, "uuid", &mut auditor),
-                implicit_album_uuid: audit_get_str_value(dict, "implicitAlbumUuid", &mut auditor),
-                db_version: audit_get_int_value(dict, "version", &mut auditor),
-                project_version: audit_get_int_value(dict, "projectVersion", &mut auditor)
-            }),
+            Plist::Dictionary(ref dict) => {
+                let result = Some(Folder {
+                    path: audit_get_str_value(dict, "folderPath", &mut auditor),
+                    folder_type: Type::from_option(audit_get_int_value(dict, "folderType", &mut auditor)),
+                    model_id: audit_get_int_value(
+                        dict, "modelId", &mut auditor),
+                    name: audit_get_str_value(dict, "name", &mut auditor),
+                    parent_uuid: audit_get_str_value(
+                        dict, "parentFolderUuid", &mut auditor),
+                    uuid: audit_get_str_value(dict, "uuid", &mut auditor),
+                    implicit_album_uuid: audit_get_str_value(
+                        dict, "implicitAlbumUuid", &mut auditor),
+                    db_version: audit_get_int_value(
+                        dict, "version", &mut auditor),
+                    project_version: audit_get_int_value(
+                        dict, "projectVersion", &mut auditor)
+                });
+                if auditor.is_some() {
+                    let ref mut auditor = auditor.unwrap();
+                    auditor.audit_ignored(dict);
+                }
+                result
+            },
             _ =>
                 None
         }

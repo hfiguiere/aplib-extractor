@@ -10,10 +10,15 @@ use plutils::{get_int_value, get_str_value, get_bool_value, Plist};
 
 #[derive(Debug)]
 pub enum SkipReason {
+    /// No reason
     None,
+    /// Didn't find it
     NotFound,
+    /// Wrong type
     InvalidType,
+    /// Data is invalid
     InvalidData,
+    /// Couldn't be parsed
     ParseFailed,
 }
 
@@ -105,6 +110,27 @@ impl Report {
 
     pub fn parsed(&mut self, key: &str) {
         self.parsed.insert(key.to_owned());
+    }
+    pub fn get_parsed(&self) -> &HashSet<String> {
+        &self.parsed
+    }
+    pub fn parsed_count(&self) -> usize {
+        self.parsed.len()
+    }
+
+    pub fn audit_ignored(&mut self, dict: &BTreeMap<String, Plist>) {
+        let ignored_keys: HashSet<_> = {
+            let skipped_keys: HashSet<_> =
+                self.skipped.keys().cloned().collect();
+            let known_keys =
+                self.parsed.union(&skipped_keys).cloned().collect();
+            let plist_keys: HashSet<_> = dict.keys().cloned().collect();
+            plist_keys.difference(&known_keys).cloned().collect()
+        };
+        for key in ignored_keys {
+            self.ignore(&key);
+        }
+
     }
 }
 

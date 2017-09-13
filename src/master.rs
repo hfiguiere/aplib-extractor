@@ -39,29 +39,36 @@ impl AplibObject for Master {
         use plutils::*;
         let plist = parse_plist(plist_path);
         match plist {
-            Plist::Dictionary(ref dict) => Some(Master {
-                uuid: audit_get_str_value(dict, "uuid", &mut auditor),
-                alternate_master: audit_get_str_value(
-                    dict, "alternateMasterUuid", &mut auditor),
-                original_version_uuid: audit_get_str_value(
-                    dict, "originalVersionUuid", &mut auditor),
-                project_uuid: audit_get_str_value(
-                    dict, "projectUuid", &mut auditor),
-                import_group_uuid: audit_get_str_value(
-                    dict, "importGroupUuid", &mut auditor),
-                filename: audit_get_str_value(dict, "fileName", &mut auditor),
-                name: audit_get_str_value(dict, "name", &mut auditor),
-                original_version_name: audit_get_str_value(
-                    dict, "originalVersionName", &mut auditor),
-                db_version: audit_get_int_value(dict, "version", &mut auditor),
-                master_type: audit_get_str_value(dict, "type", &mut auditor),
-                subtype: audit_get_str_value(dict, "subtype", &mut auditor),
-                model_id: audit_get_int_value(dict, "modelId", &mut auditor),
-                image_path: audit_get_str_value(
-                    dict, "imagePath", &mut auditor),
-                is_reference: audit_get_bool_value(
-                    dict, "fileIsReference", &mut auditor),
-            }),
+            Plist::Dictionary(ref dict) => {
+                let result = Some(Master {
+                    uuid: audit_get_str_value(dict, "uuid", &mut auditor),
+                    alternate_master: audit_get_str_value(
+                        dict, "alternateMasterUuid", &mut auditor),
+                    original_version_uuid: audit_get_str_value(
+                        dict, "originalVersionUuid", &mut auditor),
+                    project_uuid: audit_get_str_value(
+                        dict, "projectUuid", &mut auditor),
+                    import_group_uuid: audit_get_str_value(
+                        dict, "importGroupUuid", &mut auditor),
+                    filename: audit_get_str_value(dict, "fileName", &mut auditor),
+                    name: audit_get_str_value(dict, "name", &mut auditor),
+                    original_version_name: audit_get_str_value(
+                        dict, "originalVersionName", &mut auditor),
+                    db_version: audit_get_int_value(dict, "version", &mut auditor),
+                    master_type: audit_get_str_value(dict, "type", &mut auditor),
+                    subtype: audit_get_str_value(dict, "subtype", &mut auditor),
+                    model_id: audit_get_int_value(dict, "modelId", &mut auditor),
+                    image_path: audit_get_str_value(
+                        dict, "imagePath", &mut auditor),
+                    is_reference: audit_get_bool_value(
+                        dict, "fileIsReference", &mut auditor),
+                });
+                if auditor.is_some() {
+                    let ref mut auditor = auditor.unwrap();
+                    auditor.audit_ignored(dict);
+                }
+                result
+            },
             _ =>
                 None
         }
