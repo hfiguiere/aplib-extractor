@@ -5,13 +5,15 @@
  */
 
 use std::path::Path;
-use plist::Plist;
 use store;
 use AplibObject;
 use AplibType;
-use audit::{Auditable,Report};
+use audit::{
+    audit_get_str_value, audit_get_int_value, audit_get_bool_value,
+    Report, SkipReason
+};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Subclass {
     Invalid,
     Implicit,
@@ -79,44 +81,63 @@ pub struct Album {
     pub content: Option<Vec<String>>,
 }
 
-impl Auditable for Album {
-    fn audit(&self) -> Report {
-        Report::new()
-    }
-}
-
 impl AplibObject for Album {
-    fn from_path(plist_path: &Path) -> Option<Album>
-    {
+    fn from_path(plist_path: &Path,
+                 mut auditor: Option<&mut Report>) -> Option<Album> {
+
         use plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
                 if let Some(info_dict) = get_dict_value(dict, "InfoDictionary") {
+                    let subclass =
+                        Subclass::from_option(
+                            audit_get_int_value(&info_dict,
+                                                "albumSubclass", &mut auditor));
                     Some(Album {
-                        uuid: get_str_value(&info_dict, "uuid"),
-                        folder_uuid: get_str_value(&info_dict, "folderUuid"),
-                        subclass: Subclass::from_option(get_int_value(&info_dict, "albumSubclass")),
-                        album_type: get_int_value(&info_dict, "albumType"),
-                        db_version: get_int_value(&info_dict, "version"),
-                        model_id: get_int_value(&info_dict, "modelId"),
-                        sort_asc: get_bool_value(&info_dict, "sortAscending"),
-                        sort_key: get_str_value(&info_dict, "sortKeyPath"),
-                        name: get_str_value(&info_dict, "name"),
-                        query_folder_uuid: get_str_value(&info_dict, "queryFolderUuid"),
+                        uuid: audit_get_str_value(
+                            &info_dict, "uuid", &mut auditor),
+                        folder_uuid: audit_get_str_value(
+                            &info_dict, "folderUuid", &mut auditor),
+                        subclass: subclass.clone(),
+                        album_type: audit_get_int_value(
+                            &info_dict, "albumType", &mut auditor),
+                        db_version: audit_get_int_value(
+                            &info_dict, "version", &mut auditor),
+                        model_id: audit_get_int_value(
+                            &info_dict, "modelId", &mut auditor),
+                        sort_asc: audit_get_bool_value(
+                            &info_dict, "sortAscending", &mut auditor),
+                        sort_key: audit_get_str_value(
+                            &info_dict, "sortKeyPath", &mut auditor),
+                        name: audit_get_str_value(
+                            &info_dict, "name", &mut auditor),
+                        query_folder_uuid: audit_get_str_value(
+                            &info_dict, "queryFolderUuid", &mut auditor),
                         content: {
                             if let Some(array) = get_array_value(&dict, "versionUuids") {
-                                let content: Vec<String>;
-                                content = array.iter().filter_map(|elem|
-                                    match *elem {
-                                        Plist::String(ref s) =>
-                                            Some(s.to_owned()),
-                                        _ =>
-                                            None
+                                if subclass == Some(Subclass::User) {
+                                    let content: Vec<String>;
+                                    content = array.iter().filter_map(
+                                        |elem|
+                                        match *elem {
+                                            Plist::String(ref s) =>
+                                                Some(s.to_owned()),
+                                            _ =>
+                                                None
+                                        }
+                                    ).collect();
+                                    if let Some(ref mut report) = auditor {
+                                        report.parsed("versionUuids");
                                     }
-                                ).collect();
-                                Some(content)
+                                    Some(content)
+                                } else {
+                                    if let Some(ref mut report) = auditor {
+                                        report.skip("versionUuids", SkipReason::InvalidData);
+                                    }
+                                    None
+                                }
                             } else {
                                 None
                             }
@@ -161,7 +182,7 @@ fn test_album_parse() {
 
     let album = Album::from_path(
         testutils::get_test_file_path("gOnttfpzQoOxcwLpFS9DQg.apalbum")
-            .as_path());
+            .as_path(), None);
     assert!(album.is_some());
     let album = album.unwrap();
 
@@ -176,9 +197,9 @@ fn test_album_parse() {
     assert_eq!(album.sort_key.as_ref().unwrap(), "exifProperties.ImageDate");
     assert!(album.name.is_none());
 
-    let report = album.audit();
+//    let report = album.audit();
     // XXX fix when have actual audit.
-    println!("report {:?}", report);
+//    println!("report {:?}", report);
 }
 
 #[cfg(test)]
@@ -188,7 +209,7 @@ fn test_album_content_parse() {
 
     let album = Album::from_path(
         testutils::get_test_file_path("x6yNun58SB2sImfCarTJHA.apalbum")
-            .as_path());
+            .as_path(), None);
     assert!(album.is_some());
     let album = album.unwrap();
 
@@ -207,7 +228,7 @@ fn test_album_content_parse() {
     assert_eq!(content.len(), 1);
     assert_eq!(content[0], "BF6nuoBnTumzoXyexdmXlw");
 
-    let report = album.audit();
+//    let report = album.audit();
     // XXX fix when have actual audit.
-    println!("report {:?}", report);
+//    println!("report {:?}", report);
 }

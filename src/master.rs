@@ -4,11 +4,14 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use plist::Plist;
 use std::path::Path;
 use store;
 use AplibObject;
 use AplibType;
+use audit::{
+    audit_get_str_value, audit_get_int_value, audit_get_bool_value,
+    Report
+};
 
 pub struct Master {
     uuid: Option<String>,
@@ -30,28 +33,34 @@ pub struct Master {
 
 
 impl AplibObject for Master {
-    fn from_path(plist_path: &Path) -> Option<Master>
-    {
+    fn from_path(plist_path: &Path,
+                 mut auditor: Option<&mut Report>) -> Option<Master> {
+
         use plutils::*;
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => Some(Master {
-                uuid: get_str_value(dict, "uuid"),
-                alternate_master: get_str_value(dict, "alternateMasterUuid"),
-                original_version_uuid: get_str_value(dict,
-                                                     "originalVersionUuid"),
-                project_uuid: get_str_value(dict, "projectUuid"),
-                import_group_uuid: get_str_value(dict, "importGroupUuid"),
-                filename: get_str_value(dict, "fileName"),
-                name: get_str_value(dict, "name"),
-                original_version_name: get_str_value(dict,
-                                                     "originalVersionName"),
-                db_version: get_int_value(dict, "version"),
-                master_type: get_str_value(dict, "type"),
-                subtype: get_str_value(dict, "subtype"),
-                model_id: get_int_value(dict, "modelId"),
-                image_path: get_str_value(dict, "imagePath"),
-                is_reference: get_bool_value(dict, "fileIsReference"),
+                uuid: audit_get_str_value(dict, "uuid", &mut auditor),
+                alternate_master: audit_get_str_value(
+                    dict, "alternateMasterUuid", &mut auditor),
+                original_version_uuid: audit_get_str_value(
+                    dict, "originalVersionUuid", &mut auditor),
+                project_uuid: audit_get_str_value(
+                    dict, "projectUuid", &mut auditor),
+                import_group_uuid: audit_get_str_value(
+                    dict, "importGroupUuid", &mut auditor),
+                filename: audit_get_str_value(dict, "fileName", &mut auditor),
+                name: audit_get_str_value(dict, "name", &mut auditor),
+                original_version_name: audit_get_str_value(
+                    dict, "originalVersionName", &mut auditor),
+                db_version: audit_get_int_value(dict, "version", &mut auditor),
+                master_type: audit_get_str_value(dict, "type", &mut auditor),
+                subtype: audit_get_str_value(dict, "subtype", &mut auditor),
+                model_id: audit_get_int_value(dict, "modelId", &mut auditor),
+                image_path: audit_get_str_value(
+                    dict, "imagePath", &mut auditor),
+                is_reference: audit_get_bool_value(
+                    dict, "fileIsReference", &mut auditor),
             }),
             _ =>
                 None

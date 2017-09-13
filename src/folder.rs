@@ -4,12 +4,11 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use plist::Plist;
 use store;
 use std::path::Path;
 use AplibObject;
 use AplibType;
-use audit::{Auditable,Report};
+use audit::{Report,audit_get_int_value,audit_get_str_value};
 
 /// Type of folder: folder or project
 /// Only these are known.
@@ -52,7 +51,7 @@ impl Type {
 
 
 /// Folder object. This is a container of things in the library.
-#[derive(Debug)]
+#[derive(Debug,Default)]
 pub struct Folder {
     /// object uuid
     uuid: Option<String>,
@@ -75,29 +74,24 @@ pub struct Folder {
     pub implicit_album_uuid: Option<String>,
 }
 
-impl Auditable for Folder {
-    fn audit(&self) -> Report {
-        Report::new()
-    }
-}
-
 impl AplibObject for Folder {
-    fn from_path(plist_path: &Path) -> Option<Folder>
-    {
+    fn from_path(plist_path: &Path,
+                 mut auditor: Option<&mut Report>) -> Option<Folder> {
+
         use plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => Some(Folder {
-                path: get_str_value(dict, "folderPath"),
-                folder_type: Type::from_option(get_int_value(dict, "folderType")),
-                model_id: get_int_value(dict, "modelId"),
-                name: get_str_value(dict, "name"),
-                parent_uuid: get_str_value(dict, "parentFolderUuid"),
-                uuid: get_str_value(dict, "uuid"),
-                implicit_album_uuid: get_str_value(dict, "implicitAlbumUuid"),
-                db_version: get_int_value(dict, "version"),
-                project_version: get_int_value(dict, "projectVersion")
+                path: audit_get_str_value(dict, "folderPath", &mut auditor),
+                folder_type: Type::from_option(audit_get_int_value(dict, "folderType", &mut auditor)),
+                model_id: audit_get_int_value(dict, "modelId", &mut auditor),
+                name: audit_get_str_value(dict, "name", &mut auditor),
+                parent_uuid: audit_get_str_value(dict, "parentFolderUuid", &mut auditor),
+                uuid: audit_get_str_value(dict, "uuid", &mut auditor),
+                implicit_album_uuid: audit_get_str_value(dict, "implicitAlbumUuid", &mut auditor),
+                db_version: audit_get_int_value(dict, "version", &mut auditor),
+                project_version: audit_get_int_value(dict, "projectVersion", &mut auditor)
             }),
             _ =>
                 None
@@ -136,7 +130,7 @@ fn test_folder_parse() {
 
     let folder = Folder::from_path(
         testutils::get_test_file_path("a%TX9lmjQVWvuK9u6RNhGQ.apfolder")
-            .as_path());
+            .as_path(), None);
     assert!(folder.is_some());
     let folder = folder.unwrap();
 
@@ -150,7 +144,6 @@ fn test_folder_parse() {
     assert_eq!(folder.name.as_ref().unwrap(), "2011");
     assert_eq!(folder.implicit_album_uuid.as_ref().unwrap(), "J0+f3AmESPer4GHGv4BgAQ");
 
-    let report = folder.audit();
     // XXX fix when have actual audit.
-    println!("report {:?}", report);
+//    println!("report {:?}", report);
 }

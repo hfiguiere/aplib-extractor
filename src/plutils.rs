@@ -6,7 +6,7 @@
 
 use std::fs::File;
 use std::path::Path;
-use plist::Plist;
+pub use plist::Plist;
 use std::collections::BTreeMap;
 
 pub fn parse_plist(path : &Path) -> Plist

@@ -12,6 +12,7 @@ use store;
 use plist::Plist;
 use AplibObject;
 use AplibType;
+use audit::{audit_get_int_value, Report};
 
 /// A Keyword
 pub struct Keyword {
@@ -31,7 +32,8 @@ pub struct Keyword {
 impl AplibObject for Keyword {
     #[allow(unused_variables)]
     #[doc(hidden)]
-    fn from_path(plist_path: &Path) -> Option<Keyword> {
+    fn from_path(plist_path: &Path,
+                 auditor: Option<&mut Report>) -> Option<Keyword> {
         assert!(false, "must not be called");
         None
     }
@@ -58,13 +60,13 @@ impl AplibObject for Keyword {
 }
 
 /// Parse keywords from the .plist file
-pub fn parse_keywords(path: &Path) -> Option<Vec<Keyword>>
+pub fn parse_keywords(path: &Path, auditor: &mut Option<&mut Report>) -> Option<Vec<Keyword>>
 {
     let plist = parse_plist(path);
 
     match plist {
         Plist::Dictionary(ref dict) => {
-            if let Some(version) = get_int_value(dict, "keywords_version") {
+            if let Some(version) = audit_get_int_value(dict, "keywords_version", auditor) {
                 // XXX deal with proper errors here.
                 // Version 3.4.5 has version 7.
                 if version != 6 && version != 7 {

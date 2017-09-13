@@ -5,11 +5,16 @@
  */
 
 
-use plist::Plist;
 use std::path::Path;
 use store;
 use AplibObject;
 use AplibType;
+use audit::{
+    audit_get_str_value,
+    audit_get_int_value,
+    audit_get_bool_value,
+    Report
+};
 
 pub struct Version {
     uuid: Option<String>,
@@ -32,28 +37,29 @@ pub struct Version {
 
 impl AplibObject for Version {
     /// Load the version object from the plist at plist_path.
-    fn from_path(plist_path: &Path) -> Option<Version>
-    {
+    fn from_path(plist_path: &Path,
+                 mut auditor: Option<&mut Report>) -> Option<Version> {
+
         use plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => Some(Version {
-                uuid: get_str_value(dict, "uuid"),
-                master_uuid: get_str_value(dict, "masterUuid"),
-                project_uuid: get_str_value(dict, "projectUuid"),
-                raw_master_uuid: get_str_value(dict, "rawMasterUuid"),
-                nonraw_master_uuid: get_str_value(dict, "nonRawMasterUuid"),
-                timezone_name: get_str_value(dict, "imageTimeZoneName"),
-                version_number: get_int_value(dict, "versionNumber"),
-                db_version: get_int_value(dict, "version"),
-                db_minor_version: get_int_value(dict, "minorVersion"),
-                is_flagged: get_bool_value(dict, "isFlagged"),
-                is_original: get_bool_value(dict, "isOriginal"),
-                file_name: get_str_value(dict, "fileName"),
-                name: get_str_value(dict, "name"),
-                model_id: get_int_value(dict, "modelId"),
-                rating: get_int_value(dict, "mainRating"),
+                uuid: audit_get_str_value(dict, "uuid", &mut auditor),
+                master_uuid: audit_get_str_value(dict, "masterUuid", &mut auditor),
+                project_uuid: audit_get_str_value(dict, "projectUuid", &mut auditor),
+                raw_master_uuid: audit_get_str_value(dict, "rawMasterUuid", &mut auditor),
+                nonraw_master_uuid: audit_get_str_value(dict, "nonRawMasterUuid", &mut auditor),
+                timezone_name: audit_get_str_value(dict, "imageTimeZoneName", &mut auditor),
+                version_number: audit_get_int_value(dict, "versionNumber", &mut auditor),
+                db_version: audit_get_int_value(dict, "version", &mut auditor),
+                db_minor_version: audit_get_int_value(dict, "minorVersion", &mut auditor),
+                is_flagged: audit_get_bool_value(dict, "isFlagged", &mut auditor),
+                is_original: audit_get_bool_value(dict, "isOriginal", &mut auditor),
+                file_name: audit_get_str_value(dict, "fileName", &mut auditor),
+                name: audit_get_str_value(dict, "name", &mut auditor),
+                model_id: audit_get_int_value(dict, "modelId", &mut auditor),
+                rating: audit_get_int_value(dict, "mainRating", &mut auditor),
             }),
             _ =>
                 None

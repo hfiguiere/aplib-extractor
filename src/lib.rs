@@ -31,6 +31,7 @@ pub use master::Master as Master;
 pub use version::Version as Version;
 pub use keyword::Keyword as Keyword;
 pub use store::Wrapper as StoreWrapper;
+use audit::Report;
 
 pub enum AplibType {
     Album,
@@ -41,7 +42,8 @@ pub enum AplibType {
 }
 
 pub trait AplibObject {
-    fn from_path(plist_path: &Path) -> Option<Self>
+    fn from_path(plist_path: &Path,
+                 auditor: Option<&mut Report>) -> Option<Self>
         where Self: Sized;
     fn wrap(obj: Self) -> store::Wrapper;
     fn obj_type(&self) -> AplibType;

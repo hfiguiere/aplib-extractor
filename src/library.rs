@@ -13,7 +13,7 @@ use folder::Folder;
 use album::Album;
 use version::Version;
 use master::Master;
-use audit::{Reporter,Report,SkipReason,Auditable};
+use audit::{Reporter,Report,SkipReason};
 use keyword::{parse_keywords,Keyword};
 use store;
 use plutils;
@@ -273,20 +273,24 @@ impl Library {
         ModelInfo::parse(&plist)
     }
 
-    fn load_items<T: AplibObject + Auditable, F: FnMut(u64) -> bool>(
+    fn load_items<T: AplibObject, F: FnMut(u64) -> bool>(
         &mut self, dir: &str, ext: &str, set: &mut HashSet<String>, pg: &mut F)
     {
         let file_list = self.list_items(dir, ext);
         let audit = self.auditor.is_some();
         for file in file_list {
-            if let Some(obj) = T::from_path(file.as_ref()) {
+            let mut report = if audit {
+                Some(Report::new())
+            } else {
+                None
+            };
+            if let Some(obj) = T::from_path(file.as_ref(), report.as_mut()) {
                 let mut store = false;
                 if let Some(ref uuid) = *obj.uuid() {
                     set.insert(uuid.to_owned());
                     if audit {
-                        let report = obj.audit();
                         self.auditor.as_mut().unwrap().parsed(
-                            &file.to_string_lossy(), report);
+                            &file.to_string_lossy(), report.unwrap());
                     }
                     store = true;
                 }
@@ -397,17 +401,32 @@ impl Library {
         set: &mut HashSet<String>, pg: &mut F)
     {
         let file_list = self.list_versions_items(ext);
+        let audit = self.auditor.is_some();
         for file in file_list {
-            if let Some(obj) = T::from_path(file.as_ref()) {
+            let mut report = if audit {
+                Some(Report::new())
+            } else {
+                None
+            };
+            if let Some(obj) = T::from_path(file.as_ref(), report.as_mut()) {
                 let mut store = false;
                 if let Some(ref uuid) = *obj.uuid() {
                     set.insert(uuid.to_owned());
                     store = true;
+                    if audit {
+                        self.auditor.as_mut().unwrap().parsed(
+                            &file.to_string_lossy(), report.unwrap());
+                    }
                 }
                 if store {
                     self.store(T::wrap(obj));
                 }
             } else {
+                if audit {
+                    self.auditor.as_mut().unwrap().skip(
+                        &file.to_string_lossy(),
+                        SkipReason::ParseFailed);
+                }
                 println!("Error decoding object from {:?}", file);
             }
             if !pg(1) {
@@ -447,9 +466,25 @@ impl Library {
         &self.versions
     }
 
-    pub fn list_keywords(&self) -> Option<Vec<Keyword>>
+    pub fn list_keywords(&mut self) -> Option<Vec<Keyword>>
     {
-        parse_keywords(self.build_path(KEYWORDS_PLIST, true).as_ref())
+        let audit = self.auditor.is_some();
+        let mut report = if audit {
+            Some(Report::new())
+        } else {
+            None
+        };
+        let result = parse_keywords(self.build_path(KEYWORDS_PLIST, true).as_ref(), &mut report.as_mut());
+        if audit {
+            if result.is_some() {
+                self.auditor.as_mut().unwrap().parsed(
+                    KEYWORDS_PLIST, report.unwrap());
+            } else {
+                self.auditor.as_mut().unwrap().skip(
+                    KEYWORDS_PLIST, SkipReason::ParseFailed);
+            }
+        }
+        result
     }
 }
 

@@ -19,7 +19,7 @@ use aplib::Library;
 use aplib::ModelInfo;
 use aplib::Keyword;
 use aplib::StoreWrapper;
-use aplib::audit::Reporter;
+use aplib::audit::{Reporter,Report};
 use aplib::AlbumSubclass;
 use aplib::FolderType;
 
@@ -87,6 +87,17 @@ fn main() {
 }
 
 
+fn print_report(report: &Report) {
+    println!("+---- Ignored {}", report.ignored_count());
+    for key in report.get_ignored() {
+        println!("    +- {}", key);
+    }
+    println!("+---- Skipped {}", report.skipped_count());
+    for (key, reason) in report.get_skipped() {
+        println!("    +- {} ({:?})", key, reason);
+    }
+}
+
 fn process_audit(args: &Args) {
 
     let mut library = Library::new(&args.arg_path);
@@ -100,7 +111,25 @@ fn process_audit(args: &Args) {
     library.load_masters(&mut |_: u64| true);
     library.load_versions(&mut |_: u64| true);
 
-    println!("Audit: {:?}", library.get_auditor().unwrap());
+    println!("Audit:");
+    let auditor = library.get_auditor().unwrap();
+    println!("Parsed {}", auditor.parsed_count());
+    println!("+-----------------------------");
+    for (key, ref report) in auditor.get_parsed() {
+        if report.skipped_count() > 0 || report.ignored_count() > 0 {
+            println!("| {} ", key);
+            print_report(report);
+        }
+    }
+    println!("+-----------------------------");
+    println!("Skipped {}", auditor.skipped_count());
+    for (key, _) in auditor.get_skipped() {
+        println!("| {} ", key);
+    }
+    println!("Ignored {}", auditor.ignored_count());
+    for key in auditor.get_ignored() {
+        println!("| {} ", key);
+    }
 }
 
 /// print the keywords with indentation for the hierarchy
