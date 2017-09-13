@@ -208,6 +208,7 @@ Description of the master. Each version has a master.
 
 * isFlagged: version flagged
 * imageTimeZoneName: timezone name
+* rawMasterUuid: uuid of RAW master
 * nonRawMasterUuid: uuid of non-RAW master.
 * showInLibrary: whether to show. false likely to be implicit version of
   master.
