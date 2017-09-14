@@ -13,7 +13,7 @@ use folder::Folder;
 use album::Album;
 use version::Version;
 use master::Master;
-use audit::{Reporter,Report,SkipReason};
+use audit::{audit_get_str_value,Reporter,Report,SkipReason};
 use keyword::{parse_keywords,Keyword};
 use store;
 use plutils;
@@ -169,53 +169,54 @@ impl Library {
         {
             let plist_path = self.build_path(INFO_PLIST, false);
             let plist = plutils::parse_plist(&plist_path);
-            let mut report = Report::new();
             let audit = self.auditor.is_some();
-
+            let mut report = if audit {
+                Some(Report::new())
+            } else {
+                None
+            };
 
             match plist {
                 Plist::Dictionary(ref dict) => {
-                    for (key, value) in dict.iter() {
+                    let version = audit_get_str_value(
+                        dict, "CFBundleShortVersionString", &mut report.as_mut());
+                    if version.is_none() {
+                        println!("FATAL no library version found");
+                        return &self.version;
+                    }
+                    self.version = version.unwrap();
 
-                        match key.as_ref() {
-                            "CFBundleIdentifier" => {
-                                if let &Plist::String(ref s) = value {
-                                    let bundle_id = s.to_owned();
-                                    if bundle_id != BUNDLE_IDENTIFIER {
-                                        report.skip(key,
-                                                    SkipReason::InvalidData);
-                                        println!("FATAL not a library");
-                                        return &self.version;
-                                    }
-                                    if audit {
-                                        report.parsed(key);
-                                    }
-                                } else if audit {
-                                    report.skip(key, SkipReason::InvalidType);
+                    let bundle_id = audit_get_str_value(
+                        dict, "CFBundleIdentifier", &mut report.as_mut());
+                    if let Some(id) = bundle_id {
+                        if id != BUNDLE_IDENTIFIER {
+                            if audit {
+                                if let Some(ref mut r) = report {
+                                    r.skip("CFBundleIdentifier",
+                                           SkipReason::InvalidData);
                                 }
-                            },
-                            "CFBundleShortVersionString" => {
-                                if let &Plist::String(ref s) = value {
-                                    self.version = s.to_owned();
-                                    if audit {
-                                        report.parsed(key);
-                                    }
-                                } else if audit {
-                                    report.skip(key, SkipReason::InvalidType);
-                                }
-                            },
-                            _ => {
-                                if audit {
-                                    report.ignore(key);
-                                }
-                            },
+                            }
+                            println!("FATAL not a library");
+                            return &self.version;
                         }
-                    }
-                    if audit {
-                        self.auditor.as_mut().unwrap().parsed(
-                            &plist_path.to_string_lossy(), report);
+                    } else {
+                        if audit {
+                            if let Some(ref mut r) = report {
+                                r.skip("CFBundleIdentifier",
+                                       SkipReason::NotFound);
+                            }
+                        }
+                        println!("FATAL no bundle identifier");
+                        return &self.version;
                     }
 
+                    if audit {
+                        if let Some(ref mut r) = report {
+                            r.audit_ignored(dict);
+                        }
+                        self.auditor.as_mut().unwrap().parsed(
+                            &plist_path.to_string_lossy(), report.unwrap());
+                    }
                 },
                 _ => {
                     if audit {
