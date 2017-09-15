@@ -4,6 +4,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+use std::collections::BTreeMap;
 use std::path::Path;
 use store;
 use AplibObject;
@@ -12,6 +13,7 @@ use audit::{
     audit_get_str_value, audit_get_int_value, audit_get_bool_value,
     Report, SkipReason
 };
+use plutils::{get_array_value, Plist};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Subclass {
@@ -95,7 +97,7 @@ impl AplibObject for Album {
                         Subclass::from_option(
                             audit_get_int_value(&info_dict,
                                                 "albumSubclass", &mut auditor));
-                    Some(Album {
+                    let result = Some(Album {
                         uuid: audit_get_str_value(
                             &info_dict, "uuid", &mut auditor),
                         folder_uuid: audit_get_str_value(
@@ -115,34 +117,14 @@ impl AplibObject for Album {
                             &info_dict, "name", &mut auditor),
                         query_folder_uuid: audit_get_str_value(
                             &info_dict, "queryFolderUuid", &mut auditor),
-                        content: {
-                            if let Some(array) = get_array_value(&dict, "versionUuids") {
-                                if subclass == Some(Subclass::User) {
-                                    let content: Vec<String>;
-                                    content = array.iter().filter_map(
-                                        |elem|
-                                        match *elem {
-                                            Plist::String(ref s) =>
-                                                Some(s.to_owned()),
-                                            _ =>
-                                                None
-                                        }
-                                    ).collect();
-                                    if let Some(ref mut report) = auditor {
-                                        report.parsed("versionUuids");
-                                    }
-                                    Some(content)
-                                } else {
-                                    if let Some(ref mut report) = auditor {
-                                        report.skip("versionUuids", SkipReason::InvalidData);
-                                    }
-                                    None
-                                }
-                            } else {
-                                None
-                            }
-                        },
-                    })
+                        content: Album::content_from(
+                            &dict, &subclass, &mut auditor),
+                    });
+                    if auditor.is_some() {
+                        let ref mut auditor = auditor.unwrap();
+                        auditor.audit_ignored(&info_dict);
+                    }
+                    result
                 } else {
                     None
                 }
@@ -172,6 +154,35 @@ impl AplibObject for Album {
 }
 
 impl Album {
+    fn content_from(dict: &BTreeMap<String, Plist>,
+                    subclass: &Option<Subclass>,
+                    auditor: &mut Option<&mut Report>) -> Option<Vec<String>> {
+        if let Some(array) = get_array_value(&dict, "versionUuids") {
+            if *subclass == Some(Subclass::User) {
+                let content: Vec<String>;
+                content = array.iter().filter_map(
+                    |elem|
+                    match *elem {
+                        Plist::String(ref s) =>
+                            Some(s.to_owned()),
+                        _ =>
+                            None
+                    }
+                ).collect();
+                if let Some(ref mut report) = *auditor {
+                    report.parsed("versionUuids");
+                }
+                Some(content)
+            } else {
+                if let Some(ref mut report) = *auditor {
+                    report.skip("versionUuids", SkipReason::InvalidData);
+                }
+                None
+            }
+        } else {
+            None
+        }
+    }
 }
 
 
