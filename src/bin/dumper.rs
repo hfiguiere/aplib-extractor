@@ -110,7 +110,13 @@ fn process_audit(args: &Args) {
     let auditor = Reporter::new();
     library.set_auditor(Some(auditor));
 
-    library.library_version();
+    {
+        let version = library.library_version();
+        if version.is_err() {
+            println!("Invalid library");
+            return;
+        }
+    }
     library.load_folders(&mut |_: u64| true);
     library.load_albums(&mut |_: u64| true);
     library.load_masters(&mut |_: u64| true);
@@ -168,8 +174,12 @@ fn process_dump(args: &Args) {
     let mut library = Library::new(&args.arg_path);
 
     {
-        let version = library.library_version();
-        println!("Version {}", version);
+        if let Ok(version) = library.library_version() {
+            println!("Version {}", version);
+        } else {
+            println!("Version not found.");
+            return;
+        }
     }
 
     let model_info = library.get_model_info().unwrap();

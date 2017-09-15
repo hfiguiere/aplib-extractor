@@ -163,7 +163,7 @@ impl Library {
 
     /// Get the library version. Will parse the plist for that
     /// if needed.
-    pub fn library_version(&mut self) -> &String
+    pub fn library_version(&mut self) -> Result<&String, SkipReason>
     {
         if self.version.is_empty()
         {
@@ -182,7 +182,7 @@ impl Library {
                         dict, "CFBundleShortVersionString", &mut report.as_mut());
                     if version.is_none() {
                         println!("FATAL no library version found");
-                        return &self.version;
+                        return Err(SkipReason::NotFound);
                     }
                     self.version = version.unwrap();
 
@@ -197,7 +197,7 @@ impl Library {
                                 }
                             }
                             println!("FATAL not a library");
-                            return &self.version;
+                            return Err(SkipReason::InvalidData);
                         }
                     } else {
                         if audit {
@@ -207,7 +207,7 @@ impl Library {
                             }
                         }
                         println!("FATAL no bundle identifier");
-                        return &self.version;
+                        return Err(SkipReason::NotFound);
                     }
 
                     if audit {
@@ -228,7 +228,7 @@ impl Library {
             }
 
         }
-        &self.version
+        Ok(&self.version)
     }
 
     /// Build a path from the bundle root.
