@@ -89,11 +89,16 @@ fn main() {
 
 fn print_report(report: &Report) {
     println!("+---- Ignored {}", report.ignored_count());
-    for key in report.get_ignored() {
+    let mut ignored: Vec<&String> = report.get_ignored().iter().collect();
+    ignored.sort();
+    for key in ignored {
         println!("    +- {}", key);
     }
     println!("+---- Skipped {}", report.skipped_count());
-    for (key, reason) in report.get_skipped() {
+    let mut skipped: Vec<&String> = report.get_skipped().keys().collect();
+    skipped.sort();
+    for key in skipped {
+        let reason = &report.get_skipped()[key];
         println!("    +- {} ({:?})", key, reason);
     }
 }
