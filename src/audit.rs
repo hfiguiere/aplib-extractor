@@ -6,7 +6,7 @@
 
 
 use std::collections::{ BTreeMap, HashMap, HashSet };
-use plutils::{get_int_value, get_str_value, get_bool_value, Plist};
+use plutils::{get_int_value, get_str_value, get_bool_value, get_dict_value, Plist};
 
 #[derive(Debug)]
 pub enum SkipReason {
@@ -167,6 +167,20 @@ pub fn audit_get_bool_value(
     key: &str, report: &mut Option<&mut Report>) -> Option<bool> {
 
     let value = get_bool_value(dict, key);
+    if let Some(ref mut report) = *report {
+        match value {
+            Some(_) => report.parsed(key),
+            _ => report.skip(key, SkipReason::NotFound)
+        }
+    }
+    value
+}
+
+pub fn audit_get_dict_value(
+    dict: &BTreeMap<String, Plist>,
+    key: &str, report: &mut Option<&mut Report>) -> Option<BTreeMap<String, Plist>> {
+
+    let value = get_dict_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),

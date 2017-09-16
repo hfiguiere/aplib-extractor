@@ -199,12 +199,9 @@ impl Library {
                             println!("FATAL not a library");
                             return Err(SkipReason::InvalidData);
                         }
-                    } else {
-                        if audit {
-                            if let Some(ref mut r) = report {
-                                r.skip("CFBundleIdentifier",
-                                       SkipReason::NotFound);
-                            }
+                    } else if audit {
+                        if let Some(ref mut r) = report {
+                            r.skip("CFBundleIdentifier", SkipReason::NotFound);
                         }
                         println!("FATAL no bundle identifier");
                         return Err(SkipReason::NotFound);

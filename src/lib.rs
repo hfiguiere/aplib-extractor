@@ -6,15 +6,17 @@
 
 extern crate plist;
 
-mod library;
-mod folder;
 mod album;
-mod master;
-mod version;
-mod keyword;
-mod store;
 pub mod audit;
+mod exif;
+mod folder;
+mod iptc;
+mod keyword;
+mod library;
+mod master;
 pub mod plutils;
+mod store;
+mod version;
 
 #[cfg(test)]
 mod testutils;

@@ -7,12 +7,15 @@
 
 use std::path::Path;
 use store;
+use iptc::IptcProperties;
+use exif::ExifProperties;
 use AplibObject;
 use AplibType;
 use audit::{
     audit_get_str_value,
     audit_get_int_value,
     audit_get_bool_value,
+    audit_get_dict_value,
     Report
 };
 
@@ -36,6 +39,9 @@ pub struct Version {
     pub file_name: Option<String>,
     pub name: Option<String>,
     pub rating: Option<i64>,
+
+    pub iptc: Option<IptcProperties>,
+    pub exif: Option<ExifProperties>,
 }
 
 impl AplibObject for Version {
@@ -48,6 +54,8 @@ impl AplibObject for Version {
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
+                let iptc = audit_get_dict_value(dict, "iptcProperties", &mut auditor);
+                let exif = audit_get_dict_value(dict, "exifProperties", &mut auditor);
                 let result = Some(Version {
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
                     master_uuid: audit_get_str_value(
@@ -83,6 +91,8 @@ impl AplibObject for Version {
                         dict, "modelId", &mut auditor),
                     rating: audit_get_int_value(
                         dict, "mainRating", &mut auditor),
+                    iptc: IptcProperties::from(&iptc, &mut auditor),
+                    exif: ExifProperties::from(&exif, &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
