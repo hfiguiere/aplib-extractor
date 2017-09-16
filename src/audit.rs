@@ -118,7 +118,7 @@ impl Report {
         self.parsed.len()
     }
 
-    pub fn audit_ignored(&mut self, dict: &BTreeMap<String, Plist>) {
+    pub fn audit_ignored(&mut self, dict: &BTreeMap<String, Plist>, ns: Option<&str>) {
         let ignored_keys: HashSet<_> = {
             let skipped_keys: HashSet<_> =
                 self.skipped.keys().cloned().collect();
@@ -128,7 +128,12 @@ impl Report {
             plist_keys.difference(&known_keys).cloned().collect()
         };
         for key in ignored_keys {
-            self.ignore(&key);
+            if ns.is_none() {
+                self.ignore(&key);
+            } else {
+                let key = format!("{}.{}", ns.as_ref().unwrap(), key);
+                self.ignore(&key);
+            }
         }
 
     }

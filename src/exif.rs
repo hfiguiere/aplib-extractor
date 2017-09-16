@@ -25,7 +25,7 @@ impl ExifProperties {
         let result = Some(ExifProperties{
         });
         if let Some(ref mut r) = *auditor {
-            r.audit_ignored(&dict);
+            r.audit_ignored(&dict, Some("Exif"));
         }
         result
     }

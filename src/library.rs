@@ -209,7 +209,7 @@ impl Library {
 
                     if audit {
                         if let Some(ref mut r) = report {
-                            r.audit_ignored(dict);
+                            r.audit_ignored(dict, None);
                         }
                         self.auditor.as_mut().unwrap().parsed(
                             &plist_path.to_string_lossy(), report.unwrap());

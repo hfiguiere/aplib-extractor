@@ -49,7 +49,7 @@ impl IptcProperties {
             keywords: audit_get_str_value(dict, "Keywords", &mut auditor),
         });
         if let Some(ref mut r) = *auditor {
-            r.audit_ignored(&dict);
+            r.audit_ignored(&dict, Some("Iptc"));
         }
         result
     }

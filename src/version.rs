@@ -96,7 +96,7 @@ impl AplibObject for Version {
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
-                    auditor.audit_ignored(dict);
+                    auditor.audit_ignored(dict, None);
                 }
                 result
             },
