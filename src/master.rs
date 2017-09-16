@@ -5,12 +5,17 @@
  */
 
 use std::path::Path;
+use chrono::{
+    DateTime,
+    Utc
+};
 use store;
 use AplibObject;
 use AplibType;
 use audit::{
     audit_get_str_value, audit_get_int_value, audit_get_bool_value,
-    Report
+    audit_get_date_value,
+    Report, SkipReason
 };
 
 pub struct Master {
@@ -29,6 +34,21 @@ pub struct Master {
     pub subtype: Option<String>,
     pub image_path: Option<String>,
     pub is_reference: Option<bool>,
+    pub is_truly_raw: Option<bool>,
+    pub is_in_trash: Option<bool>,
+    pub is_missing: Option<bool>,
+    pub is_externaly_editable: Option<bool>,
+    pub create_date: Option<DateTime<Utc>>,
+    pub image_date: Option<DateTime<Utc>>,
+    pub file_creation_date: Option<DateTime<Utc>>,
+    pub file_modification_date: Option<DateTime<Utc>>,
+    pub original_file_name: Option<String>,
+    pub file_size: Option<i64>,
+    pub file_volume_uuid: Option<String>,
+    pub color_space_name: Option<String>,
+    pub pixel_format: Option<i64>,
+    pub has_focus_points: Option<i64>,
+    pub image_format: Option<i64>, // XXX fix this is a 4char MSB
 }
 
 
@@ -54,17 +74,46 @@ impl AplibObject for Master {
                     name: audit_get_str_value(dict, "name", &mut auditor),
                     original_version_name: audit_get_str_value(
                         dict, "originalVersionName", &mut auditor),
+                    original_file_name: audit_get_str_value(
+                        dict, "originalFileName", &mut auditor),
+                    file_volume_uuid: audit_get_str_value(
+                        dict, "fileVolumeUuid", &mut auditor),
                     db_version: audit_get_int_value(dict, "version", &mut auditor),
                     master_type: audit_get_str_value(dict, "type", &mut auditor),
                     subtype: audit_get_str_value(dict, "subtype", &mut auditor),
                     model_id: audit_get_int_value(dict, "modelId", &mut auditor),
-                    image_path: audit_get_str_value(
-                        dict, "imagePath", &mut auditor),
+                    image_path: audit_get_str_value(dict, "imagePath", &mut auditor),
+                    file_size: audit_get_int_value(dict, "fileSize", &mut auditor),
                     is_reference: audit_get_bool_value(
                         dict, "fileIsReference", &mut auditor),
+                    is_externaly_editable: audit_get_bool_value(
+                        dict, "isExternallyEditable", &mut auditor),
+                    is_in_trash: audit_get_bool_value(
+                        dict, "isInTrash", &mut auditor),
+                    is_missing: audit_get_bool_value(
+                        dict, "isMissing", &mut auditor),
+                    is_truly_raw: audit_get_bool_value(
+                        dict, "isTrulyRaw", &mut auditor),
+                    color_space_name: audit_get_str_value(
+                        dict, "colorSpaceName", &mut auditor),
+                    create_date: audit_get_date_value(dict, "createDate", &mut auditor),
+                    image_date: audit_get_date_value(dict, "imageDate", &mut auditor),
+                    file_creation_date: audit_get_date_value(dict, "fileCreationDate", &mut auditor),
+                    file_modification_date: audit_get_date_value(
+                        dict, "fileModificationDate", &mut auditor),
+                    has_focus_points: audit_get_int_value(dict, "hasFocusPoints", &mut auditor),
+                    image_format: audit_get_int_value(dict, "imageFormat", &mut auditor),
+                    pixel_format: audit_get_int_value(dict, "pixelFormat", &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
+                    auditor.skip("faceDetectionState", SkipReason::Ignore);
+                    auditor.skip("fileAliasData", SkipReason::Ignore);
+                    auditor.skip("notes", SkipReason::Ignore);
+                    auditor.skip("importedBy", SkipReason::Ignore);
+                    auditor.skip("importGroup", SkipReason::Ignore);
+                    auditor.skip("plistWriteTimestamp", SkipReason::Ignore);
+
                     auditor.audit_ignored(dict, None);
                 }
                 result
