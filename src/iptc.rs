@@ -18,6 +18,7 @@ pub struct IptcProperties {
     ci_email_work: Option<String>,
     ci_url_work: Option<String>,
 
+    byline: Option<String>,
     city: Option<String>,
     copyright_notice: Option<String>,
     country_primary_loc_code: Option<String>,
@@ -41,6 +42,7 @@ impl IptcProperties {
             ci_adr_region: audit_get_str_value(dict, "CiAdrRegion", &mut auditor),
             ci_email_work: audit_get_str_value(dict, "CiEmailWork", &mut auditor),
             ci_url_work: audit_get_str_value(dict, "CiUrlWork", &mut auditor),
+            byline: audit_get_str_value(dict, "Byline", &mut auditor),
             city: audit_get_str_value(dict, "City", &mut auditor),
             copyright_notice: audit_get_str_value(dict, "CopyrightNotice", &mut auditor),
             country_primary_loc_code: audit_get_str_value(dict, "Country/PrimaryLocationCode", &mut auditor),

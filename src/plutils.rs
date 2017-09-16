@@ -6,6 +6,7 @@
 
 use std::fs::File;
 use std::path::Path;
+use chrono::{DateTime,Utc};
 pub use plist::Plist;
 use std::collections::BTreeMap;
 
@@ -58,6 +59,14 @@ pub fn get_dict_value(dict: &BTreeMap<String, Plist>,
                       key: &str) -> Option<BTreeMap<String, Plist>> {
     match dict.get(key) {
         Some(&Plist::Dictionary(ref d)) => Some(d.to_owned()),
+        _ => None
+    }
+}
+
+pub fn get_date_value(dict: &BTreeMap<String, Plist>,
+                      key: &str) -> Option<DateTime<Utc>> {
+    match dict.get(key) {
+        Some(&Plist::Date(ref d)) => Some(d.clone().into()),
         _ => None
     }
 }

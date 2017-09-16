@@ -5,6 +5,7 @@
  */
 
 extern crate plist;
+extern crate chrono;
 
 mod album;
 pub mod audit;

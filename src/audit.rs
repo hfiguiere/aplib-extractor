@@ -6,7 +6,16 @@
 
 
 use std::collections::{ BTreeMap, HashMap, HashSet };
-use plutils::{get_int_value, get_str_value, get_bool_value, get_dict_value, Plist};
+use chrono::{DateTime,Utc};
+use plutils::{
+    get_int_value,
+    get_str_value,
+    get_bool_value,
+    get_dict_value,
+    get_date_value,
+    get_array_value,
+    Plist
+};
 
 #[derive(Debug)]
 pub enum SkipReason {
@@ -20,6 +29,8 @@ pub enum SkipReason {
     InvalidData,
     /// Couldn't be parsed
     ParseFailed,
+    /// Deliberately ignore
+    Ignore,
 }
 
 /// The audit reporter.  The idea it too list the properties that are
@@ -186,6 +197,34 @@ pub fn audit_get_dict_value(
     key: &str, report: &mut Option<&mut Report>) -> Option<BTreeMap<String, Plist>> {
 
     let value = get_dict_value(dict, key);
+    if let Some(ref mut report) = *report {
+        match value {
+            Some(_) => report.parsed(key),
+            _ => report.skip(key, SkipReason::NotFound)
+        }
+    }
+    value
+}
+
+pub fn audit_get_array_value(
+    dict: &BTreeMap<String, Plist>,
+    key: &str, report: &mut Option<&mut Report>) -> Option<Vec<Plist>> {
+
+    let value = get_array_value(dict, key);
+    if let Some(ref mut report) = *report {
+        match value {
+            Some(_) => report.parsed(key),
+            _ => report.skip(key, SkipReason::NotFound)
+        }
+    }
+    value
+}
+
+pub fn audit_get_date_value(
+    dict: &BTreeMap<String, Plist>,
+    key: &str, report: &mut Option<&mut Report>) -> Option<DateTime<Utc>> {
+
+    let value = get_date_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
