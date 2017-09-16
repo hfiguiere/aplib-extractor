@@ -4,11 +4,20 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use store;
 use std::path::Path;
+
+use chrono::{DateTime,Utc};
+
+use store;
 use AplibObject;
 use AplibType;
-use audit::{Report,audit_get_int_value,audit_get_str_value};
+use audit::{
+    Report, SkipReason,
+    audit_get_int_value,
+    audit_get_str_value,
+    audit_get_bool_value,
+    audit_get_date_value
+};
 
 /// Type of folder: folder or project
 /// Only these are known.
@@ -72,6 +81,18 @@ pub struct Folder {
     pub name: Option<String>,
     /// UUID of the album object that compose this.
     pub implicit_album_uuid: Option<String>,
+    /// index of the colour label
+    pub colour_label_index: Option<i64>,
+    pub create_date: Option<DateTime<Utc>>,
+    pub sort_key_path: Option<String>,
+    pub sort_ascending: Option<bool>,
+    pub is_hidden: Option<bool>,
+    pub is_magic: Option<bool>,
+    pub is_favourite: Option<bool>,
+    pub is_in_trash: Option<bool>,
+    pub is_expanded: Option<bool>,
+    pub is_hidden_when_empty: Option<bool>,
+    pub poster_version_uuid: Option<String>,
 }
 
 impl AplibObject for Folder {
@@ -86,21 +107,35 @@ impl AplibObject for Folder {
                 let result = Some(Folder {
                     path: audit_get_str_value(dict, "folderPath", &mut auditor),
                     folder_type: Type::from_option(audit_get_int_value(dict, "folderType", &mut auditor)),
-                    model_id: audit_get_int_value(
-                        dict, "modelId", &mut auditor),
+                    model_id: audit_get_int_value(dict, "modelId", &mut auditor),
                     name: audit_get_str_value(dict, "name", &mut auditor),
                     parent_uuid: audit_get_str_value(
                         dict, "parentFolderUuid", &mut auditor),
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
                     implicit_album_uuid: audit_get_str_value(
                         dict, "implicitAlbumUuid", &mut auditor),
-                    db_version: audit_get_int_value(
-                        dict, "version", &mut auditor),
+                    db_version: audit_get_int_value(dict, "version", &mut auditor),
                     project_version: audit_get_int_value(
-                        dict, "projectVersion", &mut auditor)
+                        dict, "projectVersion", &mut auditor),
+                    colour_label_index: audit_get_int_value(
+                        dict, "colorLabelIndex", &mut auditor),
+                    create_date: audit_get_date_value(dict, "createDate", &mut auditor),
+                    sort_key_path: audit_get_str_value(dict, "sortKeyPath", &mut auditor),
+                    sort_ascending: audit_get_bool_value(dict, "sortAscending", &mut auditor),
+                    is_hidden: audit_get_bool_value(dict, "isHidden", &mut auditor),
+                    is_magic: audit_get_bool_value(dict, "isMagic", &mut auditor),
+                    is_favourite: audit_get_bool_value(dict, "isFavorite", &mut auditor),
+                    is_in_trash: audit_get_bool_value(dict, "isInTrash", &mut auditor),
+                    is_expanded: audit_get_bool_value(dict, "isExpanded", &mut auditor),
+                    is_hidden_when_empty: audit_get_bool_value(dict, "isHiddenWhenEmpty", &mut auditor),
+                    poster_version_uuid: audit_get_str_value(dict, "posterVersionUuid", &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
+
+                    auditor.skip("CustomOrderList", SkipReason::Ignore);
+                    auditor.skip("projectCompatibleBackToVersion", SkipReason::Ignore);
+                    auditor.skip("automaticallyGenerateFullSizePreviews", SkipReason::Ignore);
                     auditor.audit_ignored(dict, None);
                 }
                 result

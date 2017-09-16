@@ -6,11 +6,15 @@
 
 use std::collections::BTreeMap;
 use std::path::Path;
+
+use chrono::{DateTime,Utc};
+
 use store;
 use AplibObject;
 use AplibType;
 use audit::{
     audit_get_str_value, audit_get_int_value, audit_get_bool_value,
+    audit_get_date_value,
     Report, SkipReason
 };
 use plutils::{get_array_value, Plist};
@@ -79,6 +83,13 @@ pub struct Album {
     pub sort_key: Option<String>,
     /// Name of the album.
     pub name: Option<String>,
+    pub custom_sort_available: Option<bool>,
+    pub colour_label_index: Option<i64>,
+    pub create_date: Option<DateTime<Utc>>,
+    pub is_hidden: Option<bool>,
+    pub is_magic: Option<bool>,
+    pub is_favourite: Option<bool>,
+    pub is_in_trash: Option<bool>,
     /// Content list
     pub content: Option<Vec<String>>,
 }
@@ -117,6 +128,16 @@ impl AplibObject for Album {
                             &info_dict, "name", &mut auditor),
                         query_folder_uuid: audit_get_str_value(
                             &info_dict, "queryFolderUuid", &mut auditor),
+                        create_date: audit_get_date_value(&info_dict, "createDate", &mut auditor),
+                        colour_label_index: audit_get_int_value(
+                            &info_dict, "colorLabelIndex", &mut auditor),
+                        custom_sort_available: audit_get_bool_value(
+                            &info_dict, "customSortAvailable", &mut auditor),
+                        is_hidden: audit_get_bool_value(&info_dict, "isHidden", &mut auditor),
+                        is_magic: audit_get_bool_value(&info_dict, "isMagic", &mut auditor),
+                        is_favourite: audit_get_bool_value(&info_dict, "isFavorite", &mut auditor),
+                        is_in_trash: audit_get_bool_value(&info_dict, "isInTrash", &mut auditor),
+
                         content: Album::content_from(
                             &dict, &subclass, &mut auditor),
                     });
