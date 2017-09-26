@@ -5,14 +5,24 @@
  */
 
 use std::collections::BTreeMap;
+use chrono::{DateTime,Utc};
 use plist::Plist;
 use audit::{
-    audit_get_str_value,
+    SkipReason,
     Report
 };
 
-pub struct ExifProperties {
+#[derive(PartialEq)]
+pub enum ExifValue {
+    None,
+    Int(i64),
+    Str(String),
+    Date(DateTime<Utc>),
+    Real(f64),
+}
 
+pub struct ExifProperties {
+    bag: BTreeMap<String, ExifValue>,
 }
 
 impl ExifProperties {
@@ -22,11 +32,21 @@ impl ExifProperties {
             return None;
         }
         let dict = dict.as_ref().unwrap();
-        let result = Some(ExifProperties{
-        });
-        if let Some(ref mut r) = *auditor {
-            r.audit_ignored(&dict, Some("Exif"));
+        let mut values: BTreeMap<String,ExifValue> = BTreeMap::new();
+        for (key, value) in dict {
+            let ev = match value {
+                &Plist::Integer(n) => ExifValue::Int(n),
+                &Plist::Real(f) => ExifValue::Real(f),
+                &Plist::String(ref s) => ExifValue::Str(s.to_owned()),
+                &Plist::Date(ref d) => ExifValue::Date(d.clone().into()),
+                _ => ExifValue::None,
+            };
+            if ev != ExifValue::None {
+                values.insert(key.to_owned(), ev);
+            } else if let Some(ref mut r) = *auditor {
+                r.skip(&format!("Exif.{}", key), SkipReason::InvalidType);
+            }
         }
-        result
+        Some(ExifProperties{bag: values})
     }
 }
