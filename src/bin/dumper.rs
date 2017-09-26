@@ -5,13 +5,15 @@
  */
 
 extern crate aplib;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate docopt;
-extern crate rustc_serialize;
 extern crate pbr;
 
-use docopt::Docopt;
-use rustc_serialize::{Decodable, Decoder};
 use std::io::stderr;
+
+use docopt::Docopt;
 use pbr::ProgressBar;
 
 use aplib::AplibObject;
@@ -39,7 +41,7 @@ Commands are:
     audit          Audit mode: output what we ignored
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_command: Command,
     arg_path: String,
@@ -51,28 +53,17 @@ struct Args {
     flag_keywords: bool
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum Command {
     Dump,
     Audit,
     Unknown(String)
 }
 
-impl Decodable for Command {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Command, D::Error> {
-        let s = try!(d.read_str());
-        Ok(match &*s {
-            "dump" => Command::Dump,
-            "audit" => Command::Audit,
-            s => Command::Unknown(s.to_owned()),
-        })
-    }
-}
-
 fn main() {
 
     let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.decode())
+        .and_then(|d| d.argv(std::env::args()).deserialize())
         .unwrap_or_else(|e| e.exit());
     {
         match args.arg_command {

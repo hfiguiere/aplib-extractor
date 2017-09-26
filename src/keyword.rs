@@ -52,9 +52,8 @@ impl AplibObject for Keyword {
     fn is_valid(&self) -> bool {
         self.uuid.is_some()
     }
-    #[allow(unused_variables)]
     #[doc(hidden)]
-    fn wrap(obj: Keyword) -> store::Wrapper {
+    fn wrap(_: Keyword) -> store::Wrapper {
         store::Wrapper::None
     }
 }
