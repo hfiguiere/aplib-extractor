@@ -145,3 +145,27 @@ impl AplibObject for Master {
 impl Master {
 
 }
+
+#[cfg(test)]
+#[test]
+fn test_master_parse() {
+    use testutils;
+
+    let master = Master::from_path(
+        testutils::get_test_file_path("Master.apmaster")
+            .as_path(), None);
+    assert!(master.is_some());
+    let master = master.unwrap();
+
+    assert_eq!(master.uuid.as_ref().unwrap(), "JpLq7STrRMmgm5YZTm6IzA");
+    assert_eq!(master.project_uuid.as_ref().unwrap(), "evHgvM2oQ3GR0j6gEMnNTQ");
+    assert_eq!(master.original_version_uuid.as_ref().unwrap(), "VF%CkiTKQy+h53Oyr7KCOA");
+    assert_eq!(master.color_space_name.as_ref().unwrap(), "kCGColorSpaceGenericHDR");
+    assert!(master.is_reference.unwrap());
+    assert_eq!(master.filename.as_ref().unwrap(), "img_8826.cr2");
+    assert_eq!(master.master_type.as_ref().unwrap(), "IMGT");
+    assert_eq!(master.subtype.as_ref().unwrap(), "RAWST");
+
+    // XXX fix when have actual audit.
+//    println!("report {:?}", report);
+}

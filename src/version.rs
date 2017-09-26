@@ -170,3 +170,29 @@ impl AplibObject for Version {
         store::Wrapper::Version(Box::new(obj))
     }
 }
+
+#[cfg(test)]
+#[test]
+fn test_version_parse() {
+    use testutils;
+
+    let version = Version::from_path(
+        testutils::get_test_file_path("Version-0.apversion")
+            .as_path(), None);
+    assert!(version.is_some());
+    let version = version.unwrap();
+
+    assert_eq!(version.uuid.as_ref().unwrap(), "MHMIbw5CQaiMgQ3n7g2w2A");
+    assert!(version.is_original.unwrap());
+    assert_eq!(version.master_uuid.as_ref().unwrap(), "WZMCPPRHR%C3nffgeeS4IQ");
+    assert_eq!(version.name.as_ref().unwrap(), "img_3136");
+    assert!(version.iptc.is_some());
+    let iptc = version.iptc.as_ref().unwrap();
+    assert!(iptc.bag.contains_key("Byline"));
+    assert!(iptc.bag.contains_key("CiAdrCity"));
+    let exif = version.exif.as_ref().unwrap();
+    assert!(exif.bag.contains_key("ApertureValue"));
+    assert!(exif.bag.contains_key("Depth"))
+    // XXX fix when have actual audit.
+//    println!("report {:?}", report);
+}

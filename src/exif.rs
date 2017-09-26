@@ -22,7 +22,7 @@ pub enum ExifValue {
 }
 
 pub struct ExifProperties {
-    bag: BTreeMap<String, ExifValue>,
+    pub bag: BTreeMap<String, ExifValue>,
 }
 
 impl ExifProperties {

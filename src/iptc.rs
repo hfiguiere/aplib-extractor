@@ -18,7 +18,7 @@ pub enum IptcValue {
 }
 
 pub struct IptcProperties {
-    bag: BTreeMap<String, IptcValue>,
+    pub bag: BTreeMap<String, IptcValue>,
 }
 
 impl IptcProperties {
