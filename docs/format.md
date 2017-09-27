@@ -149,6 +149,30 @@ Common plist properties
 * folderUuid: uuid of the folder this is contained in
 * parentFolderUuid: for Folders, the parent.
 
+Notes
+-----
+
+Notes are under a `notes` plist property. Found in folders and masters. It is 
+an array that contains dictionaries.
+
+Common properties:
+
+* attachedToUuid: uuid it is attached too (uuid in the containing plist)
+* createDate
+* uuid: uuid of the note.
+
+### Folders
+
+* note: text note. For Aperture project it is in the project info
+
+### Masters
+
+Master has `hasFocusPoints` set to true. Attached in the notes:
+
+* propertyKey: focusPoints
+* data
+* modelId.
+
 Folders
 -------
 
@@ -156,7 +180,9 @@ All in top level.
 
 * implicitAlbumUuid: the uuid of the album that is representing the view
   (Subclass 2 album)
-
+* posterVersionUuid: the uuid of the version that is the poster for the
+  Project (type = 2 [Project])
+* notes: an array of dict (multiple Notes)
 
 Albums
 ------
@@ -191,27 +217,38 @@ Versions
 
 The stem of the filename is probably irrelevant.
 
+Common properties:
+
+* createDate: date of when it was created.
+
 ### Master.apmaster ###
 
 Description of the master. Each version has a master.
+
 * type: IMGT is image.
-* subtype: RAWST is RAW. JPGST is JPEG.
+* subtype: RAWST is RAW. JPGST is JPEG. TIFST is TIFF.
 * importGroupUuid: uuid for the import group. - apparently no other info.
 * alternateMasterUuid: the other master (for JPEG+RAW) - reciprocal
-* originalVersionUuid: the uuid of the original version.
+* originalVersionUuid: the uuid of the original version. Likely n=0.
 * modelId: numerical ID
 * fileVolumeUuid: the UUID of the volume. See Volumes
 * fileIsReference: true if not physically in library (referenced file in UI)
 * projectUuid: the uuid of the project it is in (see Folders)
+* pixelFormat: (int). 6 for a CR2.
+* hasFocusPoints: If set to true the data is found in the `notes` property.
+* colorSpaceDefinition: Found with TIFF masters.
 
 ### Version-n.apversion ###
 
 * isFlagged: version flagged
-* isOriginal: this is the original version.
+* isOriginal: this is the original version. Usually n=0.
 * isEditable
 * isHidden
 * isInTrash
-* imageTimeZoneName: timezone name
+* imageTimeZoneName: timezone name for the image dates.
+* exportImageChangeDate: (date) when it was last exported.
+* exportMetadataChangeDate: (date) when metadata was last changed
+   (not on version 0)
 * rawMasterUuid: uuid of RAW master
 * nonRawMasterUuid: uuid of non-RAW master.
 * showInLibrary: whether to show. false likely to be implicit version of
@@ -219,8 +256,32 @@ Description of the master. Each version has a master.
 * name: version name
 * fileName: filename for version
 * mainRating: rating
-* isOriginal: this is the original version.
+* rotation: Image rotation in degrees.
+* versionNumber: the version number. n in the filename.
+* iptcProperties: IPTC
+* exifProperties: EXIF
+* renderVersion: ???? (is this related to the RAW decoder version
+   from adjustmentProperties.RawDecodeVersion)
+
+* hasAdjustments: bool. Always true.
+* hasEnabledAdjustments: bool. If any adjustement past RAW decode
+   is applied.
+* RKImageAdjustments: array of dict for adjustement. Always one item
+   for RAW decode.
+
+Volumes
+-------
+
+### <uuid>.apvolume ###
+
+A volume where to find files.
+
+* diskUuid: the disk UUID (OS?)
+* modelId: numerical model ID
+* uuid: the object UUID. Referenced from fileVolumeUuid in master
+* volumeName: OS volume name.
 
 Masters
 =======
+
 
