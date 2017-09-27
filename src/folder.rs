@@ -11,12 +11,15 @@ use chrono::{DateTime,Utc};
 use store;
 use AplibObject;
 use AplibType;
+use notes::NotesProperties;
+
 use audit::{
     Report, SkipReason,
     audit_get_int_value,
     audit_get_str_value,
     audit_get_bool_value,
-    audit_get_date_value
+    audit_get_date_value,
+    audit_get_array_value,
 };
 
 /// Type of folder: folder or project
@@ -93,6 +96,7 @@ pub struct Folder {
     pub is_expanded: Option<bool>,
     pub is_hidden_when_empty: Option<bool>,
     pub poster_version_uuid: Option<String>,
+    pub notes: Option<Vec<NotesProperties>>,
 }
 
 impl AplibObject for Folder {
@@ -104,6 +108,7 @@ impl AplibObject for Folder {
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
+                let notes = audit_get_array_value(dict, "notes", &mut auditor);
                 let result = Some(Folder {
                     path: audit_get_str_value(dict, "folderPath", &mut auditor),
                     folder_type: Type::from_option(audit_get_int_value(dict, "folderType", &mut auditor)),
@@ -129,6 +134,7 @@ impl AplibObject for Folder {
                     is_expanded: audit_get_bool_value(dict, "isExpanded", &mut auditor),
                     is_hidden_when_empty: audit_get_bool_value(dict, "isHiddenWhenEmpty", &mut auditor),
                     poster_version_uuid: audit_get_str_value(dict, "posterVersionUuid", &mut auditor),
+                    notes: NotesProperties::from(&notes, &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();

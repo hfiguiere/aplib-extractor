@@ -15,6 +15,7 @@ mod iptc;
 mod keyword;
 mod library;
 mod master;
+mod notes;
 pub mod plutils;
 mod store;
 mod version;
