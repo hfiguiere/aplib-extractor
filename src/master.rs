@@ -15,7 +15,7 @@ use AplibType;
 use notes::NotesProperties;
 use audit::{
     audit_get_str_value, audit_get_int_value, audit_get_bool_value,
-    audit_get_date_value, audit_get_array_value,
+    audit_get_date_value, audit_get_array_value, audit_get_data_value,
     Report, SkipReason
 };
 
@@ -51,6 +51,7 @@ pub struct Master {
     pub has_focus_points: Option<i64>,
     pub image_format: Option<i64>, // XXX fix this is a 4char MSB
     pub notes: Option<Vec<NotesProperties>>,
+    pub colour_space_definition: Option<Vec<u8>>,
 }
 
 
@@ -107,6 +108,7 @@ impl AplibObject for Master {
                     has_focus_points: audit_get_int_value(dict, "hasFocusPoints", &mut auditor),
                     image_format: audit_get_int_value(dict, "imageFormat", &mut auditor),
                     pixel_format: audit_get_int_value(dict, "pixelFormat", &mut auditor),
+                    colour_space_definition: audit_get_data_value(dict, "colorSpaceDefinition", &mut auditor),
                     notes: NotesProperties::from(&notes, &mut auditor),
                 });
                 if auditor.is_some() {

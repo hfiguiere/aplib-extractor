@@ -25,8 +25,8 @@ pub struct NotesProperties {
 impl NotesProperties {
 
     pub fn from_array_element(dict: &BTreeMap<String, Plist>,
-                mut auditor: &mut Option<&mut Report>) -> Option<NotesProperties> {
-        let result = Some(NotesProperties {
+                mut auditor: &mut Option<&mut Report>) -> NotesProperties {
+        let result = NotesProperties {
             attached_to_uuid: audit_get_str_value(dict, "attachedToUuid", &mut auditor),
             create_date: audit_get_date_value(dict, "createDate", &mut auditor),
             data: audit_get_data_value(dict, "data", &mut auditor),
@@ -34,7 +34,7 @@ impl NotesProperties {
             note: audit_get_str_value(dict, "note", &mut auditor),
             property_key: audit_get_str_value(dict, "propertyKey", &mut auditor),
             uuid: audit_get_str_value(dict, "uuid", &mut auditor),
-        });
+        };
         if auditor.is_some() {
             let ref mut auditor = auditor.as_mut().unwrap();
             auditor.audit_ignored(dict, Some("notes"));
@@ -53,11 +53,8 @@ impl NotesProperties {
         let mut counter = 0u64;
         for value in array {
             match value {
-                &Plist::Dictionary(ref d) => {
-                    if let Some(note) = NotesProperties::from_array_element(d, auditor) {
-                        result.push(note);
-                    }
-                }
+                &Plist::Dictionary(ref d) =>
+                    result.push(NotesProperties::from_array_element(d, auditor)),
                 _ => {
                     if auditor.is_some() {
                         let ref mut auditor = auditor.as_mut().unwrap();
