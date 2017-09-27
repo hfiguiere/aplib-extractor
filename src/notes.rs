@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 
 use audit::{
     Report, SkipReason,
-    audit_get_str_value,
+    audit_get_str_value, audit_get_int_value, audit_get_data_value,
     audit_get_date_value
 };
 use plutils::Plist;
@@ -15,8 +15,11 @@ use plutils::Plist;
 pub struct NotesProperties {
     attached_to_uuid: Option<String>,
     create_date: Option<DateTime<Utc>>,
+    data: Option<Vec<u8>>,
+    model_id: Option<i64>,
     note: Option<String>,
     uuid: Option<String>,
+    property_key: Option<String>,
 }
 
 impl NotesProperties {
@@ -26,7 +29,10 @@ impl NotesProperties {
         let result = Some(NotesProperties {
             attached_to_uuid: audit_get_str_value(dict, "attachedToUuid", &mut auditor),
             create_date: audit_get_date_value(dict, "createDate", &mut auditor),
+            data: audit_get_data_value(dict, "data", &mut auditor),
+            model_id: audit_get_int_value(dict, "modelId", &mut auditor),
             note: audit_get_str_value(dict, "note", &mut auditor),
+            property_key: audit_get_str_value(dict, "propertyKey", &mut auditor),
             uuid: audit_get_str_value(dict, "uuid", &mut auditor),
         });
         if auditor.is_some() {

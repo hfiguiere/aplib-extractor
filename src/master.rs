@@ -12,9 +12,10 @@ use chrono::{
 use store;
 use AplibObject;
 use AplibType;
+use notes::NotesProperties;
 use audit::{
     audit_get_str_value, audit_get_int_value, audit_get_bool_value,
-    audit_get_date_value,
+    audit_get_date_value, audit_get_array_value,
     Report, SkipReason
 };
 
@@ -49,6 +50,7 @@ pub struct Master {
     pub pixel_format: Option<i64>,
     pub has_focus_points: Option<i64>,
     pub image_format: Option<i64>, // XXX fix this is a 4char MSB
+    pub notes: Option<Vec<NotesProperties>>,
 }
 
 
@@ -60,6 +62,7 @@ impl AplibObject for Master {
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
+                let notes = audit_get_array_value(dict, "notes", &mut auditor);
                 let result = Some(Master {
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
                     alternate_master: audit_get_str_value(
@@ -104,12 +107,12 @@ impl AplibObject for Master {
                     has_focus_points: audit_get_int_value(dict, "hasFocusPoints", &mut auditor),
                     image_format: audit_get_int_value(dict, "imageFormat", &mut auditor),
                     pixel_format: audit_get_int_value(dict, "pixelFormat", &mut auditor),
+                    notes: NotesProperties::from(&notes, &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
                     auditor.skip("faceDetectionState", SkipReason::Ignore);
                     auditor.skip("fileAliasData", SkipReason::Ignore);
-                    auditor.skip("notes", SkipReason::Ignore);
                     auditor.skip("importedBy", SkipReason::Ignore);
                     auditor.skip("importGroup", SkipReason::Ignore);
                     auditor.skip("plistWriteTimestamp", SkipReason::Ignore);

@@ -71,6 +71,14 @@ pub fn get_date_value(dict: &BTreeMap<String, Plist>,
     }
 }
 
+pub fn get_data_value(dict: &BTreeMap<String, Plist>,
+                      key: &str) -> Option<Vec<u8>> {
+    match dict.get(key) {
+        Some(&Plist::Data(ref d)) => Some(d.clone()),
+        _ => None
+    }
+}
+
 pub fn get_array_value(dict: &BTreeMap<String, Plist>,
                        key: &str) -> Option<Vec<Plist>> {
     match dict.get(key) {

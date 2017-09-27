@@ -13,6 +13,7 @@ use plutils::{
     get_bool_value,
     get_dict_value,
     get_date_value,
+    get_data_value,
     get_array_value,
     Plist
 };
@@ -225,6 +226,20 @@ pub fn audit_get_date_value(
     key: &str, report: &mut Option<&mut Report>) -> Option<DateTime<Utc>> {
 
     let value = get_date_value(dict, key);
+    if let Some(ref mut report) = *report {
+        match value {
+            Some(_) => report.parsed(key),
+            _ => report.skip(key, SkipReason::NotFound)
+        }
+    }
+    value
+}
+
+pub fn audit_get_data_value(
+    dict: &BTreeMap<String, Plist>,
+    key: &str, report: &mut Option<&mut Report>) -> Option<Vec<u8>> {
+
+    let value = get_data_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
