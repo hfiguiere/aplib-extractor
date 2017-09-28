@@ -52,6 +52,7 @@ pub struct Master {
     pub image_format: Option<i64>, // XXX fix this is a 4char MSB
     pub notes: Option<Vec<NotesProperties>>,
     pub colour_space_definition: Option<Vec<u8>>,
+    pub face_detection_state: Option<i64>,
 }
 
 
@@ -110,10 +111,10 @@ impl AplibObject for Master {
                     pixel_format: audit_get_int_value(dict, "pixelFormat", &mut auditor),
                     colour_space_definition: audit_get_data_value(dict, "colorSpaceDefinition", &mut auditor),
                     notes: NotesProperties::from(&notes, &mut auditor),
+                    face_detection_state: audit_get_int_value(dict, "faceDetectionState", &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
-                    auditor.skip("faceDetectionState", SkipReason::Ignore);
                     auditor.skip("fileAliasData", SkipReason::Ignore);
                     auditor.skip("importedBy", SkipReason::Ignore);
                     auditor.skip("importGroup", SkipReason::Ignore);
