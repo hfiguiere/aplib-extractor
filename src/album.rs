@@ -90,6 +90,7 @@ pub struct Album {
     pub is_magic: Option<bool>,
     pub is_favourite: Option<bool>,
     pub is_in_trash: Option<bool>,
+    pub selected_track_path_uuid: Option<String>,
     /// Content list
     pub content: Option<Vec<String>>,
 }
@@ -137,7 +138,8 @@ impl AplibObject for Album {
                         is_magic: audit_get_bool_value(&info_dict, "isMagic", &mut auditor),
                         is_favourite: audit_get_bool_value(&info_dict, "isFavorite", &mut auditor),
                         is_in_trash: audit_get_bool_value(&info_dict, "isInTrash", &mut auditor),
-
+                        selected_track_path_uuid: audit_get_str_value(
+                            &info_dict, "selectedTrackPathUuid", &mut auditor),
                         content: Album::content_from(
                             &dict, &subclass, &mut auditor),
                     });
