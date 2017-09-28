@@ -10,8 +10,9 @@ use chrono::{DateTime,Utc};
 
 use plutils::Plist;
 use store;
-use iptc::IptcProperties;
+use custominfo::CustomInfoProperties;
 use exif::ExifProperties;
+use iptc::IptcProperties;
 use AplibObject;
 use AplibType;
 use audit::{
@@ -54,6 +55,7 @@ pub struct Version {
 
     pub iptc: Option<IptcProperties>,
     pub exif: Option<ExifProperties>,
+    pub custom_info: Option<CustomInfoProperties>,
     pub keywords: Option<Vec<Plist>>,
 }
 
@@ -69,6 +71,7 @@ impl AplibObject for Version {
             Plist::Dictionary(ref dict) => {
                 let iptc = audit_get_dict_value(dict, "iptcProperties", &mut auditor);
                 let exif = audit_get_dict_value(dict, "exifProperties", &mut auditor);
+                let custom_info = audit_get_dict_value(dict, "customInfo", &mut auditor);
                 let result = Some(Version {
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
                     master_uuid: audit_get_str_value(
@@ -117,14 +120,12 @@ impl AplibObject for Version {
                     colour_label_index: audit_get_int_value(dict, "colorLabelIndex", &mut auditor),
                     iptc: IptcProperties::from(&iptc, &mut auditor),
                     exif: ExifProperties::from(&exif, &mut auditor),
+                    custom_info: CustomInfoProperties::from(&custom_info, &mut auditor),
                     keywords: audit_get_array_value(
                         dict, "keywords", &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
-
-                    auditor.skip("customInfo", SkipReason::Ignore); // XXX parse.
-
                     auditor.skip("statistics", SkipReason::Ignore);
                     auditor.skip("thumbnailGroup", SkipReason::Ignore);
                     auditor.skip("faceDetectionIsFromPreview", SkipReason::Ignore);

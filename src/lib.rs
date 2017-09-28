@@ -9,6 +9,7 @@ extern crate chrono;
 
 mod album;
 pub mod audit;
+mod custominfo;
 mod exif;
 mod folder;
 mod iptc;
