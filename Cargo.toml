@@ -1,5 +1,5 @@
 [package]
-name = "aperture-import"
+name = "aplib-extractor"
 version = "0.1.0"
 authors = ["Hubert Figuière <hub@figuiere.net>"]
 
