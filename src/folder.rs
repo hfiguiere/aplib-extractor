@@ -45,11 +45,8 @@ impl Type {
     }
 
     fn from_option(o: Option<i64>) -> Option<Self> {
-        if let Some(v) = o {
-            Some(Self::from(v))
-        } else {
-            None
-        }
+        let v = try_opt!(o);
+        Some(Self::from(v))
     }
 
     pub fn to_int(v: &Self) -> i64 {

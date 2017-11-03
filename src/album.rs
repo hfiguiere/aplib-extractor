@@ -43,11 +43,8 @@ impl Subclass {
     }
 
     fn from_option(o: Option<i64>) -> Option<Self> {
-        if let Some(v) = o {
-            Some(Self::from(v))
-        } else {
-            None
-        }
+        let v = try_opt!(o);
+        Some(Self::from(v))
     }
 
     pub fn to_int(v: &Self) -> i64 {
@@ -104,53 +101,50 @@ impl AplibObject for Album {
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
-                if let Some(info_dict) = get_dict_value(dict, "InfoDictionary") {
-                    let subclass =
-                        Subclass::from_option(
-                            audit_get_int_value(&info_dict,
-                                                "albumSubclass", &mut auditor));
-                    let result = Some(Album {
-                        uuid: audit_get_str_value(
-                            &info_dict, "uuid", &mut auditor),
-                        folder_uuid: audit_get_str_value(
-                            &info_dict, "folderUuid", &mut auditor),
-                        subclass: subclass.clone(),
-                        album_type: audit_get_int_value(
-                            &info_dict, "albumType", &mut auditor),
-                        db_version: audit_get_int_value(
-                            &info_dict, "version", &mut auditor),
-                        model_id: audit_get_int_value(
-                            &info_dict, "modelId", &mut auditor),
-                        sort_asc: audit_get_bool_value(
-                            &info_dict, "sortAscending", &mut auditor),
-                        sort_key: audit_get_str_value(
-                            &info_dict, "sortKeyPath", &mut auditor),
-                        name: audit_get_str_value(
-                            &info_dict, "name", &mut auditor),
-                        query_folder_uuid: audit_get_str_value(
-                            &info_dict, "queryFolderUuid", &mut auditor),
-                        create_date: audit_get_date_value(&info_dict, "createDate", &mut auditor),
-                        colour_label_index: audit_get_int_value(
-                            &info_dict, "colorLabelIndex", &mut auditor),
-                        custom_sort_available: audit_get_bool_value(
-                            &info_dict, "customSortAvailable", &mut auditor),
-                        is_hidden: audit_get_bool_value(&info_dict, "isHidden", &mut auditor),
-                        is_magic: audit_get_bool_value(&info_dict, "isMagic", &mut auditor),
-                        is_favourite: audit_get_bool_value(&info_dict, "isFavorite", &mut auditor),
-                        is_in_trash: audit_get_bool_value(&info_dict, "isInTrash", &mut auditor),
-                        selected_track_path_uuid: audit_get_str_value(
-                            &info_dict, "selectedTrackPathUuid", &mut auditor),
-                        content: Album::content_from(
-                            &dict, &subclass, &mut auditor),
-                    });
-                    if auditor.is_some() {
-                        let ref mut auditor = auditor.unwrap();
-                        auditor.audit_ignored(&info_dict, None);
-                    }
-                    result
-                } else {
-                    None
+                let info_dict = try_opt!(get_dict_value(dict, "InfoDictionary"));
+                let subclass =
+                    Subclass::from_option(
+                        audit_get_int_value(&info_dict,
+                                            "albumSubclass", &mut auditor));
+                let result = Some(Album {
+                    uuid: audit_get_str_value(
+                        &info_dict, "uuid", &mut auditor),
+                    folder_uuid: audit_get_str_value(
+                        &info_dict, "folderUuid", &mut auditor),
+                    subclass: subclass.clone(),
+                    album_type: audit_get_int_value(
+                        &info_dict, "albumType", &mut auditor),
+                    db_version: audit_get_int_value(
+                        &info_dict, "version", &mut auditor),
+                    model_id: audit_get_int_value(
+                        &info_dict, "modelId", &mut auditor),
+                    sort_asc: audit_get_bool_value(
+                        &info_dict, "sortAscending", &mut auditor),
+                    sort_key: audit_get_str_value(
+                        &info_dict, "sortKeyPath", &mut auditor),
+                    name: audit_get_str_value(
+                        &info_dict, "name", &mut auditor),
+                    query_folder_uuid: audit_get_str_value(
+                        &info_dict, "queryFolderUuid", &mut auditor),
+                    create_date: audit_get_date_value(&info_dict, "createDate", &mut auditor),
+                    colour_label_index: audit_get_int_value(
+                        &info_dict, "colorLabelIndex", &mut auditor),
+                    custom_sort_available: audit_get_bool_value(
+                        &info_dict, "customSortAvailable", &mut auditor),
+                    is_hidden: audit_get_bool_value(&info_dict, "isHidden", &mut auditor),
+                    is_magic: audit_get_bool_value(&info_dict, "isMagic", &mut auditor),
+                    is_favourite: audit_get_bool_value(&info_dict, "isFavorite", &mut auditor),
+                    is_in_trash: audit_get_bool_value(&info_dict, "isInTrash", &mut auditor),
+                    selected_track_path_uuid: audit_get_str_value(
+                        &info_dict, "selectedTrackPathUuid", &mut auditor),
+                    content: Album::content_from(
+                        &dict, &subclass, &mut auditor),
+                });
+                if auditor.is_some() {
+                    let ref mut auditor = auditor.unwrap();
+                    auditor.audit_ignored(&info_dict, None);
                 }
+                result
             },
             _ =>
                 None
@@ -180,29 +174,26 @@ impl Album {
     fn content_from(dict: &BTreeMap<String, Plist>,
                     subclass: &Option<Subclass>,
                     auditor: &mut Option<&mut Report>) -> Option<Vec<String>> {
-        if let Some(array) = get_array_value(&dict, "versionUuids") {
-            if *subclass == Some(Subclass::User) {
-                let content: Vec<String>;
-                content = array.iter().filter_map(
-                    |elem|
-                    match *elem {
-                        Plist::String(ref s) =>
-                            Some(s.to_owned()),
-                        _ =>
-                            None
-                    }
-                ).collect();
-                if let Some(ref mut report) = *auditor {
-                    report.parsed("versionUuids");
+        let array = try_opt!(get_array_value(&dict, "versionUuids"));
+        if *subclass == Some(Subclass::User) {
+            let content: Vec<String>;
+            content = array.iter().filter_map(
+                |elem|
+                match *elem {
+                    Plist::String(ref s) =>
+                        Some(s.to_owned()),
+                    _ =>
+                        None
                 }
-                Some(content)
-            } else {
-                if let Some(ref mut report) = *auditor {
-                    report.skip("versionUuids", SkipReason::InvalidData);
-                }
-                None
+            ).collect();
+            if let Some(ref mut report) = *auditor {
+                report.parsed("versionUuids");
             }
+            Some(content)
         } else {
+            if let Some(ref mut report) = *auditor {
+                report.skip("versionUuids", SkipReason::InvalidData);
+            }
             None
         }
     }

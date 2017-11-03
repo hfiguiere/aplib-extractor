@@ -6,6 +6,8 @@
 
 extern crate plist;
 extern crate chrono;
+#[macro_use]
+extern crate try_opt;
 
 mod album;
 pub mod audit;

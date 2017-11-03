@@ -65,16 +65,13 @@ pub fn parse_keywords(path: &Path, auditor: &mut Option<&mut Report>) -> Option<
 
     match plist {
         Plist::Dictionary(ref dict) => {
-            if let Some(version) = audit_get_int_value(dict, "keywords_version", auditor) {
-                // XXX deal with proper errors here.
-                // Version 3.4.5 has version 7.
-                if version != 6 && version != 7 {
-                    println!("Wrong keyword version {} !", version);
-                }
-                Keyword::from_array(get_array_value(dict, "keywords"))
-            } else {
-                None
+            let version = try_opt!(audit_get_int_value(dict, "keywords_version", auditor));
+            // XXX deal with proper errors here.
+            // Version 3.4.5 has version 7.
+            if version != 6 && version != 7 {
+                println!("Wrong keyword version {} !", version);
             }
+            Keyword::from_array(get_array_value(dict, "keywords"))
         },
         _ => None
     }
@@ -85,20 +82,18 @@ impl Keyword {
     /// convert a Plist array to a vec of keyword.
     fn from_array(oa: Option<Vec<Plist>>) -> Option<Vec<Keyword>>
     {
-        if let Some(a) = oa {
-            let mut keywords = Vec::new();
-            for item in a {
-                match item {
-                    Plist::Dictionary(ref kw) => {
-                        keywords.push(Keyword::from(kw));
-                    },
-                    _ => ()
-                }
+        let a = try_opt!(oa);
+
+        let mut keywords = Vec::new();
+        for item in a {
+            match item {
+                Plist::Dictionary(ref kw) => {
+                    keywords.push(Keyword::from(kw));
+                },
+                _ => ()
             }
-            Some(keywords)
-        } else {
-            None
         }
+        Some(keywords)
     }
 
     /// create a new keyword from a plist dictionary
