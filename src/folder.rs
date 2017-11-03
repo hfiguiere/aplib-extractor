@@ -176,7 +176,6 @@ impl Folder {
 
 
 #[cfg(test)]
-
 #[test]
 fn test_folder_parse() {
     use testutils;

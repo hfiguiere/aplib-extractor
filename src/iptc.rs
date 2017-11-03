@@ -24,7 +24,7 @@ pub struct IptcProperties {
 impl IptcProperties {
 
     pub fn from(dict: &Option<BTreeMap<String, Plist>>,
-                mut auditor: &mut Option<&mut Report>) -> Option<IptcProperties> {
+                auditor: &mut Option<&mut Report>) -> Option<IptcProperties> {
         if dict.is_none() {
             return None;
         }

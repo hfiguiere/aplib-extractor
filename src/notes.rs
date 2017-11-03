@@ -54,7 +54,7 @@ impl NotesProperties {
         for value in array {
             match value {
                 &Plist::Dictionary(ref d) =>
-                    result.push(NotesProperties::from_array_element(d, auditor)),
+                    result.push(NotesProperties::from_array_element(d, &mut auditor)),
                 _ => {
                     if auditor.is_some() {
                         let ref mut auditor = auditor.as_mut().unwrap();

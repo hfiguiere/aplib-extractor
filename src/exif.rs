@@ -27,7 +27,7 @@ pub struct ExifProperties {
 
 impl ExifProperties {
     pub fn from(dict: &Option<BTreeMap<String, Plist>>,
-                mut auditor: &mut Option<&mut Report>) -> Option<ExifProperties> {
+                auditor: &mut Option<&mut Report>) -> Option<ExifProperties> {
        if dict.is_none() {
             return None;
         }
