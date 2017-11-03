@@ -187,12 +187,7 @@ All in top level.
 Albums
 ------
 
-Subclass 1 Albums are attached to a folder. Linked via the folder
-"implicitAlbumUuid" property and back with albums "folderUuid". They
-represent the view of the folder.
-Sublclass 2 Albums are "smart", they are backed by a query.
-Sublclass 3 Albums are "user", ie created by the user to contain versions.
-See the "versionUuids" array for the list of albums it contains.
+Unlike other plist definitions, albums have two levels.
 
 Top-level properties:
 
@@ -201,6 +196,21 @@ Top-level properties:
 * attachments: attachments like track path
 * FilterInfo: display filter. DATA.
 * versionUuids: An array of uuid: the versions it contains. (Subclass 3)
+
+### InfoDictionary
+
+This is the main set of properties.
+
+* selectedTrackPathUuid: the UUID of the track selected. See attachments.
+
+* albumSubclass:
+Subclass 1 Albums are attached to a folder. Linked via the folder
+`implicitAlbumUuid` property and back with albums `folderUuid`. They
+represent the view of the folder.
+Sublclass 2 Albums are "smart", they are backed by a query.
+Sublclass 3 Albums are "user", ie created by the user to contain versions.
+See the "versionUuids" array for the list of albums it contains.
+
 
 Keywords.plist
 --------------
@@ -237,6 +247,7 @@ Description of the master. Each version has a master.
 * pixelFormat: (int). 6 for a CR2.
 * hasFocusPoints: If set to true the data is found in the `notes` property.
 * colorSpaceDefinition: Found with TIFF masters.
+* faceDetectionState: int. Values found: 9.
 
 ### Version-n.apversion ###
 
@@ -262,6 +273,7 @@ Description of the master. Each version has a master.
 * exifProperties: EXIF
 * renderVersion: ???? (is this related to the RAW decoder version
    from adjustmentProperties.RawDecodeVersion)
+* customInfo: struct containing timezone of the camera and picture's.
 
 * hasAdjustments: bool. Always true.
 * hasEnabledAdjustments: bool. If any adjustement past RAW decode
