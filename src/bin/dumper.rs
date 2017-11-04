@@ -145,16 +145,16 @@ fn print_keywords(keywords: &Vec<Keyword>, indent: &str) {
         let parent = if let &Some(ref p) = keyword.parent() {
             p.clone()
         } else {
-            "".to_owned()
+            String::new()
         };
         println!("| {:<26} | {:<26} | {}{}",
                  uuid, parent, indent, name);
         if keyword.children.is_some() {
             let new_indent;
             if indent.is_empty() {
-                new_indent = "+- ".to_owned() + indent;
+                new_indent = String::from("+- ") + indent;
             } else {
-                new_indent = "\t".to_owned() + indent;
+                new_indent = String::from("\t") + indent;
             }
             print_keywords(keyword.children.as_ref().unwrap(), &new_indent);
         }
@@ -179,10 +179,10 @@ fn process_dump(args: &Args) {
     println!("\tDB minor version: {}", model_info.db_minor_version.unwrap_or(0));
     println!("\tDB back compat: {}", model_info.db_minor_back_compatible_version.unwrap_or(0));
     println!("\tProject version: {}", model_info.project_version.unwrap_or(0));
-    println!("\tCreation date: {}", model_info.create_date.as_ref().unwrap_or(&"NONE".to_owned()));
+    println!("\tCreation date: {}", model_info.create_date.as_ref().unwrap_or(&String::from("NONE")));
     println!("\tImageIO: {} Camera RAW: {}",
-             model_info.image_io_version.as_ref().unwrap_or(&"NONE".to_owned()),
-             model_info.raw_camera_bundle_version.as_ref().unwrap_or(&"NONE".to_owned()));
+             model_info.image_io_version.as_ref().unwrap_or(&String::from("NONE")),
+             model_info.raw_camera_bundle_version.as_ref().unwrap_or(&String::from("NONE")));
 
     if args.flag_all || args.flag_folders {
         dump_folders(&mut library);
@@ -268,19 +268,19 @@ fn dump_albums(library: &mut Library) {
                 let name = if let Some(ref n) = album.name {
                     n.clone()
                 } else {
-                    "".to_owned()
+                    String::new()
                 };
                 let uuid = album.uuid().as_ref().unwrap();
                 let parent = if let &Some(ref p) = album.parent() {
                     p.clone()
                 } else {
-                    "".to_owned()
+                    String::new()
                 };
                 let query_folder_uuid = if let Some(ref qf) =
                     album.query_folder_uuid {
                         qf.clone()
                     } else {
-                        "".to_owned()
+                        String::new()
                     };
                 let album_class = if let Some(ref c) = album.subclass {
                     AlbumSubclass::to_int(c)
@@ -302,7 +302,7 @@ fn dump_keywords(library: &mut Library) {
         println!("{} keywords:", keywords.len());
         println!("| uuid                       | parent                     | name");
         println!("+----------------------------+----------------------------+-----------");
-        print_keywords(keywords, &"".to_owned());
+        print_keywords(keywords, "");
     }
 }
 

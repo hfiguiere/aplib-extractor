@@ -114,7 +114,7 @@ impl Library {
     {
         Library {
             path: p.to_owned(),
-            version: "".to_owned(),
+            version: String::new(),
 
             folders: HashSet::new(),
             albums: HashSet::new(),
