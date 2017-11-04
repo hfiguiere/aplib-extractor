@@ -40,23 +40,38 @@ pub use keyword::Keyword as Keyword;
 pub use store::Wrapper as StoreWrapper;
 use audit::Report;
 
+
+/// `AplibObject` types.
 pub enum AplibType {
+    /// Album
     Album,
+    /// Folder (or Project
     Folder,
+    /// Keyword
     Keyword,
+    /// Master image
     Master,
+    /// Version
     Version,
 }
 
+/// Basic trait from the library objects.
 pub trait AplibObject {
+    /// Load object from plist `plist_path`
     fn from_path(plist_path: &Path,
                  auditor: Option<&mut Report>) -> Option<Self>
         where Self: Sized;
+    /// Wrap it for storage
     fn wrap(obj: Self) -> store::Wrapper;
+    /// Type of object.
     fn obj_type(&self) -> AplibType;
+    /// Is object valid
     fn is_valid(&self) -> bool;
+    /// Object uuid
     fn uuid(&self) -> &Option<String>;
+    /// uuid of parent object
     fn parent(&self) -> &Option<String>;
+    /// Model id (numerical id)
     fn model_id(&self) -> i64;
 }
 

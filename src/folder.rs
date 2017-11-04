@@ -22,16 +22,18 @@ use audit::{
     audit_get_array_value,
 };
 
-/// Type of folder: folder or project
-/// Only these are known.
+/// Type of folder
 #[derive(Debug, PartialEq)]
 pub enum Type {
     Invalid = 0,
+    /// Folder, aka container of things
     Folder = 1,
+    /// Project (as in the UI), contains only `Master`s
     Project = 2,
 }
 
 impl Type {
+    /// `Type` from an integer.
     fn from(v: i64) -> Self {
         match v {
             0 => Type::Invalid,
@@ -44,11 +46,13 @@ impl Type {
         }
     }
 
+    /// `Type` from an optional integer.
     fn from_option(o: Option<i64>) -> Option<Self> {
         let v = try_opt!(o);
         Some(Self::from(v))
     }
 
+    /// `Type` to an integer.
     pub fn to_int(v: &Self) -> i64 {
         match *v {
             Type::Invalid => 0,

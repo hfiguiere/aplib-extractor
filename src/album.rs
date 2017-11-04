@@ -19,16 +19,22 @@ use audit::{
 };
 use plutils::{get_array_value, Plist};
 
+/// Subclass for album
 #[derive(Debug, PartialEq, Clone)]
 pub enum Subclass {
+    /// Invalid.
     Invalid,
+    /// Implicit - used for folders
     Implicit,
+    /// Smart -
     Smart,
+    /// User - user album with explicit content.
     User
 }
 
 impl Subclass {
 
+    /// `Subclass` from an `i64`
     fn from(v: i64) -> Self {
         match v {
             0 => Subclass::Invalid,
@@ -42,11 +48,13 @@ impl Subclass {
         }
     }
 
+    /// `Subclass from an optional `i64`
     fn from_option(o: Option<i64>) -> Option<Self> {
         let v = try_opt!(o);
         Some(Self::from(v))
     }
 
+    /// Convert to `i64`
     pub fn to_int(v: &Self) -> i64 {
         match *v {
             Subclass::Invalid => 0,
@@ -88,7 +96,7 @@ pub struct Album {
     pub is_favourite: Option<bool>,
     pub is_in_trash: Option<bool>,
     pub selected_track_path_uuid: Option<String>,
-    /// Content list
+    /// Content list - for `User` subclass
     pub content: Option<Vec<String>>,
 }
 
@@ -171,6 +179,8 @@ impl AplibObject for Album {
 }
 
 impl Album {
+    /// Load album content. `dict` should contain the "versionUuids" key.
+    /// and the subclass should be `Subclass::User`.
     fn content_from(dict: &BTreeMap<String, Plist>,
                     subclass: &Option<Subclass>,
                     auditor: &mut Option<&mut Report>) -> Option<Vec<String>> {

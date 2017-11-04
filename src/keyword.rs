@@ -14,7 +14,7 @@ use AplibObject;
 use AplibType;
 use audit::{audit_get_int_value, Report};
 
-/// A Keyword
+/// An Aperture keyword.
 pub struct Keyword {
     /// The uuid
     uuid: Option<String>,
@@ -96,7 +96,7 @@ impl Keyword {
         Some(keywords)
     }
 
-    /// create a new keyword from a plist dictionary
+    /// Create a new keyword from a plist dictionary
     /// will recursively create the children
     pub fn from(d: &BTreeMap<String, Plist>) -> Keyword
     {

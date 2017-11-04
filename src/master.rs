@@ -19,12 +19,15 @@ use audit::{
     Report, SkipReason
 };
 
+/// A `Master` is a file backing an image (`Version`)
 pub struct Master {
     uuid: Option<String>,
     model_id: Option<i64>,
     project_uuid: Option<String>,
 
+    /// If it is RAW+JPEG, there is another master.
     pub alternate_master: Option<String>,
+    /// uuid of the orignal version
     pub original_version_uuid: Option<String>,
     pub import_group_uuid: Option<String>,
     pub filename: Option<String>,

@@ -263,6 +263,7 @@ impl Library {
         list
     }
 
+    /// Return the model info block
     pub fn get_model_info(&self) -> Option<ModelInfo>
     {
         let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
@@ -271,6 +272,8 @@ impl Library {
         ModelInfo::parse(&plist)
     }
 
+    /// Load items from directory `dir` with extension `ext`
+    /// and store the uuids into `set`
     fn load_items<T: AplibObject, F: FnMut(u64) -> bool>(
         &mut self, dir: &str, ext: &str, set: &mut HashSet<String>, pg: &mut F)
     {
@@ -310,6 +313,7 @@ impl Library {
         }
     }
 
+    /// Load albums.
     pub fn load_albums<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.albums.is_empty() {
@@ -319,11 +323,13 @@ impl Library {
         }
     }
 
+    /// Get albums uuids.
     pub fn get_albums(&self) -> &HashSet<String>
     {
         &self.albums
     }
 
+    /// Load folders.
     pub fn load_folders<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.folders.is_empty() {
@@ -334,6 +340,7 @@ impl Library {
         }
     }
 
+    /// Get folders uuids.
     pub fn get_folders(&self) -> &HashSet<String>
     {
         &self.folders
@@ -434,6 +441,7 @@ impl Library {
         }
     }
 
+    /// Load versions.
     pub fn load_versions<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.versions.is_empty() {
@@ -444,6 +452,7 @@ impl Library {
         }
     }
 
+    /// Load masters.
     pub fn load_masters<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
     {
         if self.masters.is_empty() {
@@ -454,16 +463,19 @@ impl Library {
         }
     }
 
+    /// Return masters uuids.
     pub fn get_masters(&self) -> &HashSet<String>
     {
         &self.masters
     }
 
+    /// Return versions uuids.
     pub fn get_versions(&self) -> &HashSet<String>
     {
         &self.versions
     }
 
+    /// List keywords.
     pub fn list_keywords(&mut self) -> Option<Vec<Keyword>>
     {
         let audit = self.auditor.is_some();

@@ -26,13 +26,19 @@ use audit::{
     Report
 };
 
+/// A rendered image. There is one for the orignal, and one per
+/// actual version. `Version` are associated to a `Master`.
 pub struct Version {
     uuid: Option<String>,
     model_id: Option<i64>,
+    /// The associated `Master`.
     master_uuid: Option<String>,
 
+    /// uuid of the `Folder` project this reside in.
     pub project_uuid: Option<String>,
+    /// uuid of the raw `Master`.
     pub raw_master_uuid: Option<String>,
+    /// uuid of the non raw `Master`.
     pub nonraw_master_uuid: Option<String>,
     pub timezone_name: Option<String>,
     pub create_date: Option<DateTime<Utc>>,
@@ -43,6 +49,7 @@ pub struct Version {
     pub db_version: Option<i64>,
     pub db_minor_version: Option<i64>,
     pub is_flagged: Option<bool>,
+    /// Indicate the version is the original.
     pub is_original: Option<bool>,
     pub is_editable: Option<bool>,
     pub is_hidden: Option<bool>,
