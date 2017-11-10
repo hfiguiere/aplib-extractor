@@ -4,8 +4,12 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-extern crate plist;
 extern crate chrono;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate maplit;
+extern crate plist;
 #[macro_use]
 extern crate try_opt;
 

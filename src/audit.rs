@@ -24,6 +24,8 @@ pub enum SkipReason {
     None,
     /// Didn't find it
     NotFound,
+    /// Unknown property
+    UnknownProp,
     /// Wrong type
     InvalidType,
     /// Data is invalid
