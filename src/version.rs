@@ -78,9 +78,12 @@ impl AplibObject for Version {
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
-                let iptc = audit_get_dict_value(dict, "iptcProperties", &mut auditor);
-                let exif = audit_get_dict_value(dict, "exifProperties", &mut auditor);
-                let custom_info = audit_get_dict_value(dict, "customInfo", &mut auditor);
+                let iptc = audit_get_dict_value(dict, "iptcProperties",
+                                                &mut auditor);
+                let exif = audit_get_dict_value(dict, "exifProperties",
+                                                &mut auditor);
+                let custom_info = audit_get_dict_value(dict, "customInfo",
+                                                       &mut auditor);
                 let result = Some(Version {
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
                     master_uuid: audit_get_str_value(
@@ -126,10 +129,12 @@ impl AplibObject for Version {
                         dict, "mainRating", &mut auditor),
                     rotation: audit_get_int_value(
                         dict, "rotation", &mut auditor),
-                    colour_label_index: audit_get_int_value(dict, "colorLabelIndex", &mut auditor),
+                    colour_label_index: audit_get_int_value(
+                        dict, "colorLabelIndex", &mut auditor),
                     iptc: IptcProperties::from(&iptc, &mut auditor),
                     exif: ExifProperties::from(&exif, &mut auditor),
-                    custom_info: CustomInfoProperties::from(&custom_info, &mut auditor),
+                    custom_info: CustomInfoProperties::from(
+                        &custom_info, &mut auditor),
                     keywords: audit_get_array_value(
                         dict, "keywords", &mut auditor),
                 });
@@ -137,7 +142,8 @@ impl AplibObject for Version {
                     let ref mut auditor = auditor.unwrap();
                     auditor.skip("statistics", SkipReason::Ignore);
                     auditor.skip("thumbnailGroup", SkipReason::Ignore);
-                    auditor.skip("faceDetectionIsFromPreview", SkipReason::Ignore);
+                    auditor.skip("faceDetectionIsFromPreview",
+                                 SkipReason::Ignore);
                     auditor.skip("processedHeight", SkipReason::Ignore);
                     auditor.skip("processedWidth", SkipReason::Ignore);
                     auditor.skip("masterHeight", SkipReason::Ignore);
