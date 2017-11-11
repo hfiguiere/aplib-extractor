@@ -7,6 +7,7 @@
 
 use std::path::Path;
 use chrono::{DateTime,Utc};
+use exempi::Xmp;
 
 use plutils::Plist;
 use store;
@@ -25,6 +26,7 @@ use audit::{
     SkipReason,
     Report
 };
+use xmp::ToXmp;
 
 /// A rendered image. There is one for the orignal, and one per
 /// actual version. `Version` are associated to a `Master`.
@@ -176,6 +178,16 @@ impl AplibObject for Version {
     }
     fn wrap(obj: Version) -> store::Wrapper {
         store::Wrapper::Version(Box::new(obj))
+    }
+}
+
+impl ToXmp for Version {
+
+    fn to_xmp(&self, xmp: &mut Xmp) -> bool {
+        if let Some(ref iptc) = self.iptc {
+            iptc.to_xmp(xmp);
+        }
+        true
     }
 }
 

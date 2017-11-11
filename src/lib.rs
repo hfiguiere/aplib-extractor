@@ -5,6 +5,7 @@
  */
 
 extern crate chrono;
+extern crate exempi;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
@@ -26,6 +27,7 @@ mod notes;
 pub mod plutils;
 mod store;
 mod version;
+mod xmp;
 
 #[cfg(test)]
 mod testutils;

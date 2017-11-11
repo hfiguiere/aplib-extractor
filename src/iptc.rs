@@ -5,48 +5,95 @@
  */
 
 use std::collections::{BTreeMap,HashMap};
+
+use exempi::Xmp;
 use plist::Plist;
+
 use audit::{
     SkipReason,
     Report
 };
+use xmp::{
+    ToXmp,
+    XmpProperty,
+    XmpTranslator
+};
+use xmp::ns::*;
 
 lazy_static! {
     /// HashMap for IPTC properties (Aperture) to XMP.
-    static ref IPTC_TO_XMP: HashMap<&'static str, &'static str> = hashmap!{
-        "Byline" => "dc:creator",
-        "BylineTitle" => "photoshop:AuthorsPosition",
-        "Caption/Abstract" => "dc:description",
-        "CiAdrCity" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiAdrCity",
-        "CiAdrCtry" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiAdrCtry",
-        "CiAdrExtadr" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiAdrExtad",
-        "CiAdrPcode" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiAdrPcode",
-        "CiAdrRegion" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiAdrRegion",
-        "CiEmailWork" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiEmailWork",
-        "CiTelWork" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiTelWork",
-        "City" => "photoshop:City",
-        "CiUrlWork" => "Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiUrlWork",
-        "CopyrightNotice" => "dc:rights",
-        "Country/PrimaryLocationCode" => "Iptc4xmpCore:CountryCode",
-        "Country/PrimaryLocationName" => "photoshop:Country",
-        "Credit" => "photoshop:Credit",
+    static ref IPTC_TO_XMP: HashMap<&'static str, XmpTranslator> = hashmap!{
+        "Byline" => XmpTranslator::Property(XmpProperty::new(
+            NS_DC, "creator")),
+        "BylineTitle" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "AuthorsPosition")),
+        "Caption/Abstract" => XmpTranslator::Property(XmpProperty::new(
+            NS_DC, "description")),
+        "CiAdrCity" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiAdrCity"))),
+        "CiAdrCtry" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiAdrCtry"))),
+        "CiAdrExtadr" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiAdrExtadr"))),
+        "CiAdrPcode" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiAdrPcode"))),
+        "CiAdrRegion" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiAdrRegion"))),
+        "CiEmailWork" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiEmailWork"))),
+        "CiTelWork" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiTelWork"))),
+        "City" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "City")),
+        "CiUrlWork" => XmpTranslator::Property(XmpProperty::new_field(
+            NS_IPTC4XMP, "CreatorContactInfo", XmpProperty::new(
+                NS_IPTC4XMP, "CiUrlWork"))),
+        "CopyrightNotice" => XmpTranslator::Property(XmpProperty::new(
+            NS_DC, "rights")),
+        "Country/PrimaryLocationCode" => XmpTranslator::Property(
+            XmpProperty::new(NS_IPTC4XMP, "CountryCode")),
+        "Country/PrimaryLocationName" => XmpTranslator::Property(
+            XmpProperty::new(NS_PHOTOSHOP, "Country")),
+        "Credit" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "Credit")),
 //        "DateCreated" => "",
-        "Headline" => "photoshop:Headline",
-        "Keywords" => "dc:subject",
+        "Headline" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "Headline")),
+        "Keywords" => XmpTranslator::Property(XmpProperty::new(
+            NS_DC, "subject")),
 //        "Label" => "",
-        "ObjectAttributeReference" => "Iptc4xmpCore:IntellectualGenre",
-        "ObjectName" => "dc:title",
-        "OriginalTransmissionReference" => "photoshop:TransmissionReference",
-        "Province/State" => "photoshop:State>",
-        "Scene" => "Iptc4xmpCore:Scene",
-        "Source" => "photoshop:Source",
-        "SpecialInstructions" => "photoshop:Instructions",
-        "SubjectReference" => "Iptc4xmpCore:SubjectReference",
-        "SubLocation" => "Iptc4xmpCore:Location",
-        "StarRating" => "xap:Rating",
-//        "TimeCreated" => "",
-        "UsageTerms" => "xapRights:UsageTerms",
-        "Writer/Editor" => "photoshop:CaptionWriter",
+        "ObjectAttributeReference" => XmpTranslator::Property(
+            XmpProperty::new(NS_IPTC4XMP, "IntellectualGenre")),
+        "ObjectName" => XmpTranslator::Property(XmpProperty::new(
+            NS_DC, "title")),
+        "OriginalTransmissionReference" => XmpTranslator::Property(
+            XmpProperty::new(NS_PHOTOSHOP, "TransmissionReference")),
+        "Province/State" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "State")),
+        "Scene" => XmpTranslator::Property(XmpProperty::new(
+            NS_IPTC4XMP, "Scene")),
+        "Source" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "Source")),
+        "SpecialInstructions" => XmpTranslator::Property(
+            XmpProperty::new(NS_PHOTOSHOP, "Instructions")),
+        "SubjectReference" => XmpTranslator::Property(XmpProperty::new(
+            NS_IPTC4XMP, "SubjectReference")),
+        "SubLocation" => XmpTranslator::Property(XmpProperty::new(
+            NS_IPTC4XMP, "Location")),
+        "StarRating" => XmpTranslator::Property(XmpProperty::new(
+            NS_XMP, "Rating")),
+        //        "TimeCreated" => "",
+        "UsageTerms" => XmpTranslator::Property(XmpProperty::new(
+            NS_XMP_RIGHTS, "UsageTerms")),
+        "Writer/Editor" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "CaptionWriter")),
     };
 }
 
@@ -85,4 +132,26 @@ impl IptcProperties {
         Some(IptcProperties{bag: values})
     }
 
+}
+
+impl ToXmp for IptcProperties {
+
+    fn to_xmp(&self, xmp: &mut Xmp) -> bool {
+        for (key, value) in &self.bag {
+            let value = match value {
+                &IptcValue::Str(ref str) => str,
+                _ => continue,
+            };
+            if let Some(ref translator) = IPTC_TO_XMP.get(&key.as_str()) {
+                match *translator {
+                    &XmpTranslator::Property(ref prop) => {
+                        prop.put_into_xmp(&value, xmp);
+                    },
+                    _ => {
+                    },
+                }
+            }
+        }
+        true
+    }
 }
