@@ -190,6 +190,11 @@ impl AplibObject for Version {
 impl ToXmp for Version {
 
     fn to_xmp(&self, xmp: &mut Xmp) -> bool {
+        // Here we make sure the Exif data are
+        // processed before Iptc.
+        if let Some(ref exif) = self.exif {
+            exif.to_xmp(xmp);
+        }
         if let Some(ref iptc) = self.iptc {
             iptc.to_xmp(xmp);
         }
@@ -235,4 +240,9 @@ fn test_version_parse() {
     let value = xmp.get_property(xmp::ns::NS_DC, "creator", &mut options);
     assert!(value.is_some());
     assert_eq!(value.unwrap().to_str(), "Hubert Figuiere");
+
+    options = exempi::PROP_NONE;
+    let value = xmp.get_property(xmp::ns::NS_EXIF, "ApertureValue", &mut options);
+    assert!(value.is_some());
+    assert_eq!(value.unwrap().to_str(), "4");
 }

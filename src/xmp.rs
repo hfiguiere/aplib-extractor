@@ -14,9 +14,9 @@ pub const NS_IPTC4XMP: &'static str = "http://iptc.org/std/Iptc4xmpCore/1.0/xmln
 pub const NS_XMP: &'static str = "http://ns.adobe.com/xap/1.0/";
 pub const NS_XMP_RIGHTS: &'static str = "http://ns.adobe.com/xap/1.0/rights/";
 pub const NS_PHOTOSHOP: &'static str = "http://ns.adobe.com/photoshop/1.0/";
-//pub const NS_EXIF: &'static str = "http://ns.adobe.com/exif/1.0/";
-//pub const NS_EXIF_AUX: &'static str = "http://ns.adobe.com/exif/1.0/aux/";
-//pub const NS_TIFF: &'static str = "http://ns.adobe.com/tiff/1.0/";
+pub const NS_EXIF: &'static str = "http://ns.adobe.com/exif/1.0/";
+pub const NS_EXIF_AUX: &'static str = "http://ns.adobe.com/exif/1.0/aux/";
+pub const NS_TIFF: &'static str = "http://ns.adobe.com/tiff/1.0/";
 }
 
 /// Define a property
