@@ -201,6 +201,8 @@ impl ToXmp for Version {
 #[test]
 fn test_version_parse() {
     use testutils;
+    use exempi;
+    use xmp;
 
     let version = Version::from_path(
         testutils::get_test_file_path("Version-0.apversion")
@@ -218,7 +220,19 @@ fn test_version_parse() {
     assert!(iptc.bag.contains_key("CiAdrCity"));
     let exif = version.exif.as_ref().unwrap();
     assert!(exif.bag.contains_key("ApertureValue"));
-    assert!(exif.bag.contains_key("Depth"))
+    assert!(exif.bag.contains_key("Depth"));
     // XXX fix when have actual audit.
-//    println!("report {:?}", report);
+    //    println!("report {:?}", report);
+
+    exempi::init();
+
+    let mut xmp = Xmp::new();
+
+    let result = version.to_xmp(&mut xmp);
+    assert!(result);
+
+    let mut options: exempi::PropFlags = exempi::PROP_NONE;
+    let value = xmp.get_property(xmp::ns::NS_DC, "creator", &mut options);
+    assert!(value.is_some());
+    assert_eq!(value.unwrap().to_str(), "Hubert Figuiere");
 }
