@@ -16,26 +16,18 @@ pub enum Wrapper {
     Folder(Box<Folder>),
     Master(Box<Master>),
     Version(Box<Version>),
-    None
+    None,
 }
 
 impl Wrapper {
     /// Extract the uuid from the wrapper
     pub fn uuid(&self) -> Option<String> {
         match *self {
-            Wrapper::Album(ref o) => {
-                o.uuid().clone()
-            },
-            Wrapper::Folder(ref o) => {
-                o.uuid().clone()
-            },
-            Wrapper::Version(ref o) => {
-                o.uuid().clone()
-            },
-            Wrapper::Master(ref o) => {
-                o.uuid().clone()
-            },
-            Wrapper::None => None
+            Wrapper::Album(ref o) => o.uuid().clone(),
+            Wrapper::Folder(ref o) => o.uuid().clone(),
+            Wrapper::Version(ref o) => o.uuid().clone(),
+            Wrapper::Master(ref o) => o.uuid().clone(),
+            Wrapper::None => None,
         }
     }
 }

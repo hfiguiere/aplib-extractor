@@ -4,20 +4,13 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::collections::{BTreeMap,HashMap};
+use std::collections::{BTreeMap, HashMap};
 
 use exempi::Xmp;
 use plist::Plist;
 
-use audit::{
-    SkipReason,
-    Report
-};
-use xmp::{
-    ToXmp,
-    XmpProperty,
-    XmpTranslator
-};
+use audit::{Report, SkipReason};
+use xmp::{ToXmp, XmpProperty, XmpTranslator};
 use xmp::ns::*;
 
 lazy_static! {
@@ -100,7 +93,7 @@ lazy_static! {
 #[derive(PartialEq)]
 pub enum IptcValue {
     None,
-    Str(String)
+    Str(String),
 }
 
 pub struct IptcProperties {
@@ -108,9 +101,10 @@ pub struct IptcProperties {
 }
 
 impl IptcProperties {
-
-    pub fn from(dict: &Option<BTreeMap<String, Plist>>,
-                auditor: &mut Option<&mut Report>) -> Option<IptcProperties> {
+    pub fn from(
+        dict: &Option<BTreeMap<String, Plist>>,
+        auditor: &mut Option<&mut Report>,
+    ) -> Option<IptcProperties> {
         let dict = try_opt!(dict.as_ref());
         let mut values: BTreeMap<String, IptcValue> = BTreeMap::new();
         for (key, value) in dict {
@@ -119,23 +113,20 @@ impl IptcProperties {
                     values.insert(key.to_owned(), IptcValue::Str(s.to_owned()));
                     if let Some(ref mut r) = *auditor {
                         if !IPTC_TO_XMP.contains_key(&key.as_str()) {
-                            r.skip(&format!("Iptc.{}", key),
-                                   SkipReason::UnknownProp);
+                            r.skip(&format!("Iptc.{}", key), SkipReason::UnknownProp);
                         }
                     }
-                },
+                }
                 _ => if let Some(ref mut r) = *auditor {
                     r.skip(&format!("Iptc.{}", key), SkipReason::InvalidType);
-                }
+                },
             };
         }
-        Some(IptcProperties{bag: values})
+        Some(IptcProperties { bag: values })
     }
-
 }
 
 impl ToXmp for IptcProperties {
-
     fn to_xmp(&self, xmp: &mut Xmp) -> bool {
         for (key, value) in &self.bag {
             let value = match value {
@@ -146,9 +137,8 @@ impl ToXmp for IptcProperties {
                 match *translator {
                     &XmpTranslator::Property(ref prop) => {
                         prop.put_into_xmp(&value, xmp);
-                    },
-                    _ => {
-                    },
+                    }
+                    _ => {}
                 }
             }
         }

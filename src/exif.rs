@@ -6,20 +6,13 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use chrono::{DateTime,Utc};
+use chrono::{DateTime, Utc};
 use exempi;
 use exempi::Xmp;
 use plist::Plist;
 
-use audit::{
-    SkipReason,
-    Report
-};
-use xmp::{
-    ToXmp,
-    XmpProperty,
-    XmpTranslator
-};
+use audit::{Report, SkipReason};
+use xmp::{ToXmp, XmpProperty, XmpTranslator};
 use xmp::ns::*;
 
 lazy_static! {
@@ -130,13 +123,15 @@ pub struct ExifProperties {
 }
 
 impl ExifProperties {
-    pub fn from(dict: &Option<BTreeMap<String, Plist>>,
-                auditor: &mut Option<&mut Report>) -> Option<ExifProperties> {
-       if dict.is_none() {
+    pub fn from(
+        dict: &Option<BTreeMap<String, Plist>>,
+        auditor: &mut Option<&mut Report>,
+    ) -> Option<ExifProperties> {
+        if dict.is_none() {
             return None;
         }
         let dict = dict.as_ref().unwrap();
-        let mut values: BTreeMap<String,ExifValue> = BTreeMap::new();
+        let mut values: BTreeMap<String, ExifValue> = BTreeMap::new();
         for (key, value) in dict {
             let ev = match value {
                 &Plist::Integer(n) => ExifValue::Int(n),
@@ -149,22 +144,21 @@ impl ExifProperties {
                 values.insert(key.to_owned(), ev);
                 if let Some(ref mut r) = *auditor {
                     if !EXIF_TO_XMP.contains_key(&key.as_str()) {
-                        r.skip(&format!("Exif.{}", key),
-                               SkipReason::UnknownProp);
+                        r.skip(&format!("Exif.{}", key), SkipReason::UnknownProp);
                     }
                 }
             } else if let Some(ref mut r) = *auditor {
                 r.skip(&format!("Exif.{}", key), SkipReason::InvalidType);
             }
         }
-        Some(ExifProperties{bag: values})
+        Some(ExifProperties { bag: values })
     }
 
     pub fn value_to_string(value: &ExifValue) -> Option<String> {
         match value {
             &ExifValue::Str(ref str) => Some(str.clone()),
             &ExifValue::Int(i) => Some(format!("{}", i)),
-            _ => None
+            _ => None,
         }
     }
 
@@ -172,8 +166,13 @@ impl ExifProperties {
     fn iso(&self, xmp: &mut Xmp) {
         let iso = self.bag.get("ISOSpeedRatings");
         if let Some(&ExifValue::Int(i)) = iso {
-            xmp.set_array_item(NS_EXIF, "ISOSpeedRatings",
-                               0, &format!("{}", i), exempi::PROP_NONE);
+            xmp.set_array_item(
+                NS_EXIF,
+                "ISOSpeedRatings",
+                0,
+                &format!("{}", i),
+                exempi::PROP_NONE,
+            );
         }
     }
 
@@ -187,12 +186,12 @@ impl ExifProperties {
         let min = match min.unwrap() {
             &ExifValue::Int(i) => i as f64,
             &ExifValue::Real(f) => f,
-            _ => return
+            _ => return,
         };
         let max = match max.unwrap() {
             &ExifValue::Int(i) => i as f64,
             &ExifValue::Real(f) => f,
-            _ => return
+            _ => return,
         };
 
         let value = format!("{}/100 {}/100 0/1 0/1", min * 100.0, max * 100.0);
@@ -201,37 +200,31 @@ impl ExifProperties {
 
     fn custom_value_to_string(&self, key: &str, xmp: &mut Xmp) {
         match key {
-
-            "Flash" => {
-            },
+            "Flash" => {}
             "ISOSpeedRatings" => {
                 self.iso(xmp);
-            },
+            }
             "LensMinMM" => {
                 self.lens_info(xmp);
-            },
-            _ => {
             }
+            _ => {}
         }
     }
 }
 
 impl ToXmp for ExifProperties {
-
     fn to_xmp(&self, xmp: &mut Xmp) -> bool {
         for (key, value) in &self.bag {
             if let Some(ref translator) = EXIF_TO_XMP.get(&key.as_str()) {
                 match *translator {
                     &XmpTranslator::Property(ref prop) => {
-
                         if let Some(value) = Self::value_to_string(value) {
-                            /*let result = */ prop.put_into_xmp(&value, xmp);
+                            /*let result = */
+                            prop.put_into_xmp(&value, xmp);
                         }
-                    },
-                    &XmpTranslator::Custom =>
-                        self.custom_value_to_string(key, xmp),
-                    _ => {
-                    },
+                    }
+                    &XmpTranslator::Custom => self.custom_value_to_string(key, xmp),
+                    _ => {}
                 }
             }
         }

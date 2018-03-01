@@ -7,16 +7,13 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use chrono::{DateTime,Utc};
+use chrono::{DateTime, Utc};
 
 use store;
 use AplibObject;
 use AplibType;
-use audit::{
-    audit_get_str_value, audit_get_int_value, audit_get_bool_value,
-    audit_get_date_value,
-    Report, SkipReason
-};
+use audit::{audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value,
+            Report, SkipReason};
 use plutils::{get_array_value, Plist};
 
 /// Subclass for album
@@ -29,11 +26,10 @@ pub enum Subclass {
     /// Smart -
     Smart,
     /// User - user album with explicit content.
-    User
+    User,
 }
 
 impl Subclass {
-
     /// `Subclass` from an `i64`
     fn from(v: i64) -> Self {
         match v {
@@ -101,61 +97,62 @@ pub struct Album {
 }
 
 impl AplibObject for Album {
-    fn from_path(plist_path: &Path,
-                 mut auditor: Option<&mut Report>) -> Option<Album> {
-
+    fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Album> {
         use plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
                 let info_dict = try_opt!(get_dict_value(dict, "InfoDictionary"));
-                let subclass =
-                    Subclass::from_option(
-                        audit_get_int_value(&info_dict,
-                                            "albumSubclass", &mut auditor));
+                let subclass = Subclass::from_option(audit_get_int_value(
+                    &info_dict,
+                    "albumSubclass",
+                    &mut auditor,
+                ));
                 let result = Some(Album {
-                    uuid: audit_get_str_value(
-                        &info_dict, "uuid", &mut auditor),
-                    folder_uuid: audit_get_str_value(
-                        &info_dict, "folderUuid", &mut auditor),
+                    uuid: audit_get_str_value(&info_dict, "uuid", &mut auditor),
+                    folder_uuid: audit_get_str_value(&info_dict, "folderUuid", &mut auditor),
                     subclass: subclass.clone(),
-                    album_type: audit_get_int_value(
-                        &info_dict, "albumType", &mut auditor),
-                    db_version: audit_get_int_value(
-                        &info_dict, "version", &mut auditor),
-                    model_id: audit_get_int_value(
-                        &info_dict, "modelId", &mut auditor),
-                    sort_asc: audit_get_bool_value(
-                        &info_dict, "sortAscending", &mut auditor),
-                    sort_key: audit_get_str_value(
-                        &info_dict, "sortKeyPath", &mut auditor),
-                    name: audit_get_str_value(
-                        &info_dict, "name", &mut auditor),
+                    album_type: audit_get_int_value(&info_dict, "albumType", &mut auditor),
+                    db_version: audit_get_int_value(&info_dict, "version", &mut auditor),
+                    model_id: audit_get_int_value(&info_dict, "modelId", &mut auditor),
+                    sort_asc: audit_get_bool_value(&info_dict, "sortAscending", &mut auditor),
+                    sort_key: audit_get_str_value(&info_dict, "sortKeyPath", &mut auditor),
+                    name: audit_get_str_value(&info_dict, "name", &mut auditor),
                     query_folder_uuid: audit_get_str_value(
-                        &info_dict, "queryFolderUuid", &mut auditor),
+                        &info_dict,
+                        "queryFolderUuid",
+                        &mut auditor,
+                    ),
                     create_date: audit_get_date_value(&info_dict, "createDate", &mut auditor),
                     colour_label_index: audit_get_int_value(
-                        &info_dict, "colorLabelIndex", &mut auditor),
+                        &info_dict,
+                        "colorLabelIndex",
+                        &mut auditor,
+                    ),
                     custom_sort_available: audit_get_bool_value(
-                        &info_dict, "customSortAvailable", &mut auditor),
+                        &info_dict,
+                        "customSortAvailable",
+                        &mut auditor,
+                    ),
                     is_hidden: audit_get_bool_value(&info_dict, "isHidden", &mut auditor),
                     is_magic: audit_get_bool_value(&info_dict, "isMagic", &mut auditor),
                     is_favourite: audit_get_bool_value(&info_dict, "isFavorite", &mut auditor),
                     is_in_trash: audit_get_bool_value(&info_dict, "isInTrash", &mut auditor),
                     selected_track_path_uuid: audit_get_str_value(
-                        &info_dict, "selectedTrackPathUuid", &mut auditor),
-                    content: Album::content_from(
-                        &dict, &subclass, &mut auditor),
+                        &info_dict,
+                        "selectedTrackPathUuid",
+                        &mut auditor,
+                    ),
+                    content: Album::content_from(&dict, &subclass, &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
                     auditor.audit_ignored(&info_dict, None);
                 }
                 result
-            },
-            _ =>
-                None
+            }
+            _ => None,
         }
     }
     fn obj_type(&self) -> AplibType {
@@ -181,21 +178,21 @@ impl AplibObject for Album {
 impl Album {
     /// Load album content. `dict` should contain the "versionUuids" key.
     /// and the subclass should be `Subclass::User`.
-    fn content_from(dict: &BTreeMap<String, Plist>,
-                    subclass: &Option<Subclass>,
-                    auditor: &mut Option<&mut Report>) -> Option<Vec<String>> {
+    fn content_from(
+        dict: &BTreeMap<String, Plist>,
+        subclass: &Option<Subclass>,
+        auditor: &mut Option<&mut Report>,
+    ) -> Option<Vec<String>> {
         let array = try_opt!(get_array_value(&dict, "versionUuids"));
         if *subclass == Some(Subclass::User) {
             let content: Vec<String>;
-            content = array.iter().filter_map(
-                |elem|
-                match *elem {
-                    Plist::String(ref s) =>
-                        Some(s.to_owned()),
-                    _ =>
-                        None
-                }
-            ).collect();
+            content = array
+                .iter()
+                .filter_map(|elem| match *elem {
+                    Plist::String(ref s) => Some(s.to_owned()),
+                    _ => None,
+                })
+                .collect();
             if let Some(ref mut report) = *auditor {
                 report.parsed("versionUuids");
             }
@@ -209,15 +206,15 @@ impl Album {
     }
 }
 
-
 #[cfg(test)]
 #[test]
 fn test_album_parse() {
     use testutils;
 
     let album = Album::from_path(
-        testutils::get_test_file_path("gOnttfpzQoOxcwLpFS9DQg.apalbum")
-            .as_path(), None);
+        testutils::get_test_file_path("gOnttfpzQoOxcwLpFS9DQg.apalbum").as_path(),
+        None,
+    );
     assert!(album.is_some());
     let album = album.unwrap();
 
@@ -232,9 +229,9 @@ fn test_album_parse() {
     assert_eq!(album.sort_key.as_ref().unwrap(), "exifProperties.ImageDate");
     assert!(album.name.is_none());
 
-//    let report = album.audit();
+    //    let report = album.audit();
     // XXX fix when have actual audit.
-//    println!("report {:?}", report);
+    //    println!("report {:?}", report);
 }
 
 #[cfg(test)]
@@ -243,8 +240,9 @@ fn test_album_content_parse() {
     use testutils;
 
     let album = Album::from_path(
-        testutils::get_test_file_path("x6yNun58SB2sImfCarTJHA.apalbum")
-            .as_path(), None);
+        testutils::get_test_file_path("x6yNun58SB2sImfCarTJHA.apalbum").as_path(),
+        None,
+    );
     assert!(album.is_some());
     let album = album.unwrap();
 
@@ -263,7 +261,7 @@ fn test_album_content_parse() {
     assert_eq!(content.len(), 1);
     assert_eq!(content[0], "BF6nuoBnTumzoXyexdmXlw");
 
-//    let report = album.audit();
+    //    let report = album.audit();
     // XXX fix when have actual audit.
-//    println!("report {:?}", report);
+    //    println!("report {:?}", report);
 }

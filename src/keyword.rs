@@ -32,8 +32,7 @@ pub struct Keyword {
 impl AplibObject for Keyword {
     #[allow(unused_variables)]
     #[doc(hidden)]
-    fn from_path(plist_path: &Path,
-                 auditor: Option<&mut Report>) -> Option<Keyword> {
+    fn from_path(plist_path: &Path, auditor: Option<&mut Report>) -> Option<Keyword> {
         assert!(false, "must not be called");
         None
     }
@@ -59,8 +58,7 @@ impl AplibObject for Keyword {
 }
 
 /// Parse keywords from the .plist file
-pub fn parse_keywords(path: &Path, auditor: &mut Option<&mut Report>) -> Option<Vec<Keyword>>
-{
+pub fn parse_keywords(path: &Path, auditor: &mut Option<&mut Report>) -> Option<Vec<Keyword>> {
     let plist = parse_plist(path);
 
     match plist {
@@ -72,16 +70,14 @@ pub fn parse_keywords(path: &Path, auditor: &mut Option<&mut Report>) -> Option<
                 println!("Wrong keyword version {} !", version);
             }
             Keyword::from_array(get_array_value(dict, "keywords"))
-        },
-        _ => None
+        }
+        _ => None,
     }
 }
 
 impl Keyword {
-
     /// convert a Plist array to a vec of keyword.
-    fn from_array(oa: Option<Vec<Plist>>) -> Option<Vec<Keyword>>
-    {
+    fn from_array(oa: Option<Vec<Plist>>) -> Option<Vec<Keyword>> {
         let a = try_opt!(oa);
 
         let mut keywords = Vec::new();
@@ -89,8 +85,8 @@ impl Keyword {
             match item {
                 Plist::Dictionary(ref kw) => {
                     keywords.push(Keyword::from(kw));
-                },
-                _ => ()
+                }
+                _ => (),
             }
         }
         Some(keywords)
@@ -98,8 +94,7 @@ impl Keyword {
 
     /// Create a new keyword from a plist dictionary
     /// will recursively create the children
-    pub fn from(d: &BTreeMap<String, Plist>) -> Keyword
-    {
+    pub fn from(d: &BTreeMap<String, Plist>) -> Keyword {
         Keyword {
             uuid: get_str_value(d, "uuid"),
             model_id: get_int_value(d, "modelId"),

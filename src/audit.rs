@@ -4,19 +4,10 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-
-use std::collections::{ BTreeMap, HashMap, HashSet };
-use chrono::{DateTime,Utc};
-use plutils::{
-    get_int_value,
-    get_str_value,
-    get_bool_value,
-    get_dict_value,
-    get_date_value,
-    get_data_value,
-    get_array_value,
-    Plist
-};
+use std::collections::{BTreeMap, HashMap, HashSet};
+use chrono::{DateTime, Utc};
+use plutils::{get_array_value, get_bool_value, get_data_value, get_date_value, get_dict_value,
+              get_int_value, get_str_value, Plist};
 
 #[derive(Debug)]
 pub enum SkipReason {
@@ -47,7 +38,6 @@ pub struct Reporter {
 }
 
 impl Reporter {
-
     pub fn new() -> Reporter {
         Reporter {
             ignored: HashSet::new(),
@@ -134,10 +124,8 @@ impl Report {
 
     pub fn audit_ignored(&mut self, dict: &BTreeMap<String, Plist>, ns: Option<&str>) {
         let ignored_keys: HashSet<_> = {
-            let skipped_keys: HashSet<_> =
-                self.skipped.keys().cloned().collect();
-            let known_keys =
-                self.parsed.union(&skipped_keys).cloned().collect();
+            let skipped_keys: HashSet<_> = self.skipped.keys().cloned().collect();
+            let known_keys = self.parsed.union(&skipped_keys).cloned().collect();
             let plist_keys: HashSet<_> = dict.keys().cloned().collect();
             plist_keys.difference(&known_keys).cloned().collect()
         };
@@ -149,19 +137,19 @@ impl Report {
                 self.ignore(&key);
             }
         }
-
     }
 }
 
 pub fn audit_get_str_value(
     dict: &BTreeMap<String, Plist>,
-    key: &str, report: &mut Option<&mut Report>) -> Option<String> {
-
+    key: &str,
+    report: &mut Option<&mut Report>,
+) -> Option<String> {
     let value = get_str_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
-            _ => report.skip(key, SkipReason::NotFound)
+            _ => report.skip(key, SkipReason::NotFound),
         }
     }
     value
@@ -169,13 +157,14 @@ pub fn audit_get_str_value(
 
 pub fn audit_get_int_value(
     dict: &BTreeMap<String, Plist>,
-    key: &str, report: &mut Option<&mut Report>) -> Option<i64> {
-
+    key: &str,
+    report: &mut Option<&mut Report>,
+) -> Option<i64> {
     let value = get_int_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
-            _ => report.skip(key, SkipReason::NotFound)
+            _ => report.skip(key, SkipReason::NotFound),
         }
     }
     value
@@ -183,13 +172,14 @@ pub fn audit_get_int_value(
 
 pub fn audit_get_bool_value(
     dict: &BTreeMap<String, Plist>,
-    key: &str, report: &mut Option<&mut Report>) -> Option<bool> {
-
+    key: &str,
+    report: &mut Option<&mut Report>,
+) -> Option<bool> {
     let value = get_bool_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
-            _ => report.skip(key, SkipReason::NotFound)
+            _ => report.skip(key, SkipReason::NotFound),
         }
     }
     value
@@ -197,13 +187,14 @@ pub fn audit_get_bool_value(
 
 pub fn audit_get_dict_value(
     dict: &BTreeMap<String, Plist>,
-    key: &str, report: &mut Option<&mut Report>) -> Option<BTreeMap<String, Plist>> {
-
+    key: &str,
+    report: &mut Option<&mut Report>,
+) -> Option<BTreeMap<String, Plist>> {
     let value = get_dict_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
-            _ => report.skip(key, SkipReason::NotFound)
+            _ => report.skip(key, SkipReason::NotFound),
         }
     }
     value
@@ -211,13 +202,14 @@ pub fn audit_get_dict_value(
 
 pub fn audit_get_array_value(
     dict: &BTreeMap<String, Plist>,
-    key: &str, report: &mut Option<&mut Report>) -> Option<Vec<Plist>> {
-
+    key: &str,
+    report: &mut Option<&mut Report>,
+) -> Option<Vec<Plist>> {
     let value = get_array_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
-            _ => report.skip(key, SkipReason::NotFound)
+            _ => report.skip(key, SkipReason::NotFound),
         }
     }
     value
@@ -225,13 +217,14 @@ pub fn audit_get_array_value(
 
 pub fn audit_get_date_value(
     dict: &BTreeMap<String, Plist>,
-    key: &str, report: &mut Option<&mut Report>) -> Option<DateTime<Utc>> {
-
+    key: &str,
+    report: &mut Option<&mut Report>,
+) -> Option<DateTime<Utc>> {
     let value = get_date_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
-            _ => report.skip(key, SkipReason::NotFound)
+            _ => report.skip(key, SkipReason::NotFound),
         }
     }
     value
@@ -239,13 +232,14 @@ pub fn audit_get_date_value(
 
 pub fn audit_get_data_value(
     dict: &BTreeMap<String, Plist>,
-    key: &str, report: &mut Option<&mut Report>) -> Option<Vec<u8>> {
-
+    key: &str,
+    report: &mut Option<&mut Report>,
+) -> Option<Vec<u8>> {
     let value = get_data_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
             Some(_) => report.parsed(key),
-            _ => report.skip(key, SkipReason::NotFound)
+            _ => report.skip(key, SkipReason::NotFound),
         }
     }
     value

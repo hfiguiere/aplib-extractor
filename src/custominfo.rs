@@ -6,10 +6,7 @@
 
 use std::collections::BTreeMap;
 use plist::Plist;
-use audit::{
-    Report,
-    audit_get_str_value
-};
+use audit::{audit_get_str_value, Report};
 
 pub struct CustomInfoProperties {
     pub camera_time_zone_name: Option<String>,
@@ -17,14 +14,16 @@ pub struct CustomInfoProperties {
 }
 
 impl CustomInfoProperties {
-    pub fn from(dict: &Option<BTreeMap<String, Plist>>,
-                mut auditor: &mut Option<&mut Report>) -> Option<CustomInfoProperties> {
-       if dict.is_none() {
+    pub fn from(
+        dict: &Option<BTreeMap<String, Plist>>,
+        mut auditor: &mut Option<&mut Report>,
+    ) -> Option<CustomInfoProperties> {
+        if dict.is_none() {
             return None;
         }
         let dict = dict.as_ref().unwrap();
 
-        let result = Some(CustomInfoProperties{
+        let result = Some(CustomInfoProperties {
             camera_time_zone_name: audit_get_str_value(dict, "cameraTimeZoneName", &mut auditor),
             picture_time_zone_name: audit_get_str_value(dict, "pictureTimeZoneName", &mut auditor),
         });

@@ -5,11 +5,11 @@
  */
 
 extern crate aplib;
+extern crate docopt;
+extern crate pbr;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate docopt;
-extern crate pbr;
 
 use std::io::stderr;
 
@@ -21,7 +21,7 @@ use aplib::Library;
 use aplib::ModelInfo;
 use aplib::Keyword;
 use aplib::StoreWrapper;
-use aplib::audit::{Reporter,Report};
+use aplib::audit::{Report, Reporter};
 use aplib::AlbumSubclass;
 use aplib::FolderType;
 
@@ -50,33 +50,28 @@ struct Args {
     flag_versions: bool,
     flag_masters: bool,
     flag_folders: bool,
-    flag_keywords: bool
+    flag_keywords: bool,
 }
 
 #[derive(Debug, Deserialize)]
 enum Command {
     Dump,
     Audit,
-    Unknown(String)
+    Unknown(String),
 }
 
 fn main() {
-
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.argv(std::env::args()).deserialize())
         .unwrap_or_else(|e| e.exit());
     {
         match args.arg_command {
-            Command::Dump =>
-                process_dump(&args),
-            Command::Audit =>
-                process_audit(&args),
-            _ =>
-                ()
+            Command::Dump => process_dump(&args),
+            Command::Audit => process_audit(&args),
+            _ => (),
         };
     }
 }
-
 
 fn print_report(report: &Report) {
     println!("+---- Ignored {}", report.ignored_count());
@@ -95,7 +90,6 @@ fn print_report(report: &Report) {
 }
 
 fn process_audit(args: &Args) {
-
     let mut library = Library::new(&args.arg_path);
 
     let auditor = Reporter::new();
@@ -147,8 +141,7 @@ fn print_keywords(keywords: &Vec<Keyword>, indent: &str) {
         } else {
             String::new()
         };
-        println!("| {:<26} | {:<26} | {}{}",
-                 uuid, parent, indent, name);
+        println!("| {:<26} | {:<26} | {}{}", uuid, parent, indent, name);
         if keyword.children.is_some() {
             let new_indent;
             if indent.is_empty() {
@@ -176,13 +169,36 @@ fn process_dump(args: &Args) {
     let model_info = library.get_model_info().unwrap();
     println!("model info");
     println!("\tDB version: {}", model_info.db_version.unwrap_or(0));
-    println!("\tDB minor version: {}", model_info.db_minor_version.unwrap_or(0));
-    println!("\tDB back compat: {}", model_info.db_minor_back_compatible_version.unwrap_or(0));
-    println!("\tProject version: {}", model_info.project_version.unwrap_or(0));
-    println!("\tCreation date: {}", model_info.create_date.as_ref().unwrap_or(&String::from("NONE")));
-    println!("\tImageIO: {} Camera RAW: {}",
-             model_info.image_io_version.as_ref().unwrap_or(&String::from("NONE")),
-             model_info.raw_camera_bundle_version.as_ref().unwrap_or(&String::from("NONE")));
+    println!(
+        "\tDB minor version: {}",
+        model_info.db_minor_version.unwrap_or(0)
+    );
+    println!(
+        "\tDB back compat: {}",
+        model_info.db_minor_back_compatible_version.unwrap_or(0)
+    );
+    println!(
+        "\tProject version: {}",
+        model_info.project_version.unwrap_or(0)
+    );
+    println!(
+        "\tCreation date: {}",
+        model_info
+            .create_date
+            .as_ref()
+            .unwrap_or(&String::from("NONE"))
+    );
+    println!(
+        "\tImageIO: {} Camera RAW: {}",
+        model_info
+            .image_io_version
+            .as_ref()
+            .unwrap_or(&String::from("NONE")),
+        model_info
+            .raw_camera_bundle_version
+            .as_ref()
+            .unwrap_or(&String::from("NONE"))
+    );
 
     if args.flag_all || args.flag_folders {
         dump_folders(&mut library);
@@ -194,10 +210,10 @@ fn process_dump(args: &Args) {
         dump_keywords(&mut library);
     }
 
-    if args.flag_all || args.flag_masters  {
+    if args.flag_all || args.flag_masters {
         dump_masters(&model_info, &mut library);
     }
-    if args.flag_all || args.flag_versions  {
+    if args.flag_all || args.flag_versions {
         dump_versions(&model_info, &mut library);
     }
 }
@@ -224,23 +240,28 @@ fn dump_folders(library: &mut Library) {
             Some(&StoreWrapper::Folder(ref folder)) => {
                 let name = folder.name.as_ref().unwrap();
                 let uuid = folder.uuid().as_ref().unwrap();
-                let implicit_album_uuid = if let Some(value) =
-                    folder.implicit_album_uuid.as_ref() {
-                        value
-                    } else {
-                        ""
-                    };
+                let implicit_album_uuid = if let Some(value) = folder.implicit_album_uuid.as_ref() {
+                    value
+                } else {
+                    ""
+                };
                 let path = folder.path.as_ref().unwrap();
                 let folder_type = if let Some(ref ft) = folder.folder_type {
                     FolderType::to_int(ft)
                 } else {
                     0
                 };
-                println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>8} | {}",
-                         name, uuid, implicit_album_uuid,
-                         folder_type, folder.model_id(), path)
-            },
-            _ => println!("folder {} not found", folder_uuid)
+                println!(
+                    "| {:<26} | {:<26} | {:<26} | {:>4} | {:>8} | {}",
+                    name,
+                    uuid,
+                    implicit_album_uuid,
+                    folder_type,
+                    folder.model_id(),
+                    path
+                )
+            }
+            _ => println!("folder {} not found", folder_uuid),
         }
     }
 }
@@ -276,23 +297,28 @@ fn dump_albums(library: &mut Library) {
                 } else {
                     String::new()
                 };
-                let query_folder_uuid = if let Some(ref qf) =
-                    album.query_folder_uuid {
-                        qf.clone()
-                    } else {
-                        String::new()
-                    };
+                let query_folder_uuid = if let Some(ref qf) = album.query_folder_uuid {
+                    qf.clone()
+                } else {
+                    String::new()
+                };
                 let album_class = if let Some(ref c) = album.subclass {
                     AlbumSubclass::to_int(c)
                 } else {
                     0
                 };
-                println!("| {:<26} | {:<26} | {:<26} | {:>4} | {:>5} | {:>8} | {}",
-                         uuid, parent, query_folder_uuid,
-                         album.album_type.unwrap_or(0),
-                         album_class, album.model_id(), name)
-            },
-            _ => println!("album {} not found", album_uuid)
+                println!(
+                    "| {:<26} | {:<26} | {:<26} | {:>4} | {:>5} | {:>8} | {}",
+                    uuid,
+                    parent,
+                    query_folder_uuid,
+                    album.album_type.unwrap_or(0),
+                    album_class,
+                    album.model_id(),
+                    name
+                )
+            }
+            _ => println!("album {} not found", album_uuid),
         }
     }
 }
@@ -330,14 +356,13 @@ fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
                 let parent = master.parent().as_ref().unwrap();
                 let image_path = master.image_path.as_ref().unwrap();
                 println!("| {:<26} | {:<26} | {}", uuid, parent, image_path)
-            },
-            _ => println!("master {} not found", master_uuid)
+            }
+            _ => println!("master {} not found", master_uuid),
         }
     }
 }
 
 fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
-
     let count = model_info.version_count.unwrap_or(0) as u64;
     let mut pb = ProgressBar::on(stderr(), count);
 
@@ -362,12 +387,16 @@ fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
                 let project_uuid = version.project_uuid.as_ref().unwrap();
                 let name = version.name.as_ref().unwrap();
 
-                println!("| {:<26} | {:<26} | {:<26} | {:>8} | {}",
-                         uuid, parent, project_uuid,
-                         version.is_original.unwrap_or(false),
-                         name)
-                },
-            _ => println!("version {} not found", version_uuid)
+                println!(
+                    "| {:<26} | {:<26} | {:<26} | {:>8} | {}",
+                    uuid,
+                    parent,
+                    project_uuid,
+                    version.is_original.unwrap_or(false),
+                    name
+                )
+            }
+            _ => println!("version {} not found", version_uuid),
         }
     }
 }

@@ -6,15 +6,15 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::collections::{HashMap,HashSet};
+use std::collections::{HashMap, HashSet};
 
 use plist::Plist;
 use folder::Folder;
 use album::Album;
 use version::Version;
 use master::Master;
-use audit::{audit_get_str_value,Reporter,Report,SkipReason};
-use keyword::{parse_keywords,Keyword};
+use audit::{audit_get_str_value, Report, Reporter, SkipReason};
+use keyword::{parse_keywords, Keyword};
 use store;
 use plutils;
 use AplibObject;
@@ -52,32 +52,32 @@ pub struct ModelInfo {
 }
 
 impl ModelInfo {
-    fn parse(plist : &Plist) -> Option<ModelInfo>
-    {
-        use plutils::{get_int_value,get_bool_value,get_str_value};
+    fn parse(plist: &Plist) -> Option<ModelInfo> {
+        use plutils::{get_bool_value, get_int_value, get_str_value};
 
         match *plist {
             Plist::Dictionary(ref dict) => Some(ModelInfo {
                 db_uuid: get_str_value(dict, "databaseUuid"),
                 db_minor_back_compatible_version: get_int_value(
-                    dict, "DatabaseCompatibleBackToMinorVersion"),
-                db_minor_version: get_int_value(
-                    dict, "DatabaseMinorVersion"),
+                    dict,
+                    "DatabaseCompatibleBackToMinorVersion",
+                ),
+                db_minor_version: get_int_value(dict, "DatabaseMinorVersion"),
                 db_version: get_int_value(dict, "DatabaseVersion"),
                 is_iphoto_library: get_bool_value(dict, "isIPhotoLibrary"),
                 create_date: get_str_value(dict, "createDate"),
                 image_io_version: get_str_value(dict, "imageIOVersion"),
-                raw_camera_bundle_version: get_str_value(
-                    dict, "rawCameraBundleVersion"),
-                touched_by_aperture: get_bool_value(
-                    dict, "touchedByAperture"),
+                raw_camera_bundle_version: get_str_value(dict, "rawCameraBundleVersion"),
+                touched_by_aperture: get_bool_value(dict, "touchedByAperture"),
                 master_count: get_int_value(dict, "masterCount"),
                 version_count: get_int_value(dict, "versionCount"),
                 project_version: get_int_value(dict, "projectVersion"),
                 project_compat_back_to_version: get_int_value(
-                    dict, "projectCompatibleBackToVersion"),
+                    dict,
+                    "projectCompatibleBackToVersion",
+                ),
             }),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -107,18 +107,16 @@ pub struct Library {
 }
 
 impl Library {
-
     /// Create a new library object from the exist path to
     /// the bundle directory.
-    pub fn new(p: &str) -> Library
-    {
+    pub fn new(p: &str) -> Library {
         Library {
             path: p.to_owned(),
             version: String::new(),
 
             folders: HashSet::new(),
             albums: HashSet::new(),
-//            keywords: HashSet::new(),
+            //            keywords: HashSet::new(),
             masters: HashSet::new(),
             versions: HashSet::new(),
 
@@ -140,8 +138,7 @@ impl Library {
     /// Return true if the object was stored
     /// Return false if there already was an object with the same uuid
     /// or if the uuid in invalid.
-    pub fn store(&mut self, obj: store::Wrapper) -> bool
-    {
+    pub fn store(&mut self, obj: store::Wrapper) -> bool {
         let uuid_str = {
             let uuid = obj.uuid();
             if uuid.is_none() {
@@ -156,44 +153,39 @@ impl Library {
     }
 
     /// Get an object out of the store by UUID
-    pub fn get(&self, uuid: &str) -> Option<&store::Wrapper>
-    {
+    pub fn get(&self, uuid: &str) -> Option<&store::Wrapper> {
         self.objects.get(uuid)
     }
 
     /// Get the library version. Will parse the plist for that
     /// if needed.
-    pub fn library_version(&mut self) -> Result<&String, SkipReason>
-    {
-        if self.version.is_empty()
-        {
+    pub fn library_version(&mut self) -> Result<&String, SkipReason> {
+        if self.version.is_empty() {
             let plist_path = self.build_path(INFO_PLIST, false);
             let plist = plutils::parse_plist(&plist_path);
             let audit = self.auditor.is_some();
-            let mut report = if audit {
-                Some(Report::new())
-            } else {
-                None
-            };
+            let mut report = if audit { Some(Report::new()) } else { None };
 
             match plist {
                 Plist::Dictionary(ref dict) => {
                     let version = audit_get_str_value(
-                        dict, "CFBundleShortVersionString", &mut report.as_mut());
+                        dict,
+                        "CFBundleShortVersionString",
+                        &mut report.as_mut(),
+                    );
                     if version.is_none() {
                         println!("FATAL no library version found");
                         return Err(SkipReason::NotFound);
                     }
                     self.version = version.unwrap();
 
-                    let bundle_id = audit_get_str_value(
-                        dict, "CFBundleIdentifier", &mut report.as_mut());
+                    let bundle_id =
+                        audit_get_str_value(dict, "CFBundleIdentifier", &mut report.as_mut());
                     if let Some(id) = bundle_id {
                         if id != BUNDLE_IDENTIFIER {
                             if audit {
                                 if let Some(ref mut r) = report {
-                                    r.skip("CFBundleIdentifier",
-                                           SkipReason::InvalidData);
+                                    r.skip("CFBundleIdentifier", SkipReason::InvalidData);
                                 }
                             }
                             println!("FATAL not a library");
@@ -211,27 +203,28 @@ impl Library {
                         if let Some(ref mut r) = report {
                             r.audit_ignored(dict, None);
                         }
-                        self.auditor.as_mut().unwrap().parsed(
-                            &plist_path.to_string_lossy(), report.unwrap());
+                        self.auditor
+                            .as_mut()
+                            .unwrap()
+                            .parsed(&plist_path.to_string_lossy(), report.unwrap());
                     }
-                },
+                }
                 _ => {
                     if audit {
-                        self.auditor.as_mut().unwrap().skip(
-                            &plist_path.to_string_lossy(),
-                            SkipReason::InvalidType);
+                        self.auditor
+                            .as_mut()
+                            .unwrap()
+                            .skip(&plist_path.to_string_lossy(), SkipReason::InvalidType);
                     }
                 }
             }
-
         }
         Ok(&self.version)
     }
 
     /// Build a path from the bundle root.
     /// If database is true, will be from the Database subdirectory.
-    fn build_path(&self, dir: &str, database: bool) -> PathBuf
-    {
+    fn build_path(&self, dir: &str, database: bool) -> PathBuf {
         let mut ppath = PathBuf::from(self.path.to_owned());
         if database {
             ppath.push(DATABASE_DIR);
@@ -243,8 +236,7 @@ impl Library {
 
     /// list items in dir with extension ext.
     /// Return a vector with full path for each.
-    fn list_items(&self, dir: &str, ext: &str) -> Vec<PathBuf>
-    {
+    fn list_items(&self, dir: &str, ext: &str) -> Vec<PathBuf> {
         let ppath = self.build_path(dir, true);
         let mut list: Vec<PathBuf> = Vec::new();
 
@@ -264,8 +256,7 @@ impl Library {
     }
 
     /// Return the model info block
-    pub fn get_model_info(&self) -> Option<ModelInfo>
-    {
+    pub fn get_model_info(&self) -> Option<ModelInfo> {
         let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
         let plist = plutils::parse_plist(ppath.as_ref());
 
@@ -275,23 +266,25 @@ impl Library {
     /// Load items from directory `dir` with extension `ext`
     /// and store the uuids into `set`
     fn load_items<T: AplibObject, F: FnMut(u64) -> bool>(
-        &mut self, dir: &str, ext: &str, set: &mut HashSet<String>, pg: &mut F)
-    {
+        &mut self,
+        dir: &str,
+        ext: &str,
+        set: &mut HashSet<String>,
+        pg: &mut F,
+    ) {
         let file_list = self.list_items(dir, ext);
         let audit = self.auditor.is_some();
         for file in file_list {
-            let mut report = if audit {
-                Some(Report::new())
-            } else {
-                None
-            };
+            let mut report = if audit { Some(Report::new()) } else { None };
             if let Some(obj) = T::from_path(file.as_ref(), report.as_mut()) {
                 let mut store = false;
                 if let Some(ref uuid) = *obj.uuid() {
                     set.insert(uuid.to_owned());
                     if audit {
-                        self.auditor.as_mut().unwrap().parsed(
-                            &file.to_string_lossy(), report.unwrap());
+                        self.auditor
+                            .as_mut()
+                            .unwrap()
+                            .parsed(&file.to_string_lossy(), report.unwrap());
                     }
                     store = true;
                 }
@@ -300,9 +293,10 @@ impl Library {
                 }
             } else {
                 if audit {
-                    self.auditor.as_mut().unwrap().skip(
-                        &file.to_string_lossy(),
-                        SkipReason::ParseFailed);
+                    self.auditor
+                        .as_mut()
+                        .unwrap()
+                        .skip(&file.to_string_lossy(), SkipReason::ParseFailed);
                 }
                 println!("Failed to decode object from {:?}", file);
             }
@@ -314,40 +308,34 @@ impl Library {
     }
 
     /// Load albums.
-    pub fn load_albums<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
-    {
+    pub fn load_albums<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
         if self.albums.is_empty() {
-            let mut albums : HashSet<String> = HashSet::new();
+            let mut albums: HashSet<String> = HashSet::new();
             self.load_items::<Album, F>(ALBUMS_DIR, "apalbum", &mut albums, pg);
             self.albums = albums;
         }
     }
 
     /// Get albums uuids.
-    pub fn get_albums(&self) -> &HashSet<String>
-    {
+    pub fn get_albums(&self) -> &HashSet<String> {
         &self.albums
     }
 
     /// Load folders.
-    pub fn load_folders<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
-    {
+    pub fn load_folders<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
         if self.folders.is_empty() {
-            let mut folders : HashSet<String> = HashSet::new();
-            self.load_items::<Folder, F>(FOLDERS_DIR, "apfolder",
-                                         &mut folders, pg);
+            let mut folders: HashSet<String> = HashSet::new();
+            self.load_items::<Folder, F>(FOLDERS_DIR, "apfolder", &mut folders, pg);
             self.folders = folders;
         }
     }
 
     /// Get folders uuids.
-    pub fn get_folders(&self) -> &HashSet<String>
-    {
+    pub fn get_folders(&self) -> &HashSet<String> {
         &self.folders
     }
 
-    fn recurse_list_directory(path: &Path, level: i32) -> Vec<PathBuf>
-    {
+    fn recurse_list_directory(path: &Path, level: i32) -> Vec<PathBuf> {
         let mut list: Vec<PathBuf> = Vec::new();
         for entry in fs::read_dir(path).unwrap() {
             let entry = entry.unwrap();
@@ -355,9 +343,7 @@ impl Library {
                 if level == 0 {
                     list.push(entry.path());
                 } else {
-                    let mut sublist =
-                        Library::recurse_list_directory(&entry.path(),
-                                                        level - 1);
+                    let mut sublist = Library::recurse_list_directory(&entry.path(), level - 1);
                     list.append(&mut sublist)
                 }
             }
@@ -366,8 +352,7 @@ impl Library {
         list
     }
 
-    fn list_versions_items_dirs(&self) -> Vec<PathBuf>
-    {
+    fn list_versions_items_dirs(&self) -> Vec<PathBuf> {
         let ppath = self.build_path(VERSIONS_BASE_DIR, true);
 
         if !fs::metadata(&ppath).unwrap().is_dir() {
@@ -378,13 +363,11 @@ impl Library {
         Library::recurse_list_directory(&ppath, 4)
     }
 
-    fn list_versions_items(&self, ext: &str) -> Vec<PathBuf>
-    {
+    fn list_versions_items(&self, ext: &str) -> Vec<PathBuf> {
         let list = self.list_versions_items_dirs();
         let mut items = Vec::new();
 
         for dir in list {
-
             if !fs::metadata(&dir).unwrap().is_dir() {
                 continue;
             }
@@ -402,25 +385,25 @@ impl Library {
     }
 
     fn load_versions_items<T: AplibObject, F: FnMut(u64) -> bool>(
-        &mut self, ext: &str,
-        set: &mut HashSet<String>, pg: &mut F)
-    {
+        &mut self,
+        ext: &str,
+        set: &mut HashSet<String>,
+        pg: &mut F,
+    ) {
         let file_list = self.list_versions_items(ext);
         let audit = self.auditor.is_some();
         for file in file_list {
-            let mut report = if audit {
-                Some(Report::new())
-            } else {
-                None
-            };
+            let mut report = if audit { Some(Report::new()) } else { None };
             if let Some(obj) = T::from_path(file.as_ref(), report.as_mut()) {
                 let mut store = false;
                 if let Some(ref uuid) = *obj.uuid() {
                     set.insert(uuid.to_owned());
                     store = true;
                     if audit {
-                        self.auditor.as_mut().unwrap().parsed(
-                            &file.to_string_lossy(), report.unwrap());
+                        self.auditor
+                            .as_mut()
+                            .unwrap()
+                            .parsed(&file.to_string_lossy(), report.unwrap());
                     }
                 }
                 if store {
@@ -428,9 +411,10 @@ impl Library {
                 }
             } else {
                 if audit {
-                    self.auditor.as_mut().unwrap().skip(
-                        &file.to_string_lossy(),
-                        SkipReason::ParseFailed);
+                    self.auditor
+                        .as_mut()
+                        .unwrap()
+                        .skip(&file.to_string_lossy(), SkipReason::ParseFailed);
                 }
                 println!("Error decoding object from {:?}", file);
             }
@@ -442,59 +426,54 @@ impl Library {
     }
 
     /// Load versions.
-    pub fn load_versions<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
-    {
+    pub fn load_versions<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
         if self.versions.is_empty() {
             let mut versions: HashSet<String> = HashSet::new();
-            self.load_versions_items::<Version, F>(
-                "apversion", &mut versions, pg);
+            self.load_versions_items::<Version, F>("apversion", &mut versions, pg);
             self.versions = versions;
         }
     }
 
     /// Load masters.
-    pub fn load_masters<F: FnMut(u64) -> bool>(&mut self, pg: &mut F)
-    {
+    pub fn load_masters<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
         if self.masters.is_empty() {
             let mut masters: HashSet<String> = HashSet::new();
-            self.load_versions_items::<Master, F>(
-                "apmaster", &mut masters, pg);
+            self.load_versions_items::<Master, F>("apmaster", &mut masters, pg);
             self.masters = masters;
         }
     }
 
     /// Return masters uuids.
-    pub fn get_masters(&self) -> &HashSet<String>
-    {
+    pub fn get_masters(&self) -> &HashSet<String> {
         &self.masters
     }
 
     /// Return versions uuids.
-    pub fn get_versions(&self) -> &HashSet<String>
-    {
+    pub fn get_versions(&self) -> &HashSet<String> {
         &self.versions
     }
 
     /// List keywords.
-    pub fn list_keywords(&mut self) -> Option<Vec<Keyword>>
-    {
+    pub fn list_keywords(&mut self) -> Option<Vec<Keyword>> {
         let audit = self.auditor.is_some();
-        let mut report = if audit {
-            Some(Report::new())
-        } else {
-            None
-        };
-        let result = parse_keywords(self.build_path(KEYWORDS_PLIST, true).as_ref(), &mut report.as_mut());
+        let mut report = if audit { Some(Report::new()) } else { None };
+        let result = parse_keywords(
+            self.build_path(KEYWORDS_PLIST, true).as_ref(),
+            &mut report.as_mut(),
+        );
         if audit {
             if result.is_some() {
-                self.auditor.as_mut().unwrap().parsed(
-                    KEYWORDS_PLIST, report.unwrap());
+                self.auditor
+                    .as_mut()
+                    .unwrap()
+                    .parsed(KEYWORDS_PLIST, report.unwrap());
             } else {
-                self.auditor.as_mut().unwrap().skip(
-                    KEYWORDS_PLIST, SkipReason::ParseFailed);
+                self.auditor
+                    .as_mut()
+                    .unwrap()
+                    .skip(KEYWORDS_PLIST, SkipReason::ParseFailed);
             }
         }
         result
     }
 }
-

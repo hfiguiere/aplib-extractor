@@ -34,18 +34,17 @@ mod testutils;
 
 use std::path::Path;
 
-pub use library::Library as Library;
-pub use library::ModelInfo as ModelInfo;
-pub use folder::Folder as Folder;
+pub use library::Library;
+pub use library::ModelInfo;
+pub use folder::Folder;
 pub use folder::Type as FolderType;
-pub use album::Album as Album;
+pub use album::Album;
 pub use album::Subclass as AlbumSubclass;
-pub use master::Master as Master;
-pub use version::Version as Version;
-pub use keyword::Keyword as Keyword;
+pub use master::Master;
+pub use version::Version;
+pub use keyword::Keyword;
 pub use store::Wrapper as StoreWrapper;
 use audit::Report;
-
 
 /// `AplibObject` types.
 pub enum AplibType {
@@ -64,9 +63,9 @@ pub enum AplibType {
 /// Basic trait from the library objects.
 pub trait AplibObject {
     /// Load object from plist `plist_path`
-    fn from_path(plist_path: &Path,
-                 auditor: Option<&mut Report>) -> Option<Self>
-        where Self: Sized;
+    fn from_path(plist_path: &Path, auditor: Option<&mut Report>) -> Option<Self>
+    where
+        Self: Sized;
     /// Wrap it for storage
     fn wrap(obj: Self) -> store::Wrapper;
     /// Type of object.
@@ -80,4 +79,3 @@ pub trait AplibObject {
     /// Model id (numerical id)
     fn model_id(&self) -> i64;
 }
-

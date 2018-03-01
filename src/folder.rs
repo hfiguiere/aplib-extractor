@@ -6,21 +6,15 @@
 
 use std::path::Path;
 
-use chrono::{DateTime,Utc};
+use chrono::{DateTime, Utc};
 
 use store;
 use AplibObject;
 use AplibType;
 use notes::NotesProperties;
 
-use audit::{
-    Report, SkipReason,
-    audit_get_int_value,
-    audit_get_str_value,
-    audit_get_bool_value,
-    audit_get_date_value,
-    audit_get_array_value,
-};
+use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
+            audit_get_int_value, audit_get_str_value, Report, SkipReason};
 
 /// Type of folder
 #[derive(Debug, PartialEq)]
@@ -62,9 +56,8 @@ impl Type {
     }
 }
 
-
 /// Folder object. This is a container of things in the library.
-#[derive(Debug,Default)]
+#[derive(Debug, Default)]
 pub struct Folder {
     /// object uuid
     uuid: Option<String>,
@@ -101,9 +94,7 @@ pub struct Folder {
 }
 
 impl AplibObject for Folder {
-    fn from_path(plist_path: &Path,
-                 mut auditor: Option<&mut Report>) -> Option<Folder> {
-
+    fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Folder> {
         use plutils::*;
 
         let plist = parse_plist(plist_path);
@@ -112,19 +103,23 @@ impl AplibObject for Folder {
                 let notes = audit_get_array_value(dict, "notes", &mut auditor);
                 let result = Some(Folder {
                     path: audit_get_str_value(dict, "folderPath", &mut auditor),
-                    folder_type: Type::from_option(audit_get_int_value(dict, "folderType", &mut auditor)),
+                    folder_type: Type::from_option(audit_get_int_value(
+                        dict,
+                        "folderType",
+                        &mut auditor,
+                    )),
                     model_id: audit_get_int_value(dict, "modelId", &mut auditor),
                     name: audit_get_str_value(dict, "name", &mut auditor),
-                    parent_uuid: audit_get_str_value(
-                        dict, "parentFolderUuid", &mut auditor),
+                    parent_uuid: audit_get_str_value(dict, "parentFolderUuid", &mut auditor),
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
                     implicit_album_uuid: audit_get_str_value(
-                        dict, "implicitAlbumUuid", &mut auditor),
+                        dict,
+                        "implicitAlbumUuid",
+                        &mut auditor,
+                    ),
                     db_version: audit_get_int_value(dict, "version", &mut auditor),
-                    project_version: audit_get_int_value(
-                        dict, "projectVersion", &mut auditor),
-                    colour_label_index: audit_get_int_value(
-                        dict, "colorLabelIndex", &mut auditor),
+                    project_version: audit_get_int_value(dict, "projectVersion", &mut auditor),
+                    colour_label_index: audit_get_int_value(dict, "colorLabelIndex", &mut auditor),
                     create_date: audit_get_date_value(dict, "createDate", &mut auditor),
                     sort_key_path: audit_get_str_value(dict, "sortKeyPath", &mut auditor),
                     sort_ascending: audit_get_bool_value(dict, "sortAscending", &mut auditor),
@@ -133,8 +128,16 @@ impl AplibObject for Folder {
                     is_favourite: audit_get_bool_value(dict, "isFavorite", &mut auditor),
                     is_in_trash: audit_get_bool_value(dict, "isInTrash", &mut auditor),
                     is_expanded: audit_get_bool_value(dict, "isExpanded", &mut auditor),
-                    is_hidden_when_empty: audit_get_bool_value(dict, "isHiddenWhenEmpty", &mut auditor),
-                    poster_version_uuid: audit_get_str_value(dict, "posterVersionUuid", &mut auditor),
+                    is_hidden_when_empty: audit_get_bool_value(
+                        dict,
+                        "isHiddenWhenEmpty",
+                        &mut auditor,
+                    ),
+                    poster_version_uuid: audit_get_str_value(
+                        dict,
+                        "posterVersionUuid",
+                        &mut auditor,
+                    ),
                     notes: NotesProperties::from(&notes, &mut auditor),
                 });
                 if auditor.is_some() {
@@ -146,9 +149,8 @@ impl AplibObject for Folder {
                     auditor.audit_ignored(dict, None);
                 }
                 result
-            },
-            _ =>
-                None
+            }
+            _ => None,
         }
     }
     fn obj_type(&self) -> AplibType {
@@ -171,9 +173,7 @@ impl AplibObject for Folder {
     }
 }
 
-impl Folder {
-}
-
+impl Folder {}
 
 #[cfg(test)]
 #[test]
@@ -181,8 +181,9 @@ fn test_folder_parse() {
     use testutils;
 
     let folder = Folder::from_path(
-        testutils::get_test_file_path("a%TX9lmjQVWvuK9u6RNhGQ.apfolder")
-            .as_path(), None);
+        testutils::get_test_file_path("a%TX9lmjQVWvuK9u6RNhGQ.apfolder").as_path(),
+        None,
+    );
     assert!(folder.is_some());
     let folder = folder.unwrap();
 
@@ -194,8 +195,11 @@ fn test_folder_parse() {
     assert!(folder.project_version.is_none());
     assert_eq!(folder.path.as_ref().unwrap(), "1/3/333/");
     assert_eq!(folder.name.as_ref().unwrap(), "2011");
-    assert_eq!(folder.implicit_album_uuid.as_ref().unwrap(), "J0+f3AmESPer4GHGv4BgAQ");
+    assert_eq!(
+        folder.implicit_album_uuid.as_ref().unwrap(),
+        "J0+f3AmESPer4GHGv4BgAQ"
+    );
 
     // XXX fix when have actual audit.
-//    println!("report {:?}", report);
+    //    println!("report {:?}", report);
 }

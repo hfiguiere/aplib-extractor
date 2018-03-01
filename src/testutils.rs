@@ -1,4 +1,3 @@
-
 use std::path::PathBuf;
 
 /// Return the testfile path for filename
@@ -12,4 +11,3 @@ pub fn get_test_file_path(filename: &str) -> PathBuf {
     path.push(filename);
     path
 }
-

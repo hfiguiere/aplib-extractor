@@ -4,9 +4,8 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-
 use std::path::Path;
-use chrono::{DateTime,Utc};
+use chrono::{DateTime, Utc};
 use exempi::Xmp;
 
 use plutils::Plist;
@@ -16,16 +15,8 @@ use exif::ExifProperties;
 use iptc::IptcProperties;
 use AplibObject;
 use AplibType;
-use audit::{
-    audit_get_str_value,
-    audit_get_int_value,
-    audit_get_bool_value,
-    audit_get_dict_value,
-    audit_get_date_value,
-    audit_get_array_value,
-    SkipReason,
-    Report
-};
+use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
+            audit_get_dict_value, audit_get_int_value, audit_get_str_value, Report, SkipReason};
 use xmp::ToXmp;
 
 /// A rendered image. There is one for the orignal, and one per
@@ -70,80 +61,58 @@ pub struct Version {
 
 impl AplibObject for Version {
     /// Load the version object from the plist at plist_path.
-    fn from_path(plist_path: &Path,
-                 mut auditor: Option<&mut Report>) -> Option<Version> {
-
+    fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Version> {
         use plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
             Plist::Dictionary(ref dict) => {
-                let iptc = audit_get_dict_value(dict, "iptcProperties",
-                                                &mut auditor);
-                let exif = audit_get_dict_value(dict, "exifProperties",
-                                                &mut auditor);
-                let custom_info = audit_get_dict_value(dict, "customInfo",
-                                                       &mut auditor);
+                let iptc = audit_get_dict_value(dict, "iptcProperties", &mut auditor);
+                let exif = audit_get_dict_value(dict, "exifProperties", &mut auditor);
+                let custom_info = audit_get_dict_value(dict, "customInfo", &mut auditor);
                 let result = Some(Version {
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
-                    master_uuid: audit_get_str_value(
-                        dict, "masterUuid", &mut auditor),
-                    project_uuid: audit_get_str_value(
-                        dict, "projectUuid", &mut auditor),
-                    raw_master_uuid: audit_get_str_value(
-                        dict, "rawMasterUuid", &mut auditor),
-                    nonraw_master_uuid: audit_get_str_value(
-                        dict, "nonRawMasterUuid", &mut auditor),
-                    timezone_name: audit_get_str_value(
-                        dict, "imageTimeZoneName", &mut auditor),
-                    create_date: audit_get_date_value(
-                        dict, "createDate", &mut auditor),
-                    image_date: audit_get_date_value(
-                        dict, "imageDate", &mut auditor),
+                    master_uuid: audit_get_str_value(dict, "masterUuid", &mut auditor),
+                    project_uuid: audit_get_str_value(dict, "projectUuid", &mut auditor),
+                    raw_master_uuid: audit_get_str_value(dict, "rawMasterUuid", &mut auditor),
+                    nonraw_master_uuid: audit_get_str_value(dict, "nonRawMasterUuid", &mut auditor),
+                    timezone_name: audit_get_str_value(dict, "imageTimeZoneName", &mut auditor),
+                    create_date: audit_get_date_value(dict, "createDate", &mut auditor),
+                    image_date: audit_get_date_value(dict, "imageDate", &mut auditor),
                     export_image_change_date: audit_get_date_value(
-                        dict, "exportImageChangeDate", &mut auditor),
+                        dict,
+                        "exportImageChangeDate",
+                        &mut auditor,
+                    ),
                     export_metadata_change_date: audit_get_date_value(
-                        dict, "exportMetadataChangeDate", &mut auditor),
-                    version_number: audit_get_int_value(
-                        dict, "versionNumber", &mut auditor),
-                    db_version: audit_get_int_value(
-                        dict, "version", &mut auditor),
-                    db_minor_version: audit_get_int_value(
-                        dict, "minorVersion", &mut auditor),
-                    is_flagged: audit_get_bool_value(
-                        dict, "isFlagged", &mut auditor),
-                    is_original: audit_get_bool_value(
-                        dict, "isOriginal", &mut auditor),
-                    is_editable: audit_get_bool_value(
-                        dict, "isEditable", &mut auditor),
-                    is_hidden: audit_get_bool_value(
-                        dict, "isHidden", &mut auditor),
-                    is_in_trash: audit_get_bool_value(
-                        dict, "isInTrash", &mut auditor),
-                    file_name: audit_get_str_value(
-                        dict, "fileName", &mut auditor),
+                        dict,
+                        "exportMetadataChangeDate",
+                        &mut auditor,
+                    ),
+                    version_number: audit_get_int_value(dict, "versionNumber", &mut auditor),
+                    db_version: audit_get_int_value(dict, "version", &mut auditor),
+                    db_minor_version: audit_get_int_value(dict, "minorVersion", &mut auditor),
+                    is_flagged: audit_get_bool_value(dict, "isFlagged", &mut auditor),
+                    is_original: audit_get_bool_value(dict, "isOriginal", &mut auditor),
+                    is_editable: audit_get_bool_value(dict, "isEditable", &mut auditor),
+                    is_hidden: audit_get_bool_value(dict, "isHidden", &mut auditor),
+                    is_in_trash: audit_get_bool_value(dict, "isInTrash", &mut auditor),
+                    file_name: audit_get_str_value(dict, "fileName", &mut auditor),
                     name: audit_get_str_value(dict, "name", &mut auditor),
-                    model_id: audit_get_int_value(
-                        dict, "modelId", &mut auditor),
-                    rating: audit_get_int_value(
-                        dict, "mainRating", &mut auditor),
-                    rotation: audit_get_int_value(
-                        dict, "rotation", &mut auditor),
-                    colour_label_index: audit_get_int_value(
-                        dict, "colorLabelIndex", &mut auditor),
+                    model_id: audit_get_int_value(dict, "modelId", &mut auditor),
+                    rating: audit_get_int_value(dict, "mainRating", &mut auditor),
+                    rotation: audit_get_int_value(dict, "rotation", &mut auditor),
+                    colour_label_index: audit_get_int_value(dict, "colorLabelIndex", &mut auditor),
                     iptc: IptcProperties::from(&iptc, &mut auditor),
                     exif: ExifProperties::from(&exif, &mut auditor),
-                    custom_info: CustomInfoProperties::from(
-                        &custom_info, &mut auditor),
-                    keywords: audit_get_array_value(
-                        dict, "keywords", &mut auditor),
+                    custom_info: CustomInfoProperties::from(&custom_info, &mut auditor),
+                    keywords: audit_get_array_value(dict, "keywords", &mut auditor),
                 });
                 if auditor.is_some() {
                     let ref mut auditor = auditor.unwrap();
                     auditor.skip("statistics", SkipReason::Ignore);
                     auditor.skip("thumbnailGroup", SkipReason::Ignore);
-                    auditor.skip("faceDetectionIsFromPreview",
-                                 SkipReason::Ignore);
+                    auditor.skip("faceDetectionIsFromPreview", SkipReason::Ignore);
                     auditor.skip("processedHeight", SkipReason::Ignore);
                     auditor.skip("processedWidth", SkipReason::Ignore);
                     auditor.skip("masterHeight", SkipReason::Ignore);
@@ -162,9 +131,8 @@ impl AplibObject for Version {
                     auditor.audit_ignored(dict, None);
                 }
                 result
-            },
-            _ =>
-                None
+            }
+            _ => None,
         }
     }
     fn obj_type(&self) -> AplibType {
@@ -188,7 +156,6 @@ impl AplibObject for Version {
 }
 
 impl ToXmp for Version {
-
     fn to_xmp(&self, xmp: &mut Xmp) -> bool {
         // Here we make sure the Exif data are
         // processed before Iptc.
@@ -210,14 +177,18 @@ fn test_version_parse() {
     use xmp;
 
     let version = Version::from_path(
-        testutils::get_test_file_path("Version-0.apversion")
-            .as_path(), None);
+        testutils::get_test_file_path("Version-0.apversion").as_path(),
+        None,
+    );
     assert!(version.is_some());
     let version = version.unwrap();
 
     assert_eq!(version.uuid.as_ref().unwrap(), "MHMIbw5CQaiMgQ3n7g2w2A");
     assert!(version.is_original.unwrap());
-    assert_eq!(version.master_uuid.as_ref().unwrap(), "WZMCPPRHR%C3nffgeeS4IQ");
+    assert_eq!(
+        version.master_uuid.as_ref().unwrap(),
+        "WZMCPPRHR%C3nffgeeS4IQ"
+    );
     assert_eq!(version.name.as_ref().unwrap(), "img_3136");
     assert!(version.iptc.is_some());
     let iptc = version.iptc.as_ref().unwrap();
