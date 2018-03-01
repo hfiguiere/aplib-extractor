@@ -172,7 +172,6 @@ impl AplibObject for Folder {
 }
 
 impl Folder {
-
 }
 
 

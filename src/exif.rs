@@ -7,6 +7,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use chrono::{DateTime,Utc};
+use exempi;
 use exempi::Xmp;
 use plist::Plist;
 
@@ -166,6 +167,53 @@ impl ExifProperties {
             _ => None
         }
     }
+
+    /// ISOSpeedRatings is an array in XMP.
+    fn iso(&self, xmp: &mut Xmp) {
+        let iso = self.bag.get("ISOSpeedRatings");
+        if let Some(&ExifValue::Int(i)) = iso {
+            xmp.set_array_item(NS_EXIF, "ISOSpeedRatings",
+                               0, &format!("{}", i), exempi::PROP_NONE);
+        }
+    }
+
+    /// Will convert to the LensInfo
+    fn lens_info(&self, xmp: &mut Xmp) {
+        let min = self.bag.get("LensMinMM");
+        let max = self.bag.get("LensMaxMM");
+        if min.is_none() || max.is_none() {
+            return;
+        }
+        let min = match min.unwrap() {
+            &ExifValue::Int(i) => i as f64,
+            &ExifValue::Real(f) => f,
+            _ => return
+        };
+        let max = match max.unwrap() {
+            &ExifValue::Int(i) => i as f64,
+            &ExifValue::Real(f) => f,
+            _ => return
+        };
+
+        let value = format!("{}/100 {}/100 0/1 0/1", min * 100.0, max * 100.0);
+        xmp.set_property(NS_EXIF_AUX, "LensInfo", &value, exempi::PROP_NONE);
+    }
+
+    fn custom_value_to_string(&self, key: &str, xmp: &mut Xmp) {
+        match key {
+
+            "Flash" => {
+            },
+            "ISOSpeedRatings" => {
+                self.iso(xmp);
+            },
+            "LensMinMM" => {
+                self.lens_info(xmp);
+            },
+            _ => {
+            }
+        }
+    }
 }
 
 impl ToXmp for ExifProperties {
@@ -177,18 +225,12 @@ impl ToXmp for ExifProperties {
                     &XmpTranslator::Property(ref prop) => {
 
                         if let Some(value) = Self::value_to_string(value) {
-                            println!("value = {}", value);
-
-                            let result = prop.put_into_xmp(&value, xmp);
-                            if !result {
-                                println!("failed to add {}", key.as_str());
-                            } else {
-                                println!("added {}", key.as_str());
-                            }
+                            /*let result = */ prop.put_into_xmp(&value, xmp);
                         }
                     },
+                    &XmpTranslator::Custom =>
+                        self.custom_value_to_string(key, xmp),
                     _ => {
-                        println!("ignored {}", key.as_str());
                     },
                 }
             }
