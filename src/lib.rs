@@ -60,12 +60,16 @@ pub enum AplibType {
     Version,
 }
 
-/// Basic trait from the library objects.
-pub trait AplibObject {
+/// Object that can be loaded from a single plist.
+pub trait PlistLoadable {
     /// Load object from plist `plist_path`
     fn from_path(plist_path: &Path, auditor: Option<&mut Report>) -> Option<Self>
     where
         Self: Sized;
+}
+
+/// Basic trait from the library objects.
+pub trait AplibObject {
     /// Wrap it for storage
     fn wrap(obj: Self) -> store::Wrapper;
     /// Type of object.

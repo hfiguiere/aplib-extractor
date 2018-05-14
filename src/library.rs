@@ -18,6 +18,7 @@ use keyword::{parse_keywords, Keyword};
 use store;
 use plutils;
 use AplibObject;
+use PlistLoadable;
 
 // This is mostly from db_version = 110
 
@@ -265,13 +266,11 @@ impl Library {
 
     /// Load items from directory `dir` with extension `ext`
     /// and store the uuids into `set`
-    fn load_items<T: AplibObject, F: FnMut(u64) -> bool>(
-        &mut self,
-        dir: &str,
-        ext: &str,
-        set: &mut HashSet<String>,
-        pg: &mut F,
-    ) {
+    fn load_items<T, F>(&mut self, dir: &str, ext: &str, set: &mut HashSet<String>, pg: &mut F)
+    where
+        T: PlistLoadable + AplibObject,
+        F: FnMut(u64) -> bool,
+    {
         let file_list = self.list_items(dir, ext);
         let audit = self.auditor.is_some();
         for file in file_list {
@@ -384,12 +383,11 @@ impl Library {
         items
     }
 
-    fn load_versions_items<T: AplibObject, F: FnMut(u64) -> bool>(
-        &mut self,
-        ext: &str,
-        set: &mut HashSet<String>,
-        pg: &mut F,
-    ) {
+    fn load_versions_items<T, F>(&mut self, ext: &str, set: &mut HashSet<String>, pg: &mut F)
+    where
+        T: PlistLoadable + AplibObject,
+        F: FnMut(u64) -> bool,
+    {
         let file_list = self.list_versions_items(ext);
         let audit = self.auditor.is_some();
         for file in file_list {

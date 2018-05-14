@@ -11,6 +11,7 @@ use chrono::{DateTime, Utc};
 use store;
 use AplibObject;
 use AplibType;
+use PlistLoadable;
 use notes::NotesProperties;
 
 use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
@@ -93,7 +94,7 @@ pub struct Folder {
     pub notes: Option<Vec<NotesProperties>>,
 }
 
-impl AplibObject for Folder {
+impl PlistLoadable for Folder {
     fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Folder> {
         use plutils::*;
 
@@ -153,6 +154,9 @@ impl AplibObject for Folder {
             _ => None,
         }
     }
+}
+
+impl AplibObject for Folder {
     fn obj_type(&self) -> AplibType {
         AplibType::Folder
     }

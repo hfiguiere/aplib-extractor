@@ -9,6 +9,7 @@ use chrono::{DateTime, Utc};
 use store;
 use AplibObject;
 use AplibType;
+use PlistLoadable;
 use notes::NotesProperties;
 use audit::{audit_get_array_value, audit_get_bool_value, audit_get_data_value,
             audit_get_date_value, audit_get_int_value, audit_get_str_value, Report, SkipReason};
@@ -52,7 +53,7 @@ pub struct Master {
     pub face_detection_state: Option<i64>,
 }
 
-impl AplibObject for Master {
+impl PlistLoadable for Master {
     fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Master> {
         use plutils::*;
         let plist = parse_plist(plist_path);
@@ -139,6 +140,9 @@ impl AplibObject for Master {
             _ => None,
         }
     }
+}
+
+impl AplibObject for Master {
     fn obj_type(&self) -> AplibType {
         AplibType::Master
     }

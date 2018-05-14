@@ -15,6 +15,7 @@ use exif::ExifProperties;
 use iptc::IptcProperties;
 use AplibObject;
 use AplibType;
+use PlistLoadable;
 use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
             audit_get_dict_value, audit_get_int_value, audit_get_str_value, Report, SkipReason};
 use xmp::ToXmp;
@@ -59,7 +60,7 @@ pub struct Version {
     pub keywords: Option<Vec<Plist>>,
 }
 
-impl AplibObject for Version {
+impl PlistLoadable for Version {
     /// Load the version object from the plist at plist_path.
     fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Version> {
         use plutils::*;
@@ -135,6 +136,9 @@ impl AplibObject for Version {
             _ => None,
         }
     }
+}
+
+impl AplibObject for Version {
     fn obj_type(&self) -> AplibType {
         AplibType::Version
     }

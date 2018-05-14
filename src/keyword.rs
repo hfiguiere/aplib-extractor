@@ -30,12 +30,6 @@ pub struct Keyword {
 }
 
 impl AplibObject for Keyword {
-    #[allow(unused_variables)]
-    #[doc(hidden)]
-    fn from_path(plist_path: &Path, auditor: Option<&mut Report>) -> Option<Keyword> {
-        assert!(false, "must not be called");
-        None
-    }
     fn obj_type(&self) -> AplibType {
         AplibType::Keyword
     }
