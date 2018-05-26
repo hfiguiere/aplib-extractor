@@ -27,7 +27,7 @@ use aplib::FolderType;
 
 const USAGE: &'static str = "
 Usage:
-  dumper <command> ([--all] | [--albums] [--versions] [--masters] [--folders] [--keywords]) <path>
+    dumper <command> ([--all] | [--albums] [--versions] [--masters] [--folders] [--keywords]) <path>
 
 Options:
     --all          Select all objects
