@@ -63,8 +63,9 @@ pub enum AplibType {
 /// Object that can be loaded from a single plist.
 pub trait PlistLoadable {
     /// Load object from plist `plist_path`
-    fn from_path(plist_path: &Path, auditor: Option<&mut Report>) -> Option<Self>
+    fn from_path<P>(plist_path: P, auditor: Option<&mut Report>) -> Option<Self>
     where
+        P: AsRef<Path>,
         Self: Sized;
 }
 

@@ -52,7 +52,10 @@ impl AplibObject for Keyword {
 }
 
 /// Parse keywords from the .plist file
-pub fn parse_keywords(path: &Path, auditor: &mut Option<&mut Report>) -> Option<Vec<Keyword>> {
+pub fn parse_keywords<P>(path: P, auditor: &mut Option<&mut Report>) -> Option<Vec<Keyword>>
+where
+    P: AsRef<Path>,
+{
     let plist = parse_plist(path);
 
     match plist {

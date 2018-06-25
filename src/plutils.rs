@@ -10,13 +10,16 @@ use chrono::{DateTime, Utc};
 pub use plist::Plist;
 use std::collections::BTreeMap;
 
-pub fn parse_plist(path: &Path) -> Plist {
+pub fn parse_plist<P>(path: P) -> Plist
+where
+    P: AsRef<Path>,
+{
     let f = File::open(&path).unwrap();
     let result = Plist::read(f);
     match result {
         Ok(v) => v,
         Err(_) => {
-            println!("Error from plist::read with file {:?}", path);
+            println!("Error from plist::read with file {:?}", path.as_ref());
             Plist::Dictionary(BTreeMap::new())
         }
     }

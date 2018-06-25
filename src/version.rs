@@ -62,7 +62,10 @@ pub struct Version {
 
 impl PlistLoadable for Version {
     /// Load the version object from the plist at plist_path.
-    fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Version> {
+    fn from_path<P>(plist_path: P, mut auditor: Option<&mut Report>) -> Option<Version>
+    where
+        P: AsRef<Path>,
+    {
         use plutils::*;
 
         let plist = parse_plist(plist_path);

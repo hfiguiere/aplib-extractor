@@ -98,7 +98,10 @@ pub struct Album {
 }
 
 impl PlistLoadable for Album {
-    fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Album> {
+    fn from_path<P>(plist_path: P, mut auditor: Option<&mut Report>) -> Option<Album>
+    where
+        P: AsRef<Path>,
+    {
         use plutils::*;
 
         let plist = parse_plist(plist_path);

@@ -259,7 +259,7 @@ impl Library {
     /// Return the model info block
     pub fn get_model_info(&self) -> Option<ModelInfo> {
         let ppath = self.build_path(DATAMODEL_VERSION_PLIST, true);
-        let plist = plutils::parse_plist(ppath.as_ref());
+        let plist = plutils::parse_plist(ppath);
 
         ModelInfo::parse(&plist)
     }
@@ -275,7 +275,7 @@ impl Library {
         let audit = self.auditor.is_some();
         for file in file_list {
             let mut report = if audit { Some(Report::new()) } else { None };
-            if let Some(obj) = T::from_path(file.as_ref(), report.as_mut()) {
+            if let Some(obj) = T::from_path(&file, report.as_mut()) {
                 let mut store = false;
                 if let Some(ref uuid) = *obj.uuid() {
                     set.insert(uuid.to_owned());
@@ -392,7 +392,7 @@ impl Library {
         let audit = self.auditor.is_some();
         for file in file_list {
             let mut report = if audit { Some(Report::new()) } else { None };
-            if let Some(obj) = T::from_path(file.as_ref(), report.as_mut()) {
+            if let Some(obj) = T::from_path(&file, report.as_mut()) {
                 let mut store = false;
                 if let Some(ref uuid) = *obj.uuid() {
                     set.insert(uuid.to_owned());
@@ -455,10 +455,7 @@ impl Library {
     pub fn list_keywords(&mut self) -> Option<Vec<Keyword>> {
         let audit = self.auditor.is_some();
         let mut report = if audit { Some(Report::new()) } else { None };
-        let result = parse_keywords(
-            self.build_path(KEYWORDS_PLIST, true).as_ref(),
-            &mut report.as_mut(),
-        );
+        let result = parse_keywords(self.build_path(KEYWORDS_PLIST, true), &mut report.as_mut());
         if audit {
             if result.is_some() {
                 self.auditor

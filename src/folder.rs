@@ -95,7 +95,10 @@ pub struct Folder {
 }
 
 impl PlistLoadable for Folder {
-    fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Folder> {
+    fn from_path<P>(plist_path: P, mut auditor: Option<&mut Report>) -> Option<Folder>
+    where
+        P: AsRef<Path>,
+    {
         use plutils::*;
 
         let plist = parse_plist(plist_path);

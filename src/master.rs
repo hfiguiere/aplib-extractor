@@ -54,7 +54,10 @@ pub struct Master {
 }
 
 impl PlistLoadable for Master {
-    fn from_path(plist_path: &Path, mut auditor: Option<&mut Report>) -> Option<Master> {
+    fn from_path<P>(plist_path: P, mut auditor: Option<&mut Report>) -> Option<Master>
+    where
+        P: AsRef<Path>,
+    {
         use plutils::*;
         let plist = parse_plist(plist_path);
         match plist {
