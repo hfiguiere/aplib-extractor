@@ -16,14 +16,14 @@ use std::io::stderr;
 use docopt::Docopt;
 use pbr::ProgressBar;
 
-use aplib::AplibObject;
-use aplib::Library;
-use aplib::ModelInfo;
-use aplib::Keyword;
-use aplib::StoreWrapper;
 use aplib::audit::{Report, Reporter};
 use aplib::AlbumSubclass;
+use aplib::AplibObject;
 use aplib::FolderType;
+use aplib::Keyword;
+use aplib::Library;
+use aplib::ModelInfo;
+use aplib::StoreWrapper;
 
 const USAGE: &str = "
 Usage:

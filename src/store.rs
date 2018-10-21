@@ -4,10 +4,10 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use folder::Folder;
 use album::Album;
-use version::Version;
+use folder::Folder;
 use master::Master;
+use version::Version;
 use AplibObject;
 
 /// Wrap an AplibObject to key it into the store.

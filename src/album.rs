@@ -9,13 +9,13 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 
+use audit::{audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value,
+            Report, SkipReason};
+use plutils::{get_array_value, Plist};
 use store;
 use AplibObject;
 use AplibType;
 use PlistLoadable;
-use audit::{audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value,
-            Report, SkipReason};
-use plutils::{get_array_value, Plist};
 
 /// Subclass for album
 #[derive(Debug, PartialEq, Clone)]

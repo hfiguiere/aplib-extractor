@@ -12,8 +12,8 @@ use exempi::Xmp;
 use plist::Plist;
 
 use audit::{Report, SkipReason};
-use xmp::{ToXmp, XmpProperty, XmpTranslator};
 use xmp::ns::*;
+use xmp::{ToXmp, XmpProperty, XmpTranslator};
 
 lazy_static! {
     /// HashMap for Exif properties (Aperture) to XMP.

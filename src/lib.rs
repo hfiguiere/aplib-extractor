@@ -34,17 +34,17 @@ mod testutils;
 
 use std::path::Path;
 
-pub use library::Library;
-pub use library::ModelInfo;
-pub use folder::Folder;
-pub use folder::Type as FolderType;
 pub use album::Album;
 pub use album::Subclass as AlbumSubclass;
-pub use master::Master;
-pub use version::Version;
-pub use keyword::Keyword;
-pub use store::Wrapper as StoreWrapper;
 use audit::Report;
+pub use folder::Folder;
+pub use folder::Type as FolderType;
+pub use keyword::Keyword;
+pub use library::Library;
+pub use library::ModelInfo;
+pub use master::Master;
+pub use store::Wrapper as StoreWrapper;
+pub use version::Version;
 
 /// `AplibObject` types.
 pub enum AplibType {

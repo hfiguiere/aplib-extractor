@@ -4,10 +4,10 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::collections::{BTreeMap, HashMap, HashSet};
 use chrono::{DateTime, Utc};
 use plutils::{get_array_value, get_bool_value, get_data_value, get_date_value, get_dict_value,
               get_int_value, get_str_value, Plist};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 #[derive(Debug)]
 pub enum SkipReason {
@@ -30,7 +30,7 @@ pub enum SkipReason {
 /// The audit reporter.  The idea it too list the properties that are
 /// ignored, skipped or parsed.  In order to establish what we are
 /// missing.
-#[derive(Debug,Default)]
+#[derive(Debug, Default)]
 pub struct Reporter {
     ignored: HashSet<String>,
     skipped: HashMap<String, SkipReason>,

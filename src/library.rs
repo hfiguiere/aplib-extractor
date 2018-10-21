@@ -4,19 +4,19 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::collections::{HashMap, HashSet};
 
-use plist::Plist;
-use folder::Folder;
 use album::Album;
-use version::Version;
-use master::Master;
 use audit::{audit_get_str_value, Report, Reporter, SkipReason};
+use folder::Folder;
 use keyword::{parse_keywords, Keyword};
-use store;
+use master::Master;
+use plist::Plist;
 use plutils;
+use store;
+use version::Version;
 use AplibObject;
 use PlistLoadable;
 

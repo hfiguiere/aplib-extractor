@@ -4,21 +4,21 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::path::Path;
 use chrono::{DateTime, Utc};
 use exempi::Xmp;
+use std::path::Path;
 
-use plutils::Plist;
-use store;
+use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
+            audit_get_dict_value, audit_get_int_value, audit_get_str_value, Report, SkipReason};
 use custominfo::CustomInfoProperties;
 use exif::ExifProperties;
 use iptc::IptcProperties;
+use plutils::Plist;
+use store;
+use xmp::ToXmp;
 use AplibObject;
 use AplibType;
 use PlistLoadable;
-use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
-            audit_get_dict_value, audit_get_int_value, audit_get_str_value, Report, SkipReason};
-use xmp::ToXmp;
 
 /// A rendered image. There is one for the orignal, and one per
 /// actual version. `Version` are associated to a `Master`.
@@ -178,8 +178,8 @@ impl ToXmp for Version {
 #[cfg(test)]
 #[test]
 fn test_version_parse() {
-    use testutils;
     use exempi;
+    use testutils;
     use xmp;
 
     let version = Version::from_path(

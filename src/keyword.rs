@@ -4,15 +4,15 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::path::Path;
 use std::collections::BTreeMap;
+use std::path::Path;
 
+use audit::{audit_get_int_value, Report};
+use plist::Plist;
 use plutils::*;
 use store;
-use plist::Plist;
 use AplibObject;
 use AplibType;
-use audit::{audit_get_int_value, Report};
 
 /// An Aperture keyword.
 pub struct Keyword {

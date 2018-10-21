@@ -4,11 +4,11 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::fs::File;
-use std::path::Path;
 use chrono::{DateTime, Utc};
 pub use plist::Plist;
 use std::collections::BTreeMap;
+use std::fs::File;
+use std::path::Path;
 
 pub fn parse_plist<P>(path: P) -> Plist
 where

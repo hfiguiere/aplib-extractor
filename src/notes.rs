@@ -47,7 +47,6 @@ impl NotesProperties {
         array: &Option<Vec<Plist>>,
         mut auditor: &mut Option<&mut Report>,
     ) -> Option<Vec<NotesProperties>> {
-
         if let Some(array) = array.as_ref() {
             let mut result: Vec<NotesProperties> = vec![];
 
@@ -61,7 +60,7 @@ impl NotesProperties {
                             auditor.skip(
                                 format!("notes[{}]", counter).as_ref(),
                                 SkipReason::InvalidType,
-                                );
+                            );
                         }
                     }
                 }
