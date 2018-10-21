@@ -52,8 +52,8 @@ impl Subclass {
     }
 
     /// Convert to `i64`
-    pub fn to_int(v: &Self) -> i64 {
-        match *v {
+    pub fn to_int(&self) -> i64 {
+        match *self {
             Subclass::Invalid => 0,
             Subclass::Implicit => 1,
             Subclass::Smart => 2,
@@ -150,8 +150,7 @@ impl PlistLoadable for Album {
                     ),
                     content: Album::content_from(&dict, &subclass, &mut auditor),
                 });
-                if auditor.is_some() {
-                    let ref mut auditor = auditor.unwrap();
+                if let Some(ref mut auditor) = auditor {
                     auditor.audit_ignored(&info_dict, None);
                 }
                 result

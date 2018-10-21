@@ -22,18 +22,18 @@ use PlistLoadable;
 
 // This is mostly from db_version = 110
 
-const INFO_PLIST: &'static str = "Info.plist";
+const INFO_PLIST: &str = "Info.plist";
 
-const BUNDLE_IDENTIFIER: &'static str = "com.apple.Aperture.library";
+const BUNDLE_IDENTIFIER: &str = "com.apple.Aperture.library";
 
-const DATABASE_DIR: &'static str = "Database";
+const DATABASE_DIR: &str = "Database";
 
 // in Database
-const DATAMODEL_VERSION_PLIST: &'static str = "DataModelVersion.plist";
-const KEYWORDS_PLIST: &'static str = "Keywords.plist";
-const ALBUMS_DIR: &'static str = "Albums";
-const FOLDERS_DIR: &'static str = "Folders";
-const VERSIONS_BASE_DIR: &'static str = "Versions";
+const DATAMODEL_VERSION_PLIST: &str = "DataModelVersion.plist";
+const KEYWORDS_PLIST: &str = "Keywords.plist";
+const ALBUMS_DIR: &str = "Albums";
+const FOLDERS_DIR: &str = "Folders";
+const VERSIONS_BASE_DIR: &str = "Versions";
 
 /// Info of the library data model
 pub struct ModelInfo {

@@ -48,8 +48,8 @@ impl Type {
     }
 
     /// `Type` to an integer.
-    pub fn to_int(v: &Self) -> i64 {
-        match *v {
+    pub fn to_int(&self) -> i64 {
+        match *self {
             Type::Invalid => 0,
             Type::Folder => 1,
             Type::Project => 2,
@@ -144,9 +144,7 @@ impl PlistLoadable for Folder {
                     ),
                     notes: NotesProperties::from(&notes, &mut auditor),
                 });
-                if auditor.is_some() {
-                    let ref mut auditor = auditor.unwrap();
-
+                if let Some(auditor) = &mut auditor {
                     auditor.skip("CustomOrderList", SkipReason::Ignore);
                     auditor.skip("projectCompatibleBackToVersion", SkipReason::Ignore);
                     auditor.skip("automaticallyGenerateFullSizePreviews", SkipReason::Ignore);

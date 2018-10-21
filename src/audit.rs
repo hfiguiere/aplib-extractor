@@ -30,7 +30,7 @@ pub enum SkipReason {
 /// The audit reporter.  The idea it too list the properties that are
 /// ignored, skipped or parsed.  In order to establish what we are
 /// missing.
-#[derive(Debug)]
+#[derive(Debug,Default)]
 pub struct Reporter {
     ignored: HashSet<String>,
     skipped: HashMap<String, SkipReason>,
@@ -39,11 +39,7 @@ pub struct Reporter {
 
 impl Reporter {
     pub fn new() -> Reporter {
-        Reporter {
-            ignored: HashSet::new(),
-            skipped: HashMap::new(),
-            parsed: HashMap::new(),
-        }
+        Reporter::default()
     }
 
     pub fn ignore(&mut self, key: &str) {
@@ -76,7 +72,7 @@ impl Reporter {
 }
 
 /// Individual report for an object
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Report {
     ignored: HashSet<String>,
     skipped: HashMap<String, SkipReason>,
@@ -85,11 +81,7 @@ pub struct Report {
 
 impl Report {
     pub fn new() -> Report {
-        Report {
-            ignored: HashSet::new(),
-            skipped: HashMap::new(),
-            parsed: HashSet::new(),
-        }
+        Report::default()
     }
 
     pub fn ignore(&mut self, key: &str) {

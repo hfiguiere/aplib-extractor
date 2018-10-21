@@ -18,19 +18,17 @@ impl CustomInfoProperties {
         dict: &Option<BTreeMap<String, Plist>>,
         mut auditor: &mut Option<&mut Report>,
     ) -> Option<CustomInfoProperties> {
-        if dict.is_none() {
-            return None;
+        if let Some(dict) = dict.as_ref() {
+            let result = Some(CustomInfoProperties {
+                camera_time_zone_name: audit_get_str_value(dict, "cameraTimeZoneName", &mut auditor),
+                picture_time_zone_name: audit_get_str_value(dict, "pictureTimeZoneName", &mut auditor),
+            });
+            if let Some(auditor) = &mut auditor.as_mut() {
+                auditor.audit_ignored(dict, Some("customInfo"));
+            }
+            result
+        } else {
+            None
         }
-        let dict = dict.as_ref().unwrap();
-
-        let result = Some(CustomInfoProperties {
-            camera_time_zone_name: audit_get_str_value(dict, "cameraTimeZoneName", &mut auditor),
-            picture_time_zone_name: audit_get_str_value(dict, "pictureTimeZoneName", &mut auditor),
-        });
-        if auditor.is_some() {
-            let ref mut auditor = auditor.as_mut().unwrap();
-            auditor.audit_ignored(dict, Some("customInfo"));
-        }
-        result
     }
 }

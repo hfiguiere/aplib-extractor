@@ -1,3 +1,9 @@
+/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 use std::collections::BTreeMap;
 
 use chrono::{DateTime, Utc};
@@ -31,8 +37,7 @@ impl NotesProperties {
             property_key: audit_get_str_value(dict, "propertyKey", &mut auditor),
             uuid: audit_get_str_value(dict, "uuid", &mut auditor),
         };
-        if auditor.is_some() {
-            let ref mut auditor = auditor.as_mut().unwrap();
+        if let Some(auditor) = &mut auditor {
             auditor.audit_ignored(dict, Some("notes"));
         }
         result
@@ -42,30 +47,28 @@ impl NotesProperties {
         array: &Option<Vec<Plist>>,
         mut auditor: &mut Option<&mut Report>,
     ) -> Option<Vec<NotesProperties>> {
-        if array.is_none() {
-            return None;
-        }
-        let array = array.as_ref().unwrap();
-        let mut result: Vec<NotesProperties> = vec![];
 
-        let mut counter = 0u64;
-        for value in array {
-            match value {
-                &Plist::Dictionary(ref d) => {
-                    result.push(NotesProperties::from_array_element(d, &mut auditor))
-                }
-                _ => {
-                    if auditor.is_some() {
-                        let ref mut auditor = auditor.as_mut().unwrap();
-                        auditor.skip(
-                            format!("notes[{}]", counter).as_ref(),
-                            SkipReason::InvalidType,
-                        );
+        if let Some(array) = array.as_ref() {
+            let mut result: Vec<NotesProperties> = vec![];
+
+            for (counter, value) in array.iter().enumerate() {
+                match *value {
+                    Plist::Dictionary(ref d) => {
+                        result.push(NotesProperties::from_array_element(d, &mut auditor))
+                    }
+                    _ => {
+                        if let Some(auditor) = &mut auditor {
+                            auditor.skip(
+                                format!("notes[{}]", counter).as_ref(),
+                                SkipReason::InvalidType,
+                                );
+                        }
                     }
                 }
             }
-            counter += 1;
+            Some(result)
+        } else {
+            None
         }
-        Some(result)
     }
 }

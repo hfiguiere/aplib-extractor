@@ -129,8 +129,7 @@ impl PlistLoadable for Master {
                         &mut auditor,
                     ),
                 });
-                if auditor.is_some() {
-                    let ref mut auditor = auditor.unwrap();
+                if let Some(auditor) = &mut auditor {
                     auditor.skip("fileAliasData", SkipReason::Ignore);
                     auditor.skip("importedBy", SkipReason::Ignore);
                     auditor.skip("importGroup", SkipReason::Ignore);

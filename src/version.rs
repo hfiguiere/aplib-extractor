@@ -112,8 +112,7 @@ impl PlistLoadable for Version {
                     custom_info: CustomInfoProperties::from(&custom_info, &mut auditor),
                     keywords: audit_get_array_value(dict, "keywords", &mut auditor),
                 });
-                if auditor.is_some() {
-                    let ref mut auditor = auditor.unwrap();
+                if let Some(auditor) = &mut auditor {
                     auditor.skip("statistics", SkipReason::Ignore);
                     auditor.skip("thumbnailGroup", SkipReason::Ignore);
                     auditor.skip("faceDetectionIsFromPreview", SkipReason::Ignore);

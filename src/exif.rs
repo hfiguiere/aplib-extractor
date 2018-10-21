@@ -133,11 +133,11 @@ impl ExifProperties {
         let dict = dict.as_ref().unwrap();
         let mut values: BTreeMap<String, ExifValue> = BTreeMap::new();
         for (key, value) in dict {
-            let ev = match value {
-                &Plist::Integer(n) => ExifValue::Int(n),
-                &Plist::Real(f) => ExifValue::Real(f),
-                &Plist::String(ref s) => ExifValue::Str(s.to_owned()),
-                &Plist::Date(ref d) => ExifValue::Date(d.clone().into()),
+            let ev = match *value {
+                Plist::Integer(n) => ExifValue::Int(n),
+                Plist::Real(f) => ExifValue::Real(f),
+                Plist::String(ref s) => ExifValue::Str(s.to_owned()),
+                Plist::Date(ref d) => ExifValue::Date(d.clone().into()),
                 _ => ExifValue::None,
             };
             if ev != ExifValue::None {
@@ -155,9 +155,9 @@ impl ExifProperties {
     }
 
     pub fn value_to_string(value: &ExifValue) -> Option<String> {
-        match value {
-            &ExifValue::Str(ref str) => Some(str.clone()),
-            &ExifValue::Int(i) => Some(format!("{}", i)),
+        match *value {
+            ExifValue::Str(ref str) => Some(str.clone()),
+            ExifValue::Int(i) => Some(format!("{}", i)),
             _ => None,
         }
     }
@@ -183,14 +183,14 @@ impl ExifProperties {
         if min.is_none() || max.is_none() {
             return;
         }
-        let min = match min.unwrap() {
-            &ExifValue::Int(i) => i as f64,
-            &ExifValue::Real(f) => f,
+        let min = match *min.unwrap() {
+            ExifValue::Int(i) => i as f64,
+            ExifValue::Real(f) => f,
             _ => return,
         };
-        let max = match max.unwrap() {
-            &ExifValue::Int(i) => i as f64,
-            &ExifValue::Real(f) => f,
+        let max = match *max.unwrap() {
+            ExifValue::Int(i) => i as f64,
+            ExifValue::Real(f) => f,
             _ => return,
         };
 
@@ -216,14 +216,14 @@ impl ToXmp for ExifProperties {
     fn to_xmp(&self, xmp: &mut Xmp) -> bool {
         for (key, value) in &self.bag {
             if let Some(ref translator) = EXIF_TO_XMP.get(&key.as_str()) {
-                match *translator {
-                    &XmpTranslator::Property(ref prop) => {
+                match *(*translator) {
+                    XmpTranslator::Property(ref prop) => {
                         if let Some(value) = Self::value_to_string(value) {
                             /*let result = */
                             prop.put_into_xmp(&value, xmp);
                         }
                     }
-                    &XmpTranslator::Custom => self.custom_value_to_string(key, xmp),
+                    XmpTranslator::Custom => self.custom_value_to_string(key, xmp),
                     _ => {}
                 }
             }

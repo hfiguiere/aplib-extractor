@@ -25,7 +25,7 @@ use aplib::audit::{Report, Reporter};
 use aplib::AlbumSubclass;
 use aplib::FolderType;
 
-const USAGE: &'static str = "
+const USAGE: &str = "
 Usage:
     dumper <command> ([--all] | [--albums] [--versions] [--masters] [--folders] [--keywords]) <path>
 
@@ -119,7 +119,7 @@ fn process_audit(args: &Args) {
     }
     println!("+-----------------------------");
     println!("Skipped {}", auditor.skipped_count());
-    for (key, _) in auditor.get_skipped() {
+    for key in auditor.get_skipped().keys() {
         println!("| {} ", key);
     }
     println!("Ignored {}", auditor.ignored_count());
@@ -129,26 +129,25 @@ fn process_audit(args: &Args) {
 }
 
 /// print the keywords with indentation for the hierarchy
-fn print_keywords(keywords: &Vec<Keyword>, indent: &str) {
+fn print_keywords(keywords: &[Keyword], indent: &str) {
     for keyword in keywords {
         if !keyword.is_valid() {
             continue;
         }
         let name = keyword.name.as_ref().unwrap();
         let uuid = keyword.uuid().as_ref().unwrap();
-        let parent = if let &Some(ref p) = keyword.parent() {
+        let parent = if let Some(ref p) = *keyword.parent() {
             p.clone()
         } else {
             String::new()
         };
         println!("| {:<26} | {:<26} | {}{}", uuid, parent, indent, name);
         if keyword.children.is_some() {
-            let new_indent;
-            if indent.is_empty() {
-                new_indent = String::from("+- ") + indent;
+            let new_indent = if indent.is_empty() {
+                String::from("+- ") + indent
             } else {
-                new_indent = String::from("\t") + indent;
-            }
+                String::from("\t") + indent
+            };
             print_keywords(keyword.children.as_ref().unwrap(), &new_indent);
         }
     }
@@ -292,7 +291,7 @@ fn dump_albums(library: &mut Library) {
                     String::new()
                 };
                 let uuid = album.uuid().as_ref().unwrap();
-                let parent = if let &Some(ref p) = album.parent() {
+                let parent = if let Some(ref p) = *album.parent() {
                     p.clone()
                 } else {
                     String::new()

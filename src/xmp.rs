@@ -9,14 +9,14 @@ use exempi::Xmp;
 
 /// Define namespace constants until we can get them out of Exempi.
 pub mod ns {
-    pub const NS_DC: &'static str = "http://purl.org/dc/elements/1.1/";
-    pub const NS_IPTC4XMP: &'static str = "http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/";
-    pub const NS_XMP: &'static str = "http://ns.adobe.com/xap/1.0/";
-    pub const NS_XMP_RIGHTS: &'static str = "http://ns.adobe.com/xap/1.0/rights/";
-    pub const NS_PHOTOSHOP: &'static str = "http://ns.adobe.com/photoshop/1.0/";
-    pub const NS_EXIF: &'static str = "http://ns.adobe.com/exif/1.0/";
-    pub const NS_EXIF_AUX: &'static str = "http://ns.adobe.com/exif/1.0/aux/";
-    pub const NS_TIFF: &'static str = "http://ns.adobe.com/tiff/1.0/";
+    pub const NS_DC: &str = "http://purl.org/dc/elements/1.1/";
+    pub const NS_IPTC4XMP: &str = "http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/";
+    pub const NS_XMP: &str = "http://ns.adobe.com/xap/1.0/";
+    pub const NS_XMP_RIGHTS: &str = "http://ns.adobe.com/xap/1.0/rights/";
+    pub const NS_PHOTOSHOP: &str = "http://ns.adobe.com/photoshop/1.0/";
+    pub const NS_EXIF: &str = "http://ns.adobe.com/exif/1.0/";
+    pub const NS_EXIF_AUX: &str = "http://ns.adobe.com/exif/1.0/aux/";
+    pub const NS_TIFF: &str = "http://ns.adobe.com/tiff/1.0/";
 }
 
 /// Define a property

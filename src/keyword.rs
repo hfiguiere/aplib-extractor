@@ -79,11 +79,8 @@ impl Keyword {
 
         let mut keywords = Vec::new();
         for item in a {
-            match item {
-                Plist::Dictionary(ref kw) => {
-                    keywords.push(Keyword::from(kw));
-                }
-                _ => (),
+            if let Plist::Dictionary(ref kw) = item {
+                keywords.push(Keyword::from(kw));
             }
         }
         Some(keywords)

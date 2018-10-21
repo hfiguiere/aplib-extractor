@@ -108,8 +108,8 @@ impl IptcProperties {
         let dict = try_opt!(dict.as_ref());
         let mut values: BTreeMap<String, IptcValue> = BTreeMap::new();
         for (key, value) in dict {
-            match value {
-                &Plist::String(ref s) => {
+            match *value {
+                Plist::String(ref s) => {
                     values.insert(key.to_owned(), IptcValue::Str(s.to_owned()));
                     if let Some(ref mut r) = *auditor {
                         if !IPTC_TO_XMP.contains_key(&key.as_str()) {
@@ -129,16 +129,13 @@ impl IptcProperties {
 impl ToXmp for IptcProperties {
     fn to_xmp(&self, xmp: &mut Xmp) -> bool {
         for (key, value) in &self.bag {
-            let value = match value {
-                &IptcValue::Str(ref str) => str,
+            let value = match *value {
+                IptcValue::Str(ref str) => str,
                 _ => continue,
             };
             if let Some(ref translator) = IPTC_TO_XMP.get(&key.as_str()) {
-                match *translator {
-                    &XmpTranslator::Property(ref prop) => {
-                        prop.put_into_xmp(&value, xmp);
-                    }
-                    _ => {}
+                if let XmpTranslator::Property(ref prop) = *(*translator) {
+                    prop.put_into_xmp(&value, xmp);
                 }
             }
         }
