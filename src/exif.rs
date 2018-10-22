@@ -166,13 +166,15 @@ impl ExifProperties {
     fn iso(&self, xmp: &mut Xmp) {
         let iso = self.bag.get("ISOSpeedRatings");
         if let Some(&ExifValue::Int(i)) = iso {
-            xmp.set_array_item(
+            if let Err(err) = xmp.set_array_item(
                 NS_EXIF,
                 "ISOSpeedRatings",
                 0,
                 &format!("{}", i),
                 exempi::PROP_NONE,
-            );
+            ) {
+                println!("Error converting ISO {:?}", err);
+            }
         }
     }
 
@@ -195,7 +197,9 @@ impl ExifProperties {
         };
 
         let value = format!("{}/100 {}/100 0/1 0/1", min * 100.0, max * 100.0);
-        xmp.set_property(NS_EXIF_AUX, "LensInfo", &value, exempi::PROP_NONE);
+        if let Err(err) = xmp.set_property(NS_EXIF_AUX, "LensInfo", &value, exempi::PROP_NONE) {
+            println!("Error converting LensInfo {:?}", err);
+        }
     }
 
     fn custom_value_to_string(&self, key: &str, xmp: &mut Xmp) {

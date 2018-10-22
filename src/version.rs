@@ -215,11 +215,11 @@ fn test_version_parse() {
 
     let mut options: exempi::PropFlags = exempi::PROP_NONE;
     let value = xmp.get_property(xmp::ns::NS_DC, "creator", &mut options);
-    assert!(value.is_some());
+    assert!(value.is_ok());
     assert_eq!(value.unwrap().to_str(), "Hubert Figuiere");
 
     options = exempi::PROP_NONE;
     let value = xmp.get_property(xmp::ns::NS_EXIF, "ApertureValue", &mut options);
-    assert!(value.is_some());
+    assert!(value.is_ok());
     assert_eq!(value.unwrap().to_str(), "4");
 }

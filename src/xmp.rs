@@ -56,16 +56,16 @@ impl XmpProperty {
     /// Put the property `value` into the XMP meta.
     pub fn put_into_xmp(&self, value: &str, xmp: &mut Xmp) -> bool {
         if self.index.is_none() && self.field.is_none() {
-            return xmp.set_property(self.ns, self.property, value, exempi::PROP_NONE);
+            return xmp.set_property(self.ns, self.property, value, exempi::PROP_NONE).is_ok();
         } else if let Some(ref field) = self.field {
             // XXX when there is the API in exempi, use it.
             // For now we have to compose the path by hand.
             if let Some(prefix) = exempi::namespace_prefix(field.ns) {
                 let property = format!("{}/{}{}", self.property, prefix, field.property);
-                return xmp.set_property(self.ns, &property, value, exempi::PROP_NONE);
+                return xmp.set_property(self.ns, &property, value, exempi::PROP_NONE).is_ok();
             }
         } else if let Some(index) = self.index {
-            return xmp.set_array_item(self.ns, self.property, index, value, exempi::PROP_NONE);
+            return xmp.set_array_item(self.ns, self.property, index, value, exempi::PROP_NONE).is_ok();
         }
         false
     }
@@ -107,6 +107,6 @@ fn test_xmp() {
 
     let mut options: exempi::PropFlags = exempi::PROP_NONE;
     let value = xmp.get_property(prop1.ns, prop1.property, &mut options);
-    assert!(value.is_some());
+    assert!(value.is_ok());
     assert_eq!(value.unwrap().to_str(), "Batman");
 }
