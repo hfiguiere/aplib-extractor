@@ -4,8 +4,6 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::collections::BTreeMap;
-
 use chrono::{DateTime, Utc};
 
 use audit::{
@@ -27,7 +25,7 @@ pub struct NotesProperties {
 
 impl NotesProperties {
     pub fn from_array_element(
-        dict: &BTreeMap<String, Value>,
+        dict: &plist::Dictionary,
         mut auditor: &mut Option<&mut Report>,
     ) -> NotesProperties {
         let result = NotesProperties {

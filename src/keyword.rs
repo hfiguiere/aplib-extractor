@@ -4,7 +4,6 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::collections::BTreeMap;
 use std::path::Path;
 
 use audit::{audit_get_int_value, Report};
@@ -87,7 +86,7 @@ impl Keyword {
 
     /// Create a new keyword from a plist dictionary
     /// will recursively create the children
-    pub fn from(d: &BTreeMap<String, Value>) -> Keyword {
+    pub fn from(d: &plist::Dictionary) -> Keyword {
         Keyword {
             uuid: get_str_value(d, "uuid"),
             model_id: get_int_value(d, "modelId"),

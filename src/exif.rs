@@ -125,7 +125,7 @@ pub struct ExifProperties {
 
 impl ExifProperties {
     pub fn from(
-        dict: &Option<BTreeMap<String, Value>>,
+        dict: &Option<plist::Dictionary>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<ExifProperties> {
         if dict.is_none() {
@@ -135,7 +135,7 @@ impl ExifProperties {
         let mut values: BTreeMap<String, ExifValue> = BTreeMap::new();
         for (key, value) in dict {
             let ev = match *value {
-                Value::Integer(n) => ExifValue::Int(n),
+                Value::Integer(n) => n.as_signed().map_or(ExifValue::None, |v| ExifValue::Int(v)),
                 Value::Real(f) => ExifValue::Real(f),
                 Value::String(ref s) => ExifValue::Str(s.to_owned()),
                 Value::Date(ref d) => {

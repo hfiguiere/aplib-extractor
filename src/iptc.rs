@@ -102,7 +102,7 @@ pub struct IptcProperties {
 
 impl IptcProperties {
     pub fn from(
-        dict: &Option<BTreeMap<String, Value>>,
+        dict: &Option<plist::Dictionary>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<IptcProperties> {
         let dict = try_opt!(dict.as_ref());

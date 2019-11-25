@@ -4,7 +4,6 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::collections::BTreeMap;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
@@ -187,7 +186,7 @@ impl Album {
     /// Load album content. `dict` should contain the "versionUuids" key.
     /// and the subclass should be `Subclass::User`.
     fn content_from(
-        dict: &BTreeMap<String, Value>,
+        dict: &plist::Dictionary,
         subclass: &Option<Subclass>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<Vec<String>> {
