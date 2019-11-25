@@ -135,7 +135,7 @@ impl ExifProperties {
         let mut values: BTreeMap<String, ExifValue> = BTreeMap::new();
         for (key, value) in dict {
             let ev = match *value {
-                Value::Integer(n) => n.as_signed().map_or(ExifValue::None, |v| ExifValue::Int(v)),
+                Value::Integer(n) => n.as_signed().map_or(ExifValue::None, ExifValue::Int),
                 Value::Real(f) => ExifValue::Real(f),
                 Value::String(ref s) => ExifValue::Str(s.to_owned()),
                 Value::Date(ref d) => {
