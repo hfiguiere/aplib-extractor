@@ -13,7 +13,7 @@ use audit::{
     audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value, Report,
     SkipReason,
 };
-use plutils::{get_array_value, Plist};
+use plutils::{get_array_value, Value};
 use store;
 use AplibObject;
 use AplibType;
@@ -108,7 +108,7 @@ impl PlistLoadable for Album {
 
         let plist = parse_plist(plist_path);
         match plist {
-            Plist::Dictionary(ref dict) => {
+            Value::Dictionary(ref dict) => {
                 let info_dict = try_opt!(get_dict_value(dict, "InfoDictionary"));
                 let subclass = Subclass::from_option(audit_get_int_value(
                     &info_dict,
@@ -187,7 +187,7 @@ impl Album {
     /// Load album content. `dict` should contain the "versionUuids" key.
     /// and the subclass should be `Subclass::User`.
     fn content_from(
-        dict: &BTreeMap<String, Plist>,
+        dict: &BTreeMap<String, Value>,
         subclass: &Option<Subclass>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<Vec<String>> {
@@ -197,7 +197,7 @@ impl Album {
             content = array
                 .iter()
                 .filter_map(|elem| match *elem {
-                    Plist::String(ref s) => Some(s.to_owned()),
+                    Value::String(ref s) => Some(s.to_owned()),
                     _ => None,
                 }).collect();
             if let Some(ref mut report) = *auditor {

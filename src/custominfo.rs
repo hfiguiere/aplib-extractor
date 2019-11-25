@@ -5,7 +5,7 @@
  */
 
 use audit::{audit_get_str_value, Report};
-use plist::Plist;
+use plist::Value;
 use std::collections::BTreeMap;
 
 pub struct CustomInfoProperties {
@@ -15,7 +15,7 @@ pub struct CustomInfoProperties {
 
 impl CustomInfoProperties {
     pub fn from(
-        dict: &Option<BTreeMap<String, Plist>>,
+        dict: &Option<BTreeMap<String, Value>>,
         mut auditor: &mut Option<&mut Report>,
     ) -> Option<CustomInfoProperties> {
         if let Some(dict) = dict.as_ref() {

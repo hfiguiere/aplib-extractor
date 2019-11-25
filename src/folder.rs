@@ -105,7 +105,7 @@ impl PlistLoadable for Folder {
 
         let plist = parse_plist(plist_path);
         match plist {
-            Plist::Dictionary(ref dict) => {
+            Value::Dictionary(ref dict) => {
                 let notes = audit_get_array_value(dict, "notes", &mut auditor);
                 let result = Some(Folder {
                     path: audit_get_str_value(dict, "folderPath", &mut auditor),

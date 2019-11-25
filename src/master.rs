@@ -63,7 +63,7 @@ impl PlistLoadable for Master {
         use plutils::*;
         let plist = parse_plist(plist_path);
         match plist {
-            Plist::Dictionary(ref dict) => {
+            Value::Dictionary(ref dict) => {
                 let notes = audit_get_array_value(dict, "notes", &mut auditor);
                 let result = Some(Master {
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),

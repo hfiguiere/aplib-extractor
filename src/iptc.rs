@@ -7,7 +7,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use exempi::Xmp;
-use plist::Plist;
+use plist::Value;
 
 use audit::{Report, SkipReason};
 use xmp::ns::*;
@@ -102,14 +102,14 @@ pub struct IptcProperties {
 
 impl IptcProperties {
     pub fn from(
-        dict: &Option<BTreeMap<String, Plist>>,
+        dict: &Option<BTreeMap<String, Value>>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<IptcProperties> {
         let dict = try_opt!(dict.as_ref());
         let mut values: BTreeMap<String, IptcValue> = BTreeMap::new();
         for (key, value) in dict {
             match *value {
-                Plist::String(ref s) => {
+                Value::String(ref s) => {
                     values.insert(key.to_owned(), IptcValue::Str(s.to_owned()));
                     if let Some(ref mut r) = *auditor {
                         if !IPTC_TO_XMP.contains_key(&key.as_str()) {

@@ -8,7 +8,6 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use audit::{audit_get_int_value, Report};
-use plist::Plist;
 use plutils::*;
 use store;
 use AplibObject;
@@ -59,7 +58,7 @@ where
     let plist = parse_plist(path);
 
     match plist {
-        Plist::Dictionary(ref dict) => {
+        Value::Dictionary(ref dict) => {
             let version = try_opt!(audit_get_int_value(dict, "keywords_version", auditor));
             // XXX deal with proper errors here.
             // Version 3.4.5 has version 7.
@@ -74,12 +73,12 @@ where
 
 impl Keyword {
     /// convert a Plist array to a vec of keyword.
-    fn from_array(oa: Option<Vec<Plist>>) -> Option<Vec<Keyword>> {
+    fn from_array(oa: Option<Vec<Value>>) -> Option<Vec<Keyword>> {
         let a = try_opt!(oa);
 
         let mut keywords = Vec::new();
         for item in a {
-            if let Plist::Dictionary(ref kw) = item {
+            if let Value::Dictionary(ref kw) = item {
                 keywords.push(Keyword::from(kw));
             }
         }
@@ -88,7 +87,7 @@ impl Keyword {
 
     /// Create a new keyword from a plist dictionary
     /// will recursively create the children
-    pub fn from(d: &BTreeMap<String, Plist>) -> Keyword {
+    pub fn from(d: &BTreeMap<String, Value>) -> Keyword {
         Keyword {
             uuid: get_str_value(d, "uuid"),
             model_id: get_int_value(d, "modelId"),

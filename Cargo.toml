@@ -10,7 +10,7 @@ exempi = { version = "2.5.0", git = "https://github.com/hfiguiere/exempi-rs.git"
 lazy_static = "1.4.0"
 maplit = "1.0.0"
 pbr = "1.0.0"
-plist = "0.3.0"
+plist = "0.4.0"
 serde = "1.0.15"
 serde_derive = "1.0"  # if you're using `derive(Deserialize)`
 try_opt = "0.1.1"

@@ -5,68 +5,66 @@
  */
 
 use chrono::{DateTime, Utc};
-pub use plist::Plist;
+pub use plist::Value;
 use std::collections::BTreeMap;
-use std::fs::File;
 use std::path::Path;
 use std::time::SystemTime;
 
-pub fn parse_plist<P>(path: P) -> Plist
+pub fn parse_plist<P>(path: P) -> Value
 where
     P: AsRef<Path>,
 {
-    let f = File::open(&path).unwrap();
-    let result = Plist::read(f);
+    let result = Value::from_file(&path);
     match result {
         Ok(v) => v,
         Err(_) => {
             println!("Error from plist::read with file {:?}", path.as_ref());
-            Plist::Dictionary(BTreeMap::new())
+            Value::Dictionary(BTreeMap::new())
         }
     }
 }
 
-pub fn get_str_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<String> {
+pub fn get_str_value(dict: &BTreeMap<String, Value>, key: &str) -> Option<String> {
     match dict.get(key) {
-        Some(&Plist::String(ref s)) => Some(s.to_owned()),
+        Some(&Value::String(ref s)) => Some(s.to_owned()),
         _ => None,
     }
 }
 
-pub fn get_int_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<i64> {
+pub fn get_int_value(dict: &BTreeMap<String, Value>, key: &str) -> Option<i64> {
     match dict.get(key) {
-        Some(&Plist::Integer(n)) => Some(n),
+        Some(&Value::Integer(n)) => Some(n),
         _ => None,
     }
 }
 
-pub fn get_uint_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<u64> {
+pub fn get_uint_value(dict: &BTreeMap<String, Value>, key: &str) -> Option<u64> {
     match dict.get(key) {
-        Some(&Plist::Integer(n)) => Some(n as u64),
+        Some(&Value::Integer(n)) => Some(n as u64),
         _ => None,
     }
 }
 
-pub fn get_bool_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<bool> {
+pub fn get_bool_value(dict: &BTreeMap<String, Value>, key: &str) -> Option<bool> {
     match dict.get(key) {
-        Some(&Plist::Boolean(b)) => Some(b),
+        Some(&Value::Boolean(b)) => Some(b),
         _ => None,
     }
 }
 
 pub fn get_dict_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
-) -> Option<BTreeMap<String, Plist>> {
+) -> Option<BTreeMap<String, Value>> {
     match dict.get(key) {
-        Some(&Plist::Dictionary(ref d)) => Some(d.to_owned()),
+        Some(&Value::Dictionary(ref d)) => Some(d.to_owned()),
         _ => None,
     }
 }
 
-pub fn get_date_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<DateTime<Utc>> {
+pub fn get_date_value(dict: &BTreeMap<String, Value>, key: &str) -> Option<DateTime<Utc>> {
     match dict.get(key) {
-        Some(&Plist::Date(ref d)) => {
+        Some(&Value::Date(ref d)) => {
             let t: SystemTime = d.clone().into();
             Some(t.into())
         }
@@ -74,16 +72,16 @@ pub fn get_date_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<DateT
     }
 }
 
-pub fn get_data_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<Vec<u8>> {
+pub fn get_data_value(dict: &BTreeMap<String, Value>, key: &str) -> Option<Vec<u8>> {
     match dict.get(key) {
-        Some(&Plist::Data(ref d)) => Some(d.clone()),
+        Some(&Value::Data(ref d)) => Some(d.clone()),
         _ => None,
     }
 }
 
-pub fn get_array_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<Vec<Plist>> {
+pub fn get_array_value(dict: &BTreeMap<String, Value>, key: &str) -> Option<Vec<Value>> {
     match dict.get(key) {
-        Some(&Plist::Array(ref a)) => Some(a.to_owned()),
+        Some(&Value::Array(ref a)) => Some(a.to_owned()),
         _ => None,
     }
 }

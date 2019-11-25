@@ -10,7 +10,7 @@ use std::time::SystemTime;
 use chrono::{DateTime, Utc};
 use exempi;
 use exempi::Xmp;
-use plist::Plist;
+use plist::Value;
 
 use audit::{Report, SkipReason};
 use xmp::ns::*;
@@ -125,7 +125,7 @@ pub struct ExifProperties {
 
 impl ExifProperties {
     pub fn from(
-        dict: &Option<BTreeMap<String, Plist>>,
+        dict: &Option<BTreeMap<String, Value>>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<ExifProperties> {
         if dict.is_none() {
@@ -135,10 +135,10 @@ impl ExifProperties {
         let mut values: BTreeMap<String, ExifValue> = BTreeMap::new();
         for (key, value) in dict {
             let ev = match *value {
-                Plist::Integer(n) => ExifValue::Int(n),
-                Plist::Real(f) => ExifValue::Real(f),
-                Plist::String(ref s) => ExifValue::Str(s.to_owned()),
-                Plist::Date(ref d) => {
+                Value::Integer(n) => ExifValue::Int(n),
+                Value::Real(f) => ExifValue::Real(f),
+                Value::String(ref s) => ExifValue::Str(s.to_owned()),
+                Value::Date(ref d) => {
                     let t: SystemTime = d.clone().into();
                     ExifValue::Date(t.into())
                 }

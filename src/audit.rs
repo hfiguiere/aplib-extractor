@@ -7,7 +7,7 @@
 use chrono::{DateTime, Utc};
 use plutils::{
     get_array_value, get_bool_value, get_data_value, get_date_value, get_dict_value, get_int_value,
-    get_str_value, Plist,
+    get_str_value, Value,
 };
 use std::collections::{BTreeMap, HashMap, HashSet};
 
@@ -116,7 +116,7 @@ impl Report {
         self.parsed.len()
     }
 
-    pub fn audit_ignored(&mut self, dict: &BTreeMap<String, Plist>, ns: Option<&str>) {
+    pub fn audit_ignored(&mut self, dict: &BTreeMap<String, Value>, ns: Option<&str>) {
         let ignored_keys: HashSet<_> = {
             let skipped_keys: HashSet<_> = self.skipped.keys().cloned().collect();
             let known_keys = self.parsed.union(&skipped_keys).cloned().collect();
@@ -135,7 +135,7 @@ impl Report {
 }
 
 pub fn audit_get_str_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
     report: &mut Option<&mut Report>,
 ) -> Option<String> {
@@ -150,7 +150,7 @@ pub fn audit_get_str_value(
 }
 
 pub fn audit_get_int_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
     report: &mut Option<&mut Report>,
 ) -> Option<i64> {
@@ -165,7 +165,7 @@ pub fn audit_get_int_value(
 }
 
 pub fn audit_get_bool_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
     report: &mut Option<&mut Report>,
 ) -> Option<bool> {
@@ -180,10 +180,10 @@ pub fn audit_get_bool_value(
 }
 
 pub fn audit_get_dict_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
     report: &mut Option<&mut Report>,
-) -> Option<BTreeMap<String, Plist>> {
+) -> Option<BTreeMap<String, Value>> {
     let value = get_dict_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
@@ -195,10 +195,10 @@ pub fn audit_get_dict_value(
 }
 
 pub fn audit_get_array_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
     report: &mut Option<&mut Report>,
-) -> Option<Vec<Plist>> {
+) -> Option<Vec<Value>> {
     let value = get_array_value(dict, key);
     if let Some(ref mut report) = *report {
         match value {
@@ -210,7 +210,7 @@ pub fn audit_get_array_value(
 }
 
 pub fn audit_get_date_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
     report: &mut Option<&mut Report>,
 ) -> Option<DateTime<Utc>> {
@@ -225,7 +225,7 @@ pub fn audit_get_date_value(
 }
 
 pub fn audit_get_data_value(
-    dict: &BTreeMap<String, Plist>,
+    dict: &BTreeMap<String, Value>,
     key: &str,
     report: &mut Option<&mut Report>,
 ) -> Option<Vec<u8>> {

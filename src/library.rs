@@ -13,7 +13,7 @@ use audit::{audit_get_str_value, Report, Reporter, SkipReason};
 use folder::Folder;
 use keyword::{parse_keywords, Keyword};
 use master::Master;
-use plist::Plist;
+use plist::Value;
 use plutils;
 use store;
 use version::Version;
@@ -53,11 +53,11 @@ pub struct ModelInfo {
 }
 
 impl ModelInfo {
-    fn parse(plist: &Plist) -> Option<ModelInfo> {
+    fn parse(plist: &Value) -> Option<ModelInfo> {
         use plutils::{get_bool_value, get_int_value, get_str_value};
 
         match *plist {
-            Plist::Dictionary(ref dict) => Some(ModelInfo {
+            Value::Dictionary(ref dict) => Some(ModelInfo {
                 db_uuid: get_str_value(dict, "databaseUuid"),
                 db_minor_back_compatible_version: get_int_value(
                     dict,
@@ -168,7 +168,7 @@ impl Library {
             let mut report = if audit { Some(Report::new()) } else { None };
 
             match plist {
-                Plist::Dictionary(ref dict) => {
+                Value::Dictionary(ref dict) => {
                     let version = audit_get_str_value(
                         dict,
                         "CFBundleShortVersionString",

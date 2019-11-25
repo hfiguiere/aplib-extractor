@@ -15,7 +15,7 @@ use audit::{
 use custominfo::CustomInfoProperties;
 use exif::ExifProperties;
 use iptc::IptcProperties;
-use plutils::Plist;
+use plutils::Value;
 use store;
 use xmp::ToXmp;
 use AplibObject;
@@ -59,7 +59,7 @@ pub struct Version {
     pub iptc: Option<IptcProperties>,
     pub exif: Option<ExifProperties>,
     pub custom_info: Option<CustomInfoProperties>,
-    pub keywords: Option<Vec<Plist>>,
+    pub keywords: Option<Vec<Value>>,
 }
 
 impl PlistLoadable for Version {
@@ -72,7 +72,7 @@ impl PlistLoadable for Version {
 
         let plist = parse_plist(plist_path);
         match plist {
-            Plist::Dictionary(ref dict) => {
+            Value::Dictionary(ref dict) => {
                 let iptc = audit_get_dict_value(dict, "iptcProperties", &mut auditor);
                 let exif = audit_get_dict_value(dict, "exifProperties", &mut auditor);
                 let custom_info = audit_get_dict_value(dict, "customInfo", &mut auditor);

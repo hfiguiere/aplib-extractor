@@ -12,7 +12,7 @@ use audit::{
     audit_get_data_value, audit_get_date_value, audit_get_int_value, audit_get_str_value, Report,
     SkipReason,
 };
-use plutils::Plist;
+use plutils::Value;
 
 #[derive(Debug)]
 pub struct NotesProperties {
@@ -27,7 +27,7 @@ pub struct NotesProperties {
 
 impl NotesProperties {
     pub fn from_array_element(
-        dict: &BTreeMap<String, Plist>,
+        dict: &BTreeMap<String, Value>,
         mut auditor: &mut Option<&mut Report>,
     ) -> NotesProperties {
         let result = NotesProperties {
@@ -46,7 +46,7 @@ impl NotesProperties {
     }
 
     pub fn from(
-        array: &Option<Vec<Plist>>,
+        array: &Option<Vec<Value>>,
         mut auditor: &mut Option<&mut Report>,
     ) -> Option<Vec<NotesProperties>> {
         if let Some(array) = array.as_ref() {
@@ -54,7 +54,7 @@ impl NotesProperties {
 
             for (counter, value) in array.iter().enumerate() {
                 match *value {
-                    Plist::Dictionary(ref d) => {
+                    Value::Dictionary(ref d) => {
                         result.push(NotesProperties::from_array_element(d, &mut auditor))
                     }
                     _ => {
