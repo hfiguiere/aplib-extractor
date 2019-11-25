@@ -9,6 +9,7 @@ pub use plist::Plist;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::path::Path;
+use std::time::SystemTime;
 
 pub fn parse_plist<P>(path: P) -> Plist
 where
@@ -65,7 +66,10 @@ pub fn get_dict_value(
 
 pub fn get_date_value(dict: &BTreeMap<String, Plist>, key: &str) -> Option<DateTime<Utc>> {
     match dict.get(key) {
-        Some(&Plist::Date(ref d)) => Some(d.clone().into()),
+        Some(&Plist::Date(ref d)) => {
+            let t: SystemTime = d.clone().into();
+            Some(t.into())
+        }
         _ => None,
     }
 }

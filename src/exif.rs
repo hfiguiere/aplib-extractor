@@ -5,6 +5,7 @@
  */
 
 use std::collections::{BTreeMap, HashMap};
+use std::time::SystemTime;
 
 use chrono::{DateTime, Utc};
 use exempi;
@@ -137,7 +138,10 @@ impl ExifProperties {
                 Plist::Integer(n) => ExifValue::Int(n),
                 Plist::Real(f) => ExifValue::Real(f),
                 Plist::String(ref s) => ExifValue::Str(s.to_owned()),
-                Plist::Date(ref d) => ExifValue::Date(d.clone().into()),
+                Plist::Date(ref d) => {
+                    let t: SystemTime = d.clone().into();
+                    ExifValue::Date(t.into())
+                }
                 _ => ExifValue::None,
             };
             if ev != ExifValue::None {
