@@ -14,8 +14,10 @@ use AplibObject;
 use AplibType;
 use PlistLoadable;
 
-use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
-            audit_get_int_value, audit_get_str_value, Report, SkipReason};
+use audit::{
+    audit_get_array_value, audit_get_bool_value, audit_get_date_value, audit_get_int_value,
+    audit_get_str_value, Report, SkipReason,
+};
 
 /// Type of folder
 #[derive(Debug, PartialEq)]

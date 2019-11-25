@@ -9,8 +9,10 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 
-use audit::{audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value,
-            Report, SkipReason};
+use audit::{
+    audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value, Report,
+    SkipReason,
+};
 use plutils::{get_array_value, Plist};
 use store;
 use AplibObject;
@@ -197,8 +199,7 @@ impl Album {
                 .filter_map(|elem| match *elem {
                     Plist::String(ref s) => Some(s.to_owned()),
                     _ => None,
-                })
-                .collect();
+                }).collect();
             if let Some(ref mut report) = *auditor {
                 report.parsed("versionUuids");
             }

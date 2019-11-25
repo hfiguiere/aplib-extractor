@@ -8,8 +8,10 @@ use std::collections::BTreeMap;
 
 use chrono::{DateTime, Utc};
 
-use audit::{audit_get_data_value, audit_get_date_value, audit_get_int_value, audit_get_str_value,
-            Report, SkipReason};
+use audit::{
+    audit_get_data_value, audit_get_date_value, audit_get_int_value, audit_get_str_value, Report,
+    SkipReason,
+};
 use plutils::Plist;
 
 #[derive(Debug)]

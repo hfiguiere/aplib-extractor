@@ -8,8 +8,10 @@ use chrono::{DateTime, Utc};
 use exempi::Xmp;
 use std::path::Path;
 
-use audit::{audit_get_array_value, audit_get_bool_value, audit_get_date_value,
-            audit_get_dict_value, audit_get_int_value, audit_get_str_value, Report, SkipReason};
+use audit::{
+    audit_get_array_value, audit_get_bool_value, audit_get_date_value, audit_get_dict_value,
+    audit_get_int_value, audit_get_str_value, Report, SkipReason,
+};
 use custominfo::CustomInfoProperties;
 use exif::ExifProperties;
 use iptc::IptcProperties;

@@ -4,8 +4,10 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use audit::{audit_get_array_value, audit_get_bool_value, audit_get_data_value,
-            audit_get_date_value, audit_get_int_value, audit_get_str_value, Report, SkipReason};
+use audit::{
+    audit_get_array_value, audit_get_bool_value, audit_get_data_value, audit_get_date_value,
+    audit_get_int_value, audit_get_str_value, Report, SkipReason,
+};
 use chrono::{DateTime, Utc};
 use notes::NotesProperties;
 use std::path::Path;

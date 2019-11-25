@@ -5,8 +5,10 @@
  */
 
 use chrono::{DateTime, Utc};
-use plutils::{get_array_value, get_bool_value, get_data_value, get_date_value, get_dict_value,
-              get_int_value, get_str_value, Plist};
+use plutils::{
+    get_array_value, get_bool_value, get_data_value, get_date_value, get_dict_value, get_int_value,
+    get_str_value, Plist,
+};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
 #[derive(Debug)]
