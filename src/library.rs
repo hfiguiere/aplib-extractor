@@ -140,16 +140,13 @@ impl Library {
     /// Return false if there already was an object with the same uuid
     /// or if the uuid in invalid.
     pub fn store(&mut self, obj: store::Wrapper) -> bool {
-        let uuid_str = {
-            let uuid = obj.uuid();
-            if uuid.is_none() {
-                return false;
+        if let Some(uuid_str) = obj.uuid() {
+            match self.objects.insert(uuid_str, obj) {
+                None => true,
+                _ => false,
             }
-            uuid.unwrap().to_owned()
-        };
-        match self.objects.insert(uuid_str, obj) {
-            None => true,
-            _ => false,
+        } else {
+            false
         }
     }
 
