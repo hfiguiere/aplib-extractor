@@ -44,7 +44,7 @@ impl Type {
 
     /// `Type` from an optional integer.
     fn from_option(o: Option<i64>) -> Option<Self> {
-        let v = try_opt!(o);
+        let v = o?;
         Some(Self::from(v))
     }
 

@@ -11,8 +11,6 @@ extern crate lazy_static;
 #[macro_use]
 extern crate maplit;
 extern crate plist;
-#[macro_use]
-extern crate try_opt;
 
 mod album;
 pub mod audit;

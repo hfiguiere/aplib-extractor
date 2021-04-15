@@ -48,7 +48,7 @@ impl Subclass {
 
     /// `Subclass from an optional `i64`
     fn from_option(o: Option<i64>) -> Option<Self> {
-        let v = try_opt!(o);
+        let v = o?;
         Some(Self::from(v))
     }
 
@@ -108,7 +108,7 @@ impl PlistLoadable for Album {
         let plist = parse_plist(plist_path);
         match plist {
             Value::Dictionary(ref dict) => {
-                let info_dict = try_opt!(get_dict_value(dict, "InfoDictionary"));
+                let info_dict = get_dict_value(dict, "InfoDictionary")?;
                 let subclass = Subclass::from_option(audit_get_int_value(
                     &info_dict,
                     "albumSubclass",
@@ -190,7 +190,7 @@ impl Album {
         subclass: &Option<Subclass>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<Vec<String>> {
-        let array = try_opt!(get_array_value(&dict, "versionUuids"));
+        let array = get_array_value(&dict, "versionUuids")?;
         if *subclass == Some(Subclass::User) {
             let content: Vec<String>;
             content = array

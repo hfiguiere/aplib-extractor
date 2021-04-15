@@ -105,7 +105,7 @@ impl IptcProperties {
         dict: &Option<plist::Dictionary>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<IptcProperties> {
-        let dict = try_opt!(dict.as_ref());
+        let dict = dict.as_ref()?;
         let mut values: BTreeMap<String, IptcValue> = BTreeMap::new();
         for (key, value) in dict {
             match *value {

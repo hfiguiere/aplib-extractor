@@ -58,7 +58,7 @@ where
 
     match plist {
         Value::Dictionary(ref dict) => {
-            let version = try_opt!(audit_get_int_value(dict, "keywords_version", auditor));
+            let version = audit_get_int_value(dict, "keywords_version", auditor)?;
             // XXX deal with proper errors here.
             // Version 3.4.5 has version 7.
             if version != 6 && version != 7 {
@@ -73,7 +73,7 @@ where
 impl Keyword {
     /// convert a Plist array to a vec of keyword.
     fn from_array(oa: Option<Vec<Value>>) -> Option<Vec<Keyword>> {
-        let a = try_opt!(oa);
+        let a = oa?;
 
         let mut keywords = Vec::new();
         for item in a {
