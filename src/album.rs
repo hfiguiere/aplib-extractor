@@ -1,8 +1,8 @@
 /*
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
+ This Source Code Form is subject to the terms of the Mozilla Public
+ License, v. 2.0. If a copy of the MPL was not distributed with this
+ file, You can obtain one at http://mozilla.org/MPL/2.0/.
+*/
 
 use std::path::Path;
 
@@ -198,7 +198,8 @@ impl Album {
                 .filter_map(|elem| match *elem {
                     Value::String(ref s) => Some(s.to_owned()),
                     _ => None,
-                }).collect();
+                })
+                .collect();
             if let Some(ref mut report) = *auditor {
                 report.parsed("versionUuids");
             }
