@@ -141,10 +141,7 @@ impl Library {
     /// or if the uuid in invalid.
     pub fn store(&mut self, obj: store::Wrapper) -> bool {
         if let Some(uuid_str) = obj.uuid() {
-            match self.objects.insert(uuid_str, obj) {
-                None => true,
-                _ => false,
-            }
+            matches!(self.objects.insert(uuid_str, obj), None)
         } else {
             false
         }
