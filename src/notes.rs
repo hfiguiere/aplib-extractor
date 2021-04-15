@@ -6,11 +6,11 @@
 
 use chrono::{DateTime, Utc};
 
-use audit::{
+use crate::audit::{
     audit_get_data_value, audit_get_date_value, audit_get_int_value, audit_get_str_value, Report,
     SkipReason,
 };
-use plutils::Value;
+use crate::plutils::Value;
 
 #[derive(Debug)]
 pub struct NotesProperties {

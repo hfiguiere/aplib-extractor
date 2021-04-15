@@ -4,7 +4,7 @@
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-use audit::{audit_get_str_value, Report};
+use crate::audit::{audit_get_str_value, Report};
 
 pub struct CustomInfoProperties {
     pub camera_time_zone_name: Option<String>,

@@ -6,11 +6,11 @@
 
 use std::path::Path;
 
-use audit::{audit_get_int_value, Report};
-use plutils::*;
-use store;
-use AplibObject;
-use AplibType;
+use crate::audit::{audit_get_int_value, Report};
+use crate::plutils::*;
+use crate::store;
+use crate::AplibObject;
+use crate::AplibType;
 
 /// An Aperture keyword.
 pub struct Keyword {

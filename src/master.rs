@@ -4,17 +4,19 @@
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-use audit::{
+use std::path::Path;
+
+use chrono::{DateTime, Utc};
+
+use crate::audit::{
     audit_get_array_value, audit_get_bool_value, audit_get_data_value, audit_get_date_value,
     audit_get_int_value, audit_get_str_value, Report, SkipReason,
 };
-use chrono::{DateTime, Utc};
-use notes::NotesProperties;
-use std::path::Path;
-use store;
-use AplibObject;
-use AplibType;
-use PlistLoadable;
+use crate::notes::NotesProperties;
+use crate::store;
+use crate::AplibObject;
+use crate::AplibType;
+use crate::PlistLoadable;
 
 /// A `Master` is a file backing an image (`Version`)
 pub struct Master {
@@ -60,7 +62,7 @@ impl PlistLoadable for Master {
     where
         P: AsRef<Path>,
     {
-        use plutils::*;
+        use crate::plutils::*;
         let plist = parse_plist(plist_path);
         match plist {
             Value::Dictionary(ref dict) => {
@@ -172,7 +174,7 @@ impl Master {}
 #[cfg(test)]
 #[test]
 fn test_master_parse() {
-    use testutils;
+    use crate::testutils;
 
     let master = Master::from_path(
         testutils::get_test_file_path("Master.apmaster").as_path(),

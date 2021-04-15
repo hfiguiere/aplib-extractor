@@ -8,16 +8,15 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 
-use notes::NotesProperties;
-use store;
-use AplibObject;
-use AplibType;
-use PlistLoadable;
-
-use audit::{
+use crate::audit::{
     audit_get_array_value, audit_get_bool_value, audit_get_date_value, audit_get_int_value,
     audit_get_str_value, Report, SkipReason,
 };
+use crate::notes::NotesProperties;
+use crate::store;
+use crate::AplibObject;
+use crate::AplibType;
+use crate::PlistLoadable;
 
 /// Type of folder
 #[derive(Debug, PartialEq)]
@@ -101,7 +100,7 @@ impl PlistLoadable for Folder {
     where
         P: AsRef<Path>,
     {
-        use plutils::*;
+        use crate::plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
@@ -185,7 +184,7 @@ impl Folder {}
 #[cfg(test)]
 #[test]
 fn test_folder_parse() {
-    use testutils;
+    use crate::testutils;
 
     let folder = Folder::from_path(
         testutils::get_test_file_path("a%TX9lmjQVWvuK9u6RNhGQ.apfolder").as_path(),

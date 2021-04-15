@@ -4,11 +4,11 @@
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-use album::Album;
-use folder::Folder;
-use master::Master;
-use version::Version;
-use AplibObject;
+use crate::album::Album;
+use crate::folder::Folder;
+use crate::master::Master;
+use crate::version::Version;
+use crate::AplibObject;
 
 /// Wrap an AplibObject to key it into the store.
 pub enum Wrapper {

@@ -8,17 +8,17 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use album::Album;
-use audit::{audit_get_str_value, Report, Reporter, SkipReason};
-use folder::Folder;
-use keyword::{parse_keywords, Keyword};
-use master::Master;
-use plist::Value;
-use plutils;
-use store;
-use version::Version;
-use AplibObject;
-use PlistLoadable;
+use crate::album::Album;
+use crate::audit::{audit_get_str_value, Report, Reporter, SkipReason};
+use crate::folder::Folder;
+use crate::keyword::{parse_keywords, Keyword};
+use crate::master::Master;
+use crate::plist::Value;
+use crate::plutils;
+use crate::store;
+use crate::version::Version;
+use crate::AplibObject;
+use crate::PlistLoadable;
 
 // This is mostly from db_version = 110
 
@@ -54,7 +54,7 @@ pub struct ModelInfo {
 
 impl ModelInfo {
     fn parse(plist: &Value) -> Option<ModelInfo> {
-        use plutils::{get_bool_value, get_int_value, get_str_value};
+        use crate::plutils::{get_bool_value, get_int_value, get_str_value};
 
         match *plist {
             Value::Dictionary(ref dict) => Some(ModelInfo {

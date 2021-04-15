@@ -8,15 +8,15 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 
-use audit::{
+use crate::audit::{
     audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value, Report,
     SkipReason,
 };
-use plutils::{get_array_value, Value};
-use store;
-use AplibObject;
-use AplibType;
-use PlistLoadable;
+use crate::plutils::{get_array_value, Value};
+use crate::store;
+use crate::AplibObject;
+use crate::AplibType;
+use crate::PlistLoadable;
 
 /// Subclass for album
 #[derive(Debug, PartialEq, Clone)]
@@ -103,7 +103,7 @@ impl PlistLoadable for Album {
     where
         P: AsRef<Path>,
     {
-        use plutils::*;
+        use crate::plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
@@ -216,7 +216,7 @@ impl Album {
 #[cfg(test)]
 #[test]
 fn test_album_parse() {
-    use testutils;
+    use crate::testutils;
 
     let album = Album::from_path(
         testutils::get_test_file_path("gOnttfpzQoOxcwLpFS9DQg.apalbum").as_path(),
@@ -244,7 +244,7 @@ fn test_album_parse() {
 #[cfg(test)]
 #[test]
 fn test_album_content_parse() {
-    use testutils;
+    use crate::testutils;
 
     let album = Album::from_path(
         testutils::get_test_file_path("x6yNun58SB2sImfCarTJHA.apalbum").as_path(),

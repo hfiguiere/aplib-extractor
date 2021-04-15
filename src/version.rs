@@ -8,19 +8,19 @@ use chrono::{DateTime, Utc};
 use exempi::Xmp;
 use std::path::Path;
 
-use audit::{
+use crate::audit::{
     audit_get_array_value, audit_get_bool_value, audit_get_date_value, audit_get_dict_value,
     audit_get_int_value, audit_get_str_value, Report, SkipReason,
 };
-use custominfo::CustomInfoProperties;
-use exif::ExifProperties;
-use iptc::IptcProperties;
-use plutils::Value;
-use store;
-use xmp::ToXmp;
-use AplibObject;
-use AplibType;
-use PlistLoadable;
+use crate::custominfo::CustomInfoProperties;
+use crate::exif::ExifProperties;
+use crate::iptc::IptcProperties;
+use crate::plutils::Value;
+use crate::store;
+use crate::xmp::ToXmp;
+use crate::AplibObject;
+use crate::AplibType;
+use crate::PlistLoadable;
 
 /// A rendered image. There is one for the orignal, and one per
 /// actual version. `Version` are associated to a `Master`.
@@ -68,7 +68,7 @@ impl PlistLoadable for Version {
     where
         P: AsRef<Path>,
     {
-        use plutils::*;
+        use crate::plutils::*;
 
         let plist = parse_plist(plist_path);
         match plist {
@@ -180,9 +180,9 @@ impl ToXmp for Version {
 #[cfg(test)]
 #[test]
 fn test_version_parse() {
+    use crate::testutils;
+    use crate::xmp;
     use exempi;
-    use testutils;
-    use xmp;
 
     let version = Version::from_path(
         testutils::get_test_file_path("Version-0.apversion").as_path(),

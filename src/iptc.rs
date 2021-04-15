@@ -9,9 +9,9 @@ use std::collections::{BTreeMap, HashMap};
 use exempi::Xmp;
 use plist::Value;
 
-use audit::{Report, SkipReason};
-use xmp::ns::*;
-use xmp::{ToXmp, XmpProperty, XmpTranslator};
+use crate::audit::{Report, SkipReason};
+use crate::xmp::ns::*;
+use crate::xmp::{ToXmp, XmpProperty, XmpTranslator};
 
 lazy_static! {
     /// HashMap for IPTC properties (Aperture) to XMP.
