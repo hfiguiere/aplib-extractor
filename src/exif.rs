@@ -8,7 +8,6 @@ use std::collections::{BTreeMap, HashMap};
 use std::time::SystemTime;
 
 use chrono::{DateTime, Utc};
-use exempi;
 use exempi::Xmp;
 use plist::Value;
 
@@ -138,8 +137,8 @@ impl ExifProperties {
                 Value::Integer(n) => n.as_signed().map_or(ExifValue::None, ExifValue::Int),
                 Value::Real(f) => ExifValue::Real(f),
                 Value::String(ref s) => ExifValue::Str(s.to_owned()),
-                Value::Date(ref d) => {
-                    let t: SystemTime = d.clone().into();
+                Value::Date(d) => {
+                    let t: SystemTime = d.into();
                     ExifValue::Date(t.into())
                 }
                 _ => ExifValue::None,

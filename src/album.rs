@@ -232,7 +232,7 @@ fn test_album_parse() {
     assert_eq!(album.album_type.unwrap(), 1);
     assert!(album.query_folder_uuid.is_none());
     assert_eq!(album.db_version.unwrap(), 110);
-    assert_eq!(album.sort_asc.unwrap(), true);
+    assert!(album.sort_asc.unwrap());
     assert_eq!(album.sort_key.as_ref().unwrap(), "exifProperties.ImageDate");
     assert!(album.name.is_none());
 
@@ -260,7 +260,7 @@ fn test_album_content_parse() {
     assert_eq!(album.album_type.unwrap(), 1);
     assert!(album.query_folder_uuid.is_none());
     assert_eq!(album.db_version.unwrap(), 110);
-    assert_eq!(album.sort_asc.unwrap(), true);
+    assert!(album.sort_asc.unwrap());
     assert_eq!(album.sort_key.as_ref().unwrap(), "exifProperties.ImageDate");
     assert_eq!(album.name.as_ref().unwrap(), "Flickr");
     assert!(album.content.is_some());

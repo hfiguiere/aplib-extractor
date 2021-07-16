@@ -60,8 +60,8 @@ pub fn get_dict_value(dict: &plist::Dictionary, key: &str) -> Option<plist::Dict
 
 pub fn get_date_value(dict: &plist::Dictionary, key: &str) -> Option<DateTime<Utc>> {
     match dict.get(key) {
-        Some(&Value::Date(ref d)) => {
-            let t: SystemTime = d.clone().into();
+        Some(&Value::Date(d)) => {
+            let t: SystemTime = d.into();
             Some(t.into())
         }
         _ => None,
