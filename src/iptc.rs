@@ -13,9 +13,9 @@ use crate::audit::{Report, SkipReason};
 use crate::xmp::ns::*;
 use crate::xmp::{ToXmp, XmpProperty, XmpTranslator};
 
-lazy_static! {
+lazy_static::lazy_static! {
     /// HashMap for IPTC properties (Aperture) to XMP.
-    static ref IPTC_TO_XMP: HashMap<&'static str, XmpTranslator> = hashmap!{
+    static ref IPTC_TO_XMP: HashMap<&'static str, XmpTranslator> = maplit::hashmap!{
         "Byline" => XmpTranslator::Property(XmpProperty::new(
             NS_DC, "creator")),
         "BylineTitle" => XmpTranslator::Property(XmpProperty::new(

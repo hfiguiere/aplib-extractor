@@ -8,12 +8,13 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use plist::Value;
+
 use crate::album::Album;
 use crate::audit::{audit_get_str_value, Report, Reporter, SkipReason};
 use crate::folder::Folder;
 use crate::keyword::{parse_keywords, Keyword};
 use crate::master::Master;
-use crate::plist::Value;
 use crate::plutils;
 use crate::store;
 use crate::version::Version;

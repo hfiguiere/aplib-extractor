@@ -4,14 +4,6 @@
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-extern crate chrono;
-extern crate exempi;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate maplit;
-extern crate plist;
-
 mod album;
 pub mod audit;
 mod custominfo;

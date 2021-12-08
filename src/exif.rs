@@ -15,9 +15,9 @@ use crate::audit::{Report, SkipReason};
 use crate::xmp::ns::*;
 use crate::xmp::{ToXmp, XmpProperty, XmpTranslator};
 
-lazy_static! {
+lazy_static::lazy_static! {
     /// HashMap for Exif properties (Aperture) to XMP.
-    static ref EXIF_TO_XMP: HashMap<&'static str, XmpTranslator> = hashmap!{
+    static ref EXIF_TO_XMP: HashMap<&'static str, XmpTranslator> = maplit::hashmap!{
         "ApertureValue" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF, "ApertureValue")),
         "Artist" => XmpTranslator::Property(XmpProperty::new(
