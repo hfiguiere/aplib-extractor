@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 chrono = "0.4.0"
-exempi = { version = "2.5.0" }
+exempi2 = "0.1.0"
 lazy_static = "1.4.0"
 maplit = "1.0.0"
 plist = "0.5.1"

@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::time::SystemTime;
 
 use chrono::{DateTime, Utc};
-use exempi::Xmp;
+use exempi2::Xmp;
 use plist::Value;
 
 use crate::audit::{Report, SkipReason};
@@ -174,7 +174,7 @@ impl ExifProperties {
                 "ISOSpeedRatings",
                 0,
                 &format!("{}", i),
-                exempi::PROP_NONE,
+                exempi2::PropFlags::NONE,
             ) {
                 println!("Error converting ISO {:?}", err);
             }
@@ -200,7 +200,9 @@ impl ExifProperties {
         };
 
         let value = format!("{}/100 {}/100 0/1 0/1", min * 100.0, max * 100.0);
-        if let Err(err) = xmp.set_property(NS_EXIF_AUX, "LensInfo", &value, exempi::PROP_NONE) {
+        if let Err(err) =
+            xmp.set_property(NS_EXIF_AUX, "LensInfo", &value, exempi2::PropFlags::NONE)
+        {
             println!("Error converting LensInfo {:?}", err);
         }
     }

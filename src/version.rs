@@ -5,7 +5,7 @@
 */
 
 use chrono::{DateTime, Utc};
-use exempi::Xmp;
+use exempi2::Xmp;
 use std::path::Path;
 
 use crate::audit::{
@@ -182,7 +182,7 @@ impl ToXmp for Version {
 fn test_version_parse() {
     use crate::testutils;
     use crate::xmp;
-    use exempi;
+    use exempi2;
 
     let version = Version::from_path(
         testutils::get_test_file_path("Version-0.apversion").as_path(),
@@ -208,20 +208,18 @@ fn test_version_parse() {
     // XXX fix when have actual audit.
     //    println!("report {:?}", report);
 
-    exempi::init();
-
     let mut xmp = Xmp::new();
 
     let result = version.to_xmp(&mut xmp);
     assert!(result);
 
-    let mut options: exempi::PropFlags = exempi::PROP_NONE;
+    let mut options: exempi2::PropFlags = exempi2::PropFlags::NONE;
     let value = xmp.get_property(xmp::ns::NS_DC, "creator", &mut options);
     assert!(value.is_ok());
-    assert_eq!(value.unwrap().to_str(), "Hubert Figuiere");
+    assert_eq!(value.unwrap().to_str(), Some("Hubert Figuiere"));
 
-    options = exempi::PROP_NONE;
+    options = exempi2::PropFlags::NONE;
     let value = xmp.get_property(xmp::ns::NS_EXIF, "ApertureValue", &mut options);
     assert!(value.is_ok());
-    assert_eq!(value.unwrap().to_str(), "4");
+    assert_eq!(value.unwrap().to_str(), Some("4"));
 }

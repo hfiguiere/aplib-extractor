@@ -4,7 +4,7 @@
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-use exempi::Xmp;
+use exempi2::Xmp;
 
 /// Define namespace constants until we can get them out of Exempi.
 pub mod ns {
@@ -56,20 +56,26 @@ impl XmpProperty {
     pub fn put_into_xmp(&self, value: &str, xmp: &mut Xmp) -> bool {
         if self.index.is_none() && self.field.is_none() {
             return xmp
-                .set_property(self.ns, self.property, value, exempi::PROP_NONE)
+                .set_property(self.ns, self.property, value, exempi2::PropFlags::NONE)
                 .is_ok();
         } else if let Some(ref field) = self.field {
             // XXX when there is the API in exempi, use it.
             // For now we have to compose the path by hand.
-            if let Some(prefix) = exempi::namespace_prefix(field.ns) {
+            if let Ok(prefix) = exempi2::namespace_prefix(field.ns) {
                 let property = format!("{}/{}{}", self.property, prefix, field.property);
                 return xmp
-                    .set_property(self.ns, &property, value, exempi::PROP_NONE)
+                    .set_property(self.ns, &property, value, exempi2::PropFlags::NONE)
                     .is_ok();
             }
         } else if let Some(index) = self.index {
             return xmp
-                .set_array_item(self.ns, self.property, index, value, exempi::PROP_NONE)
+                .set_array_item(
+                    self.ns,
+                    self.property,
+                    index,
+                    value,
+                    exempi2::PropFlags::NONE,
+                )
                 .is_ok();
         }
         false
@@ -95,9 +101,7 @@ pub trait ToXmp {
 #[cfg(test)]
 #[test]
 fn test_xmp() {
-    use exempi::Xmp;
-
-    exempi::init();
+    use exempi2::Xmp;
 
     let mut xmp = Xmp::new();
 
@@ -110,8 +114,8 @@ fn test_xmp() {
     assert!(prop1.put_into_xmp("Batman", &mut xmp));
     assert!(prop2.put_into_xmp("Gotham", &mut xmp));
 
-    let mut options: exempi::PropFlags = exempi::PROP_NONE;
+    let mut options: exempi2::PropFlags = exempi2::PropFlags::NONE;
     let value = xmp.get_property(prop1.ns, prop1.property, &mut options);
     assert!(value.is_ok());
-    assert_eq!(value.unwrap().to_str(), "Batman");
+    assert_eq!(value.unwrap().to_str(), Some("Batman"));
 }

@@ -6,7 +6,7 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use exempi::Xmp;
+use exempi2::Xmp;
 use plist::Value;
 
 use crate::audit::{Report, SkipReason};
