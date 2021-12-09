@@ -108,7 +108,7 @@ fn process_audit(args: &Args) {
     library.load_versions(&mut |_: u64| true);
 
     println!("Audit:");
-    let auditor = library.get_auditor().unwrap();
+    let auditor = library.auditor().unwrap();
     println!("Parsed {}", auditor.parsed_count());
     println!("+-----------------------------");
     for (key, ref report) in auditor.get_parsed() {
@@ -227,7 +227,7 @@ fn dump_folders(library: &mut Library) {
     });
     pb.finish();
 
-    let folders = library.get_folders();
+    let folders = library.folders();
     println!("{} Folders:", folders.len());
     println!("| Name                       | uuid                       | impl album                 | type | model id | path");
     println!("+----------------------------+----------------------------+----------------------------+------+----------+----------");
@@ -275,7 +275,7 @@ fn dump_albums(library: &mut Library) {
     });
     pb.finish();
 
-    let albums = library.get_albums();
+    let albums = library.albums();
     println!("{} Albums:", albums.len());
     println!("| uuid                       | parent (fldr)              | query (fldr)               | type | class | model id | name");
     println!("+----------------------------+----------------------------+----------------------------+------+-------+----------+-----");
@@ -341,7 +341,7 @@ fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
     });
     pb.finish();
 
-    let masters = library.get_masters();
+    let masters = library.masters();
     println!("{} Masters:", masters.len());
     println!("| uuid                       | project                    | path");
     println!("+----------------------------+----------------------------+-----------------------");
@@ -371,7 +371,7 @@ fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
     });
     pb.finish();
 
-    let versions = library.get_versions();
+    let versions = library.versions();
     println!("{} Versions:", versions.len());
     println!("| uuid                       | master                     | project                    | original | name");
     println!("+----------------------------+----------------------------+----------------------------+----------+------------");

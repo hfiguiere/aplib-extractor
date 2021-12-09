@@ -132,7 +132,7 @@ impl Library {
         self.auditor = auditor;
     }
     /// Get the auditor
-    pub fn get_auditor(&self) -> Option<&Reporter> {
+    pub fn auditor(&self) -> Option<&Reporter> {
         self.auditor.as_ref()
     }
 
@@ -301,7 +301,7 @@ impl Library {
         }
     }
 
-    /// Load albums.
+    /// Load albums. Once done the result it cached.
     pub fn load_albums<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
         if self.albums.is_empty() {
             let mut albums: HashSet<String> = HashSet::new();
@@ -311,11 +311,11 @@ impl Library {
     }
 
     /// Get albums uuids.
-    pub fn get_albums(&self) -> &HashSet<String> {
+    pub fn albums(&self) -> &HashSet<String> {
         &self.albums
     }
 
-    /// Load folders.
+    /// Load folders. Once done the result is cached.
     pub fn load_folders<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
         if self.folders.is_empty() {
             let mut folders: HashSet<String> = HashSet::new();
@@ -325,7 +325,7 @@ impl Library {
     }
 
     /// Get folders uuids.
-    pub fn get_folders(&self) -> &HashSet<String> {
+    pub fn folders(&self) -> &HashSet<String> {
         &self.folders
     }
 
@@ -437,12 +437,12 @@ impl Library {
     }
 
     /// Return masters uuids.
-    pub fn get_masters(&self) -> &HashSet<String> {
+    pub fn masters(&self) -> &HashSet<String> {
         &self.masters
     }
 
     /// Return versions uuids.
-    pub fn get_versions(&self) -> &HashSet<String> {
+    pub fn versions(&self) -> &HashSet<String> {
         &self.versions
     }
 
