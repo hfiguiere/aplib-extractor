@@ -117,5 +117,5 @@ fn test_xmp() {
     let mut options: exempi2::PropFlags = exempi2::PropFlags::NONE;
     let value = xmp.get_property(prop1.ns, prop1.property, &mut options);
     assert!(value.is_ok());
-    assert_eq!(value.unwrap().to_str(), Some("Batman"));
+    assert_eq!(value.unwrap().to_str(), Ok("Batman"));
 }

@@ -8,13 +8,12 @@ extern crate aplib;
 extern crate docopt;
 extern crate pbr;
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
 
 use std::io::stderr;
 
 use docopt::Docopt;
 use pbr::ProgressBar;
+use serde::Deserialize;
 
 use aplib::audit::{Report, Reporter};
 use aplib::AlbumSubclass;
