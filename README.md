@@ -17,11 +17,13 @@ Building
 
 If you use this in your project, just add to your Cargo.toml:
 ```toml
-aplib-extractor = "0.1.0"
+aplib-extractor = { version = "0.1.0", default-features = false }
 ```
 To build the dumper tool:
 
-$ cargo build --feature=binaries
+```shell
+$ cargo build
+```
 
 Other
 -----

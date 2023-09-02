@@ -23,4 +23,5 @@ name = "dumper"
 required-features = ["binaries"]
 
 [features]
+default = ["binaries"]
 binaries = ["docopt", "pbr", "serde" ]
