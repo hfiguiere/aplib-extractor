@@ -4,16 +4,10 @@
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-extern crate aplib;
-extern crate docopt;
-extern crate pbr;
-extern crate serde;
-
 use std::io::stderr;
 
-use docopt::Docopt;
+use clap::{Parser, Subcommand};
 use pbr::ProgressBar;
-use serde::Deserialize;
 
 use aplib::audit::{Report, Reporter};
 use aplib::AlbumSubclass;
@@ -24,52 +18,43 @@ use aplib::Library;
 use aplib::ModelInfo;
 use aplib::StoreWrapper;
 
-const USAGE: &str = "
-Usage:
-    dumper <command> ([--all] | [--albums] [--versions] [--masters] [--folders] [--keywords]) <path>
-
-Options:
-    --all          Select all objects
-    --albums       Select only albums
-    --masters      Select only masters
-    --folders      Select only folders
-    --keywords     Select only keywords
-
-Commands are:
-    dump           Dump the objects
-    audit          Audit mode: output what we ignored
-";
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Parser)]
+#[command(version)]
 struct Args {
-    arg_command: Command,
-    arg_path: String,
-    flag_all: bool,
-    flag_albums: bool,
-    flag_versions: bool,
-    flag_masters: bool,
-    flag_folders: bool,
-    flag_keywords: bool,
+    #[command(subcommand)]
+    command: Command,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Subcommand)]
 enum Command {
-    Dump,
-    Audit,
-    Unknown(String),
+    Dump(CommandArgs),
+    Audit(CommandArgs),
+}
+
+#[derive(Clone, Debug, Parser)]
+struct CommandArgs {
+    #[arg(long)]
+    all: bool,
+    #[arg(long)]
+    albums: bool,
+    #[arg(long)]
+    versions: bool,
+    #[arg(long)]
+    masters: bool,
+    #[arg(long)]
+    folders: bool,
+    #[arg(long)]
+    keywords: bool,
+    path: String,
 }
 
 fn main() {
-    let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.argv(std::env::args()).deserialize())
-        .unwrap_or_else(|e| e.exit());
-    {
-        match args.arg_command {
-            Command::Dump => process_dump(&args),
-            Command::Audit => process_audit(&args),
-            _ => (),
-        };
-    }
+    let args = Args::parse();
+
+    match args.command {
+        Command::Dump(_) => process_dump(&args),
+        Command::Audit(_) => process_audit(&args),
+    };
 }
 
 fn print_report(report: &Report) {
@@ -89,41 +74,45 @@ fn print_report(report: &Report) {
 }
 
 fn process_audit(args: &Args) {
-    let mut library = Library::new(&args.arg_path);
+    if let Command::Audit(args) = &args.command {
+        let mut library = Library::new(&args.path);
 
-    let auditor = Reporter::new();
-    library.set_auditor(Some(auditor));
+        let auditor = Reporter::new();
+        library.set_auditor(Some(auditor));
 
-    {
-        let version = library.library_version();
-        if version.is_err() {
-            println!("Invalid library");
-            return;
+        {
+            let version = library.library_version();
+            if version.is_err() {
+                println!("Invalid library");
+                return;
+            }
         }
-    }
-    library.load_folders(&mut |_: u64| true);
-    library.load_albums(&mut |_: u64| true);
-    library.load_masters(&mut |_: u64| true);
-    library.load_versions(&mut |_: u64| true);
+        library.load_folders(&mut |_: u64| true);
+        library.load_albums(&mut |_: u64| true);
+        library.load_masters(&mut |_: u64| true);
+        library.load_versions(&mut |_: u64| true);
 
-    println!("Audit:");
-    let auditor = library.auditor().unwrap();
-    println!("Parsed {}", auditor.parsed_count());
-    println!("+-----------------------------");
-    for (key, report) in auditor.get_parsed() {
-        if report.skipped_count() > 0 || report.ignored_count() > 0 {
+        println!("Audit:");
+        let auditor = library.auditor().unwrap();
+        println!("Parsed {}", auditor.parsed_count());
+        println!("+-----------------------------");
+        for (key, report) in auditor.get_parsed() {
+            if report.skipped_count() > 0 || report.ignored_count() > 0 {
+                println!("| {} ", key);
+                print_report(report);
+            }
+        }
+        println!("+-----------------------------");
+        println!("Skipped {}", auditor.skipped_count());
+        for key in auditor.get_skipped().keys() {
             println!("| {} ", key);
-            print_report(report);
         }
-    }
-    println!("+-----------------------------");
-    println!("Skipped {}", auditor.skipped_count());
-    for key in auditor.get_skipped().keys() {
-        println!("| {} ", key);
-    }
-    println!("Ignored {}", auditor.ignored_count());
-    for key in auditor.get_ignored() {
-        println!("| {} ", key);
+        println!("Ignored {}", auditor.ignored_count());
+        for key in auditor.get_ignored() {
+            println!("| {} ", key);
+        }
+    } else {
+        unreachable!()
     }
 }
 
@@ -153,66 +142,70 @@ fn print_keywords(keywords: &[Keyword], indent: &str) {
 }
 
 fn process_dump(args: &Args) {
-    let mut library = Library::new(&args.arg_path);
+    if let Command::Dump(args) = &args.command {
+        let mut library = Library::new(&args.path);
 
-    {
-        if let Ok(version) = library.library_version() {
-            println!("Version {}", version);
-        } else {
-            println!("Version not found.");
-            return;
+        {
+            if let Ok(version) = library.library_version() {
+                println!("Version {}", version);
+            } else {
+                println!("Version not found.");
+                return;
+            }
         }
-    }
 
-    let model_info = library.get_model_info().unwrap();
-    println!("model info");
-    println!("\tDB version: {}", model_info.db_version.unwrap_or(0));
-    println!(
-        "\tDB minor version: {}",
-        model_info.db_minor_version.unwrap_or(0)
-    );
-    println!(
-        "\tDB back compat: {}",
-        model_info.db_minor_back_compatible_version.unwrap_or(0)
-    );
-    println!(
-        "\tProject version: {}",
-        model_info.project_version.unwrap_or(0)
-    );
-    println!(
-        "\tCreation date: {}",
-        model_info
-            .create_date
-            .as_ref()
-            .unwrap_or(&String::from("NONE"))
-    );
-    println!(
-        "\tImageIO: {} Camera RAW: {}",
-        model_info
-            .image_io_version
-            .as_ref()
-            .unwrap_or(&String::from("NONE")),
-        model_info
-            .raw_camera_bundle_version
-            .as_ref()
-            .unwrap_or(&String::from("NONE"))
-    );
+        let model_info = library.get_model_info().unwrap();
+        println!("model info");
+        println!("\tDB version: {}", model_info.db_version.unwrap_or(0));
+        println!(
+            "\tDB minor version: {}",
+            model_info.db_minor_version.unwrap_or(0)
+        );
+        println!(
+            "\tDB back compat: {}",
+            model_info.db_minor_back_compatible_version.unwrap_or(0)
+        );
+        println!(
+            "\tProject version: {}",
+            model_info.project_version.unwrap_or(0)
+        );
+        println!(
+            "\tCreation date: {}",
+            model_info
+                .create_date
+                .as_ref()
+                .unwrap_or(&String::from("NONE"))
+        );
+        println!(
+            "\tImageIO: {} Camera RAW: {}",
+            model_info
+                .image_io_version
+                .as_ref()
+                .unwrap_or(&String::from("NONE")),
+            model_info
+                .raw_camera_bundle_version
+                .as_ref()
+                .unwrap_or(&String::from("NONE"))
+        );
 
-    if args.flag_all || args.flag_folders {
-        dump_folders(&mut library);
-    }
-    if args.flag_all || args.flag_albums {
-        dump_albums(&mut library);
-    }
-    if args.flag_all || args.flag_keywords {
-        dump_keywords(&mut library);
-    }
+        if args.all || args.folders {
+            dump_folders(&mut library);
+        }
+        if args.all || args.albums {
+            dump_albums(&mut library);
+        }
+        if args.all || args.keywords {
+            dump_keywords(&mut library);
+        }
 
-    if args.flag_all || args.flag_masters {
-        dump_masters(&model_info, &mut library);
-    }
-    if args.flag_all || args.flag_versions {
-        dump_versions(&model_info, &mut library);
+        if args.all || args.masters {
+            dump_masters(&model_info, &mut library);
+        }
+        if args.all || args.versions {
+            dump_versions(&model_info, &mut library);
+        }
+    } else {
+        unreachable!()
     }
 }
 
