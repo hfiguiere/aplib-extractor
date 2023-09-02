@@ -36,6 +36,7 @@ pub use master::Master;
 pub use store::Wrapper as StoreWrapper;
 pub use version::Version;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
 /// `AplibObject` types.
 pub enum AplibType {
     /// Album

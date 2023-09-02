@@ -6,6 +6,7 @@
 
 use crate::audit::{audit_get_str_value, Report};
 
+#[derive(Debug, Default)]
 pub struct CustomInfoProperties {
     pub camera_time_zone_name: Option<String>,
     pub picture_time_zone_name: Option<String>,

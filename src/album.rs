@@ -19,7 +19,7 @@ use crate::AplibType;
 use crate::PlistLoadable;
 
 /// Subclass for album
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Subclass {
     /// Invalid.
     Invalid,
@@ -64,7 +64,7 @@ impl Subclass {
 }
 
 /// Album object.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Album {
     /// uuid
     uuid: Option<String>,

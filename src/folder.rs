@@ -19,7 +19,7 @@ use crate::AplibType;
 use crate::PlistLoadable;
 
 /// Type of folder
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Type {
     Invalid = 0,
     /// Folder, aka container of things

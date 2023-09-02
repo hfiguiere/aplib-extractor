@@ -109,8 +109,9 @@ lazy_static::lazy_static! {
     };
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub enum ExifValue {
+    #[default]
     None,
     Int(i64),
     Str(String),
@@ -118,6 +119,7 @@ pub enum ExifValue {
     Real(f64),
 }
 
+#[derive(Debug, Default)]
 pub struct ExifProperties {
     pub bag: BTreeMap<String, ExifValue>,
 }

@@ -19,6 +19,7 @@ use crate::AplibType;
 use crate::PlistLoadable;
 
 /// A `Master` is a file backing an image (`Version`)
+#[derive(Debug, Default)]
 pub struct Master {
     uuid: Option<String>,
     model_id: Option<i64>,

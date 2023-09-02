@@ -22,6 +22,7 @@ use crate::AplibObject;
 use crate::AplibType;
 use crate::PlistLoadable;
 
+#[derive(Debug)]
 /// A rendered image. There is one for the orignal, and one per
 /// actual version. `Version` are associated to a `Master`.
 pub struct Version {

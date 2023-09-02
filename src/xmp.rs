@@ -18,8 +18,8 @@ pub mod ns {
     pub const NS_TIFF: &str = "http://ns.adobe.com/tiff/1.0/";
 }
 
-/// Define a property
 #[derive(Clone, Debug)]
+/// Define a property
 pub struct XmpProperty {
     /// The namespace URI
     ns: &'static str,
@@ -83,7 +83,7 @@ impl XmpProperty {
 }
 
 /// Specify a translation method.
-pub enum XmpTranslator {
+pub(crate) enum XmpTranslator {
     /// Simple property mapping.
     Property(XmpProperty),
     /// Custom (TBD).

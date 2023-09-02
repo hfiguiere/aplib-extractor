@@ -90,12 +90,13 @@ lazy_static::lazy_static! {
     };
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum IptcValue {
     None,
     Str(String),
 }
 
+#[derive(Debug)]
 pub struct IptcProperties {
     pub bag: BTreeMap<String, IptcValue>,
 }

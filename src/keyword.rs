@@ -13,6 +13,7 @@ use crate::AplibObject;
 use crate::AplibType;
 
 /// An Aperture keyword.
+#[derive(Debug, Default)]
 pub struct Keyword {
     /// The uuid
     uuid: Option<String>,
