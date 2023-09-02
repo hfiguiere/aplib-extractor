@@ -87,7 +87,7 @@ impl ModelInfo {
 /// Library is the Aperture library.
 pub struct Library {
     /// The path to the .aplib bundle (the directory)
-    path: String,
+    path: PathBuf,
 
     /// It's version string (displayed by get info in the Finder)
     version: String,
@@ -111,9 +111,12 @@ pub struct Library {
 impl Library {
     /// Create a new library object from the exist path to
     /// the bundle directory.
-    pub fn new(p: &str) -> Library {
+    pub fn new<P>(p: P) -> Library
+    where
+        P: AsRef<std::path::Path>,
+    {
         Library {
-            path: p.to_owned(),
+            path: p.as_ref().to_path_buf(),
             version: String::new(),
 
             folders: HashSet::new(),
@@ -221,7 +224,7 @@ impl Library {
     /// Build a path from the bundle root.
     /// If database is true, will be from the Database subdirectory.
     fn build_path(&self, dir: &str, database: bool) -> PathBuf {
-        let mut ppath = PathBuf::from(self.path.to_owned());
+        let mut ppath = self.path.clone();
         if database {
             ppath.push(DATABASE_DIR);
         }
