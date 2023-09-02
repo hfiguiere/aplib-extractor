@@ -226,8 +226,8 @@ impl ExifProperties {
 impl ToXmp for ExifProperties {
     fn to_xmp(&self, xmp: &mut Xmp) -> bool {
         for (key, value) in &self.bag {
-            if let Some(ref translator) = EXIF_TO_XMP.get(&key.as_str()) {
-                match *(*translator) {
+            if let Some(translator) = EXIF_TO_XMP.get(&key.as_str()) {
+                match *translator {
                     XmpTranslator::Property(ref prop) => {
                         if let Some(value) = Self::value_to_string(value) {
                             /*let result = */

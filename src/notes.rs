@@ -29,13 +29,13 @@ impl NotesProperties {
         mut auditor: &mut Option<&mut Report>,
     ) -> NotesProperties {
         let result = NotesProperties {
-            attached_to_uuid: audit_get_str_value(dict, "attachedToUuid", &mut auditor),
-            create_date: audit_get_date_value(dict, "createDate", &mut auditor),
-            data: audit_get_data_value(dict, "data", &mut auditor),
-            model_id: audit_get_int_value(dict, "modelId", &mut auditor),
-            note: audit_get_str_value(dict, "note", &mut auditor),
-            property_key: audit_get_str_value(dict, "propertyKey", &mut auditor),
-            uuid: audit_get_str_value(dict, "uuid", &mut auditor),
+            attached_to_uuid: audit_get_str_value(dict, "attachedToUuid", auditor),
+            create_date: audit_get_date_value(dict, "createDate", auditor),
+            data: audit_get_data_value(dict, "data", auditor),
+            model_id: audit_get_int_value(dict, "modelId", auditor),
+            note: audit_get_str_value(dict, "note", auditor),
+            property_key: audit_get_str_value(dict, "propertyKey", auditor),
+            uuid: audit_get_str_value(dict, "uuid", auditor),
         };
         if let Some(auditor) = &mut auditor {
             auditor.audit_ignored(dict, Some("notes"));
@@ -53,7 +53,7 @@ impl NotesProperties {
             for (counter, value) in array.iter().enumerate() {
                 match *value {
                     Value::Dictionary(ref d) => {
-                        result.push(NotesProperties::from_array_element(d, &mut auditor))
+                        result.push(NotesProperties::from_array_element(d, auditor))
                     }
                     _ => {
                         if let Some(auditor) = &mut auditor {

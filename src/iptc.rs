@@ -137,7 +137,7 @@ impl ToXmp for IptcProperties {
                 _ => continue,
             };
             if let Some(XmpTranslator::Property(ref prop)) = IPTC_TO_XMP.get(&key.as_str()) {
-                prop.put_into_xmp(&value, xmp);
+                prop.put_into_xmp(value, xmp);
             }
         }
         true

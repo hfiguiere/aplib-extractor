@@ -117,7 +117,7 @@ impl PlistLoadable for Album {
                 let result = Some(Album {
                     uuid: audit_get_str_value(&info_dict, "uuid", &mut auditor),
                     folder_uuid: audit_get_str_value(&info_dict, "folderUuid", &mut auditor),
-                    subclass: subclass.clone(),
+                    subclass,
                     album_type: audit_get_int_value(&info_dict, "albumType", &mut auditor),
                     db_version: audit_get_int_value(&info_dict, "version", &mut auditor),
                     model_id: audit_get_int_value(&info_dict, "modelId", &mut auditor),
@@ -149,7 +149,7 @@ impl PlistLoadable for Album {
                         "selectedTrackPathUuid",
                         &mut auditor,
                     ),
-                    content: Album::content_from(&dict, &subclass, &mut auditor),
+                    content: Album::content_from(dict, &subclass, &mut auditor),
                 });
                 if let Some(ref mut auditor) = auditor {
                     auditor.audit_ignored(&info_dict, None);
@@ -190,10 +190,9 @@ impl Album {
         subclass: &Option<Subclass>,
         auditor: &mut Option<&mut Report>,
     ) -> Option<Vec<String>> {
-        let array = get_array_value(&dict, "versionUuids")?;
+        let array = get_array_value(dict, "versionUuids")?;
         if *subclass == Some(Subclass::User) {
-            let content: Vec<String>;
-            content = array
+            let content: Vec<String> = array
                 .iter()
                 .filter_map(|elem| match *elem {
                     Value::String(ref s) => Some(s.to_owned()),

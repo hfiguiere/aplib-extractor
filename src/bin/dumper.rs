@@ -110,7 +110,7 @@ fn process_audit(args: &Args) {
     let auditor = library.auditor().unwrap();
     println!("Parsed {}", auditor.parsed_count());
     println!("+-----------------------------");
-    for (key, ref report) in auditor.get_parsed() {
+    for (key, report) in auditor.get_parsed() {
         if report.skipped_count() > 0 || report.ignored_count() > 0 {
             println!("| {} ", key);
             print_report(report);
@@ -235,7 +235,7 @@ fn dump_folders(library: &mut Library) {
             continue;
         }
         match library.get(folder_uuid) {
-            Some(&StoreWrapper::Folder(ref folder)) => {
+            Some(StoreWrapper::Folder(folder)) => {
                 let name = folder.name.as_ref().unwrap();
                 let uuid = folder.uuid().as_ref().unwrap();
                 let implicit_album_uuid = if let Some(value) = folder.implicit_album_uuid.as_ref() {
@@ -283,7 +283,7 @@ fn dump_albums(library: &mut Library) {
             continue;
         }
         match library.get(album_uuid) {
-            Some(&StoreWrapper::Album(ref album)) => {
+            Some(StoreWrapper::Album(album)) => {
                 let name = if let Some(ref n) = album.name {
                     n.clone()
                 } else {
@@ -349,7 +349,7 @@ fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
             continue;
         }
         match library.get(master_uuid) {
-            Some(&StoreWrapper::Master(ref master)) => {
+            Some(StoreWrapper::Master(master)) => {
                 let uuid = master.uuid().as_ref().unwrap();
                 let parent = master.parent().as_ref().unwrap();
                 let image_path = master.image_path.as_ref().unwrap();
@@ -379,7 +379,7 @@ fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
             continue;
         }
         match library.get(version_uuid) {
-            Some(&StoreWrapper::Version(ref version)) => {
+            Some(StoreWrapper::Version(version)) => {
                 let uuid = version.uuid().as_ref().unwrap();
                 let parent = version.parent().as_ref().unwrap();
                 let project_uuid = version.project_uuid.as_ref().unwrap();

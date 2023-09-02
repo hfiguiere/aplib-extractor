@@ -15,20 +15,12 @@ pub struct CustomInfoProperties {
 impl CustomInfoProperties {
     pub fn from(
         dict: &Option<plist::Dictionary>,
-        mut auditor: &mut Option<&mut Report>,
+        auditor: &mut Option<&mut Report>,
     ) -> Option<CustomInfoProperties> {
         if let Some(dict) = dict.as_ref() {
             let result = Some(CustomInfoProperties {
-                camera_time_zone_name: audit_get_str_value(
-                    dict,
-                    "cameraTimeZoneName",
-                    &mut auditor,
-                ),
-                picture_time_zone_name: audit_get_str_value(
-                    dict,
-                    "pictureTimeZoneName",
-                    &mut auditor,
-                ),
+                camera_time_zone_name: audit_get_str_value(dict, "cameraTimeZoneName", auditor),
+                picture_time_zone_name: audit_get_str_value(dict, "pictureTimeZoneName", auditor),
             });
             if let Some(auditor) = &mut auditor.as_mut() {
                 auditor.audit_ignored(dict, Some("customInfo"));
