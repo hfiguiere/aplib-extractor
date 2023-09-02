@@ -7,6 +7,7 @@
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
+use num_traits::FromPrimitive;
 
 use crate::audit::{
     audit_get_array_value, audit_get_bool_value, audit_get_date_value, audit_get_int_value,
@@ -18,44 +19,15 @@ use crate::AplibObject;
 use crate::AplibType;
 use crate::PlistLoadable;
 
+#[derive(Clone, Copy, Debug, num_derive::ToPrimitive, num_derive::FromPrimitive, PartialEq)]
+#[repr(u32)]
 /// Type of folder
-#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Type {
     Invalid = 0,
     /// Folder, aka container of things
     Folder = 1,
     /// Project (as in the UI), contains only `Master`s
     Project = 2,
-}
-
-impl Type {
-    /// `Type` from an integer.
-    fn from(v: i64) -> Self {
-        match v {
-            0 => Type::Invalid,
-            1 => Type::Folder,
-            2 => Type::Project,
-            _ => {
-                println!("Unknown folder type {}", v);
-                Type::Invalid
-            }
-        }
-    }
-
-    /// `Type` from an optional integer.
-    fn from_option(o: Option<i64>) -> Option<Self> {
-        let v = o?;
-        Some(Self::from(v))
-    }
-
-    /// `Type` to an integer.
-    pub fn to_int(&self) -> i64 {
-        match *self {
-            Type::Invalid => 0,
-            Type::Folder => 1,
-            Type::Project => 2,
-        }
-    }
 }
 
 /// Folder object. This is a container of things in the library.
@@ -108,11 +80,8 @@ impl PlistLoadable for Folder {
                 let notes = audit_get_array_value(dict, "notes", &mut auditor);
                 let result = Some(Folder {
                     path: audit_get_str_value(dict, "folderPath", &mut auditor),
-                    folder_type: Type::from_option(audit_get_int_value(
-                        dict,
-                        "folderType",
-                        &mut auditor,
-                    )),
+                    folder_type: audit_get_int_value(dict, "folderType", &mut auditor)
+                        .and_then(FromPrimitive::from_i64),
                     model_id: audit_get_int_value(dict, "modelId", &mut auditor),
                     name: audit_get_str_value(dict, "name", &mut auditor),
                     parent_uuid: audit_get_str_value(dict, "parentFolderUuid", &mut auditor),

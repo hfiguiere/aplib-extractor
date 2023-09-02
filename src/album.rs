@@ -7,6 +7,7 @@
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
+use num_traits::FromPrimitive;
 
 use crate::audit::{
     audit_get_bool_value, audit_get_date_value, audit_get_int_value, audit_get_str_value, Report,
@@ -18,49 +19,18 @@ use crate::AplibObject;
 use crate::AplibType;
 use crate::PlistLoadable;
 
+#[derive(Clone, Copy, Debug, num_derive::FromPrimitive, num_derive::ToPrimitive, PartialEq)]
+#[repr(u32)]
 /// Subclass for album
-#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Subclass {
     /// Invalid.
-    Invalid,
+    Invalid = 0,
     /// Implicit - used for folders
-    Implicit,
+    Implicit = 1,
     /// Smart -
-    Smart,
+    Smart = 2,
     /// User - user album with explicit content.
-    User,
-}
-
-impl Subclass {
-    /// `Subclass` from an `i64`
-    fn from(v: i64) -> Self {
-        match v {
-            0 => Subclass::Invalid,
-            1 => Subclass::Implicit,
-            2 => Subclass::Smart,
-            3 => Subclass::User,
-            _ => {
-                println!("Unknown subclass value {}", v);
-                Subclass::Invalid
-            }
-        }
-    }
-
-    /// `Subclass from an optional `i64`
-    fn from_option(o: Option<i64>) -> Option<Self> {
-        let v = o?;
-        Some(Self::from(v))
-    }
-
-    /// Convert to `i64`
-    pub fn to_int(&self) -> i64 {
-        match *self {
-            Subclass::Invalid => 0,
-            Subclass::Implicit => 1,
-            Subclass::Smart => 2,
-            Subclass::User => 3,
-        }
-    }
+    User = 3,
 }
 
 /// Album object.
@@ -109,11 +79,8 @@ impl PlistLoadable for Album {
         match plist {
             Value::Dictionary(ref dict) => {
                 let info_dict = get_dict_value(dict, "InfoDictionary")?;
-                let subclass = Subclass::from_option(audit_get_int_value(
-                    &info_dict,
-                    "albumSubclass",
-                    &mut auditor,
-                ));
+                let subclass = audit_get_int_value(&info_dict, "albumSubclass", &mut auditor)
+                    .and_then(Subclass::from_i64);
                 let result = Some(Album {
                     uuid: audit_get_str_value(&info_dict, "uuid", &mut auditor),
                     folder_uuid: audit_get_str_value(&info_dict, "folderUuid", &mut auditor),

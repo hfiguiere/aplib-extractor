@@ -7,12 +7,12 @@
 use std::io::stderr;
 
 use clap::{Parser, Subcommand};
+use num_traits::ToPrimitive;
 use pbr::ProgressBar;
 
 use aplib::audit::{Report, Reporter};
 use aplib::AlbumSubclass;
 use aplib::AplibObject;
-use aplib::FolderType;
 use aplib::Keyword;
 use aplib::Library;
 use aplib::ModelInfo;
@@ -124,11 +124,7 @@ fn print_keywords(keywords: &[Keyword], indent: &str) {
         }
         let name = keyword.name.as_ref().unwrap();
         let uuid = keyword.uuid().as_ref().unwrap();
-        let parent = if let Some(ref p) = *keyword.parent() {
-            p.clone()
-        } else {
-            String::new()
-        };
+        let parent = keyword.parent().clone().unwrap_or_default();
         println!("| {:<26} | {:<26} | {}{}", uuid, parent, indent, name);
         if keyword.children.is_some() {
             let new_indent = if indent.is_empty() {
@@ -231,17 +227,13 @@ fn dump_folders(library: &mut Library) {
             Some(StoreWrapper::Folder(folder)) => {
                 let name = folder.name.as_ref().unwrap();
                 let uuid = folder.uuid().as_ref().unwrap();
-                let implicit_album_uuid = if let Some(value) = folder.implicit_album_uuid.as_ref() {
-                    value
-                } else {
-                    ""
-                };
+                let implicit_album_uuid = folder.implicit_album_uuid.clone().unwrap_or_default();
                 let path = folder.path.as_ref().unwrap();
-                let folder_type = if let Some(ref ft) = folder.folder_type {
-                    FolderType::to_int(ft)
-                } else {
-                    0
-                };
+                let folder_type = folder
+                    .folder_type
+                    .as_ref()
+                    .and_then(ToPrimitive::to_i32)
+                    .unwrap_or(0);
                 println!(
                     "| {:<26} | {:<26} | {:<26} | {:>4} | {:>8} | {}",
                     name,
@@ -277,27 +269,15 @@ fn dump_albums(library: &mut Library) {
         }
         match library.get(album_uuid) {
             Some(StoreWrapper::Album(album)) => {
-                let name = if let Some(ref n) = album.name {
-                    n.clone()
-                } else {
-                    String::new()
-                };
+                let name = album.name.clone().unwrap_or_default();
                 let uuid = album.uuid().as_ref().unwrap();
-                let parent = if let Some(ref p) = *album.parent() {
-                    p.clone()
-                } else {
-                    String::new()
-                };
-                let query_folder_uuid = if let Some(ref qf) = album.query_folder_uuid {
-                    qf.clone()
-                } else {
-                    String::new()
-                };
-                let album_class = if let Some(ref c) = album.subclass {
-                    AlbumSubclass::to_int(c)
-                } else {
-                    0
-                };
+                let parent = album.parent().clone().unwrap_or_default();
+                let query_folder_uuid = album.query_folder_uuid.clone().unwrap_or_default();
+                let album_class = album
+                    .subclass
+                    .as_ref()
+                    .and_then(AlbumSubclass::to_i32)
+                    .unwrap_or(0);
                 println!(
                     "| {:<26} | {:<26} | {:<26} | {:>4} | {:>5} | {:>8} | {}",
                     uuid,

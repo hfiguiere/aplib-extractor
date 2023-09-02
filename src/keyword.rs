@@ -84,10 +84,12 @@ impl Keyword {
         }
         Some(keywords)
     }
+}
 
+impl From<&plist::Dictionary> for Keyword {
     /// Create a new keyword from a plist dictionary
     /// will recursively create the children
-    pub fn from(d: &plist::Dictionary) -> Keyword {
+    fn from(d: &plist::Dictionary) -> Keyword {
         Keyword {
             uuid: get_str_value(d, "uuid"),
             model_id: get_int_value(d, "modelId"),
