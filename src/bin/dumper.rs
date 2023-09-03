@@ -263,8 +263,8 @@ fn dump_albums(library: &mut Library) {
 
     let albums = library.albums();
     println!("{} Albums:", albums.len());
-    println!("| uuid                       | parent (fldr)              | query (fldr)               | type | class | model id | name");
-    println!("+----------------------------+----------------------------+----------------------------+------+-------+----------+-----");
+    println!("| uuid                                  | parent (fldr)              | query (fldr)               | type | class      | model id | name");
+    println!("+---------------------------------------+----------------------------+----------------------------+------+------------+----------+-----");
     for album_uuid in albums {
         if album_uuid.is_empty() {
             continue;
@@ -277,16 +277,20 @@ fn dump_albums(library: &mut Library) {
                 let query_folder_uuid = album.query_folder_uuid.clone().unwrap_or_default();
                 let album_class = album
                     .subclass
+                    .unwrap_or_default();
+                let album_class_num = album
+                    .subclass
                     .as_ref()
                     .and_then(AlbumSubclass::to_i32)
                     .unwrap_or(0);
                 println!(
-                    "| {:<26} | {:<26} | {:<26} | {:>4} | {:>5} | {:>8} | {}",
+                    "| {:<37} | {:<26} | {:<26} | {:>4} | {:<8}{:>2} | {:>8} | {}",
                     uuid,
                     parent,
                     query_folder_uuid,
                     album.album_type.unwrap_or(0),
-                    album_class,
+                    format!("{:?}", album_class),
+                    album_class_num,
                     album.model_id(),
                     name
                 )

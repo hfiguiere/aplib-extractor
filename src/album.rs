@@ -19,10 +19,11 @@ use crate::AplibObject;
 use crate::AplibType;
 use crate::PlistLoadable;
 
-#[derive(Clone, Copy, Debug, num_derive::FromPrimitive, num_derive::ToPrimitive, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, num_derive::FromPrimitive, num_derive::ToPrimitive, PartialEq)]
 #[repr(u32)]
 /// Subclass for album
 pub enum Subclass {
+    #[default]
     /// Invalid.
     Invalid = 0,
     /// Implicit - used for folders
