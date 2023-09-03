@@ -217,8 +217,8 @@ fn dump_folders(library: &mut Library) {
 
     let folders = library.folders();
     println!("{} Folders:", folders.len());
-    println!("| Name                       | uuid                       | impl album                 | type | model id | path");
-    println!("+----------------------------+----------------------------+----------------------------+------+----------+----------");
+    println!("| Name                       | uuid                       | impl album                            | type      | model id | path");
+    println!("+----------------------------+----------------------------+---------------------------------------+-----------+----------+----------");
     for folder_uuid in folders {
         if folder_uuid.is_empty() {
             continue;
@@ -229,17 +229,19 @@ fn dump_folders(library: &mut Library) {
                 let uuid = folder.uuid().as_ref().unwrap();
                 let implicit_album_uuid = folder.implicit_album_uuid.clone().unwrap_or_default();
                 let path = folder.path.as_ref().unwrap();
-                let folder_type = folder
+                let folder_type = folder.folder_type.unwrap_or_default();
+                let folder_type_num = folder
                     .folder_type
                     .as_ref()
                     .and_then(ToPrimitive::to_i32)
                     .unwrap_or(0);
                 println!(
-                    "| {:<26} | {:<26} | {:<26} | {:>4} | {:>8} | {}",
+                    "| {:<26} | {:<26} | {:<37} | {:<7}{:>2} | {:>8} | {}",
                     name,
                     uuid,
                     implicit_album_uuid,
-                    folder_type,
+                    format!("{:?}", folder_type),
+                    folder_type_num,
                     folder.model_id(),
                     path
                 )

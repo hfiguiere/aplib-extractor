@@ -19,10 +19,13 @@ use crate::AplibObject;
 use crate::AplibType;
 use crate::PlistLoadable;
 
-#[derive(Clone, Copy, Debug, num_derive::ToPrimitive, num_derive::FromPrimitive, PartialEq)]
+#[derive(
+    Clone, Copy, Debug, Default, num_derive::ToPrimitive, num_derive::FromPrimitive, PartialEq,
+)]
 #[repr(u32)]
 /// Type of folder
 pub enum Type {
+    #[default]
     Invalid = 0,
     /// Folder, aka container of things
     Folder = 1,
@@ -46,7 +49,7 @@ pub struct Folder {
     pub db_version: Option<i64>,
     /// Project model version - expected 8
     pub project_version: Option<i64>,
-    /// Path in the tree (using model_id for each components.
+    /// Path in the tree (using model_id for each components).
     pub path: Option<String>,
     /// Name
     pub name: Option<String>,
