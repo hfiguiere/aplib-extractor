@@ -36,6 +36,8 @@ const ALBUMS_DIR: &str = "Albums";
 const FOLDERS_DIR: &str = "Folders";
 const VERSIONS_BASE_DIR: &str = "Versions";
 
+pub const PROGRESS_NONE: Option<fn(u64) -> bool> = None;
+
 /// Info of the library data model
 pub struct ModelInfo {
     pub is_iphoto_library: Option<bool>,
@@ -264,8 +266,13 @@ impl Library {
 
     /// Load items from directory `dir` with extension `ext`
     /// and store the uuids into `set`
-    fn load_items<T, F>(&mut self, dir: &str, ext: &str, set: &mut HashSet<String>, pg: &mut F)
-    where
+    fn load_items<T, F>(
+        &mut self,
+        dir: &str,
+        ext: &str,
+        set: &mut HashSet<String>,
+        mut pg: Option<F>,
+    ) where
         T: PlistLoadable + AplibObject,
         F: FnMut(u64) -> bool,
     {
@@ -297,15 +304,17 @@ impl Library {
                 }
                 println!("Failed to decode object from {:?}", file);
             }
-            if !pg(1) {
-                println!("Cancelled");
-                return;
+            if let Some(pg) = pg.as_mut() {
+                if !pg(1) {
+                    println!("Cancelled");
+                    return;
+                }
             }
         }
     }
 
     /// Load albums. Once done the result it cached.
-    pub fn load_albums<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
+    pub fn load_albums<F: FnMut(u64) -> bool>(&mut self, pg: Option<F>) {
         if self.albums.is_empty() {
             let mut albums: HashSet<String> = HashSet::new();
             self.load_items::<Album, F>(ALBUMS_DIR, "apalbum", &mut albums, pg);
@@ -319,7 +328,7 @@ impl Library {
     }
 
     /// Load folders. Once done the result is cached.
-    pub fn load_folders<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
+    pub fn load_folders<F: FnMut(u64) -> bool>(&mut self, pg: Option<F>) {
         if self.folders.is_empty() {
             let mut folders: HashSet<String> = HashSet::new();
             self.load_items::<Folder, F>(FOLDERS_DIR, "apfolder", &mut folders, pg);
@@ -381,7 +390,7 @@ impl Library {
         items
     }
 
-    fn load_versions_items<T, F>(&mut self, ext: &str, set: &mut HashSet<String>, pg: &mut F)
+    fn load_versions_items<T, F>(&mut self, ext: &str, set: &mut HashSet<String>, mut pg: Option<F>)
     where
         T: PlistLoadable + AplibObject,
         F: FnMut(u64) -> bool,
@@ -414,15 +423,17 @@ impl Library {
                 }
                 println!("Error decoding object from {:?}", file);
             }
-            if !pg(1) {
-                println!("Cancelled!");
-                break;
+            if let Some(pg) = pg.as_mut() {
+                if !pg(1) {
+                    println!("Cancelled!");
+                    break;
+                }
             }
         }
     }
 
     /// Load versions.
-    pub fn load_versions<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
+    pub fn load_versions<F: FnMut(u64) -> bool>(&mut self, pg: Option<F>) {
         if self.versions.is_empty() {
             let mut versions: HashSet<String> = HashSet::new();
             self.load_versions_items::<Version, F>("apversion", &mut versions, pg);
@@ -431,7 +442,7 @@ impl Library {
     }
 
     /// Load masters.
-    pub fn load_masters<F: FnMut(u64) -> bool>(&mut self, pg: &mut F) {
+    pub fn load_masters<F: FnMut(u64) -> bool>(&mut self, pg: Option<F>) {
         if self.masters.is_empty() {
             let mut masters: HashSet<String> = HashSet::new();
             self.load_versions_items::<Master, F>("apmaster", &mut masters, pg);

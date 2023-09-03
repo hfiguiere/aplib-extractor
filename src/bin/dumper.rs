@@ -11,12 +11,12 @@ use num_traits::ToPrimitive;
 use pbr::ProgressBar;
 
 use aplib::audit::{Report, Reporter};
-use aplib::AlbumSubclass;
 use aplib::AplibObject;
 use aplib::Keyword;
 use aplib::Library;
 use aplib::ModelInfo;
 use aplib::StoreWrapper;
+use aplib::{AlbumSubclass, PROGRESS_NONE};
 
 #[derive(Debug, Parser)]
 #[command(version)]
@@ -87,10 +87,10 @@ fn process_audit(args: &Args) {
                 return;
             }
         }
-        library.load_folders(&mut |_: u64| true);
-        library.load_albums(&mut |_: u64| true);
-        library.load_masters(&mut |_: u64| true);
-        library.load_versions(&mut |_: u64| true);
+        library.load_folders(PROGRESS_NONE);
+        library.load_albums(PROGRESS_NONE);
+        library.load_masters(PROGRESS_NONE);
+        library.load_versions(PROGRESS_NONE);
 
         println!("Audit:");
         let auditor = library.auditor().unwrap();
@@ -209,10 +209,10 @@ fn dump_folders(library: &mut Library) {
     let mut pb = ProgressBar::on(stderr(), 1);
     pb.tick_format("|/-\\");
 
-    library.load_folders(&mut |_: u64| {
+    library.load_folders(Some(&mut |_: u64| {
         pb.tick();
         true
-    });
+    }));
     pb.finish();
 
     let folders = library.folders();
@@ -253,10 +253,10 @@ fn dump_albums(library: &mut Library) {
     let mut pb = ProgressBar::on(stderr(), 1);
     pb.tick_format("|/-\\");
 
-    library.load_albums(&mut |_: u64| {
+    library.load_albums(Some(&mut |_: u64| {
         pb.tick();
         true
-    });
+    }));
     pb.finish();
 
     let albums = library.albums();
@@ -307,10 +307,10 @@ fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
     let count = model_info.master_count.unwrap_or(0) as u64;
     let mut pb = ProgressBar::on(stderr(), count);
 
-    library.load_masters(&mut |inc: u64| {
+    library.load_masters(Some(&mut |inc: u64| {
         pb.add(inc);
         true
-    });
+    }));
     pb.finish();
 
     let masters = library.masters();
@@ -337,10 +337,10 @@ fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
     let count = model_info.version_count.unwrap_or(0) as u64;
     let mut pb = ProgressBar::on(stderr(), count);
 
-    library.load_versions(&mut |inc: u64| {
+    library.load_versions(Some(&mut |inc: u64| {
         pb.add(inc);
         true
-    });
+    }));
     pb.finish();
 
     let versions = library.versions();
