@@ -13,20 +13,27 @@ use crate::plutils::{
     get_str_value, Value,
 };
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum SkipReason {
+    #[error("No Reason")]
     /// No reason
     None,
+    #[error("Not found")]
     /// Didn't find it
     NotFound,
+    #[error("Unknown Property")]
     /// Unknown property
     UnknownProp,
+    #[error("Invalid Type")]
     /// Wrong type
     InvalidType,
+    #[error("Invalid Data")]
     /// Data is invalid
     InvalidData,
+    #[error("Parse Failed")]
     /// Couldn't be parsed
     ParseFailed,
+    #[error("Ignore")]
     /// Deliberately ignore
     Ignore,
 }
