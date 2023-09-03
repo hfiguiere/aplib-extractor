@@ -321,8 +321,8 @@ fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
 
     let masters = library.masters();
     println!("{} Masters:", masters.len());
-    println!("| uuid                       | project                    | path");
-    println!("+----------------------------+----------------------------+-----------------------");
+    println!("| uuid                   | project                | alternate              | mtyp | subt  | orig | path");
+    println!("+------------------------+------------------------+------------------------+------+-------+-----------------------");
     for master_uuid in masters {
         if master_uuid.is_empty() {
             continue;
@@ -332,7 +332,11 @@ fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
                 let uuid = master.uuid().as_ref().unwrap();
                 let parent = master.parent().as_ref().unwrap();
                 let image_path = master.image_path.as_ref().unwrap();
-                println!("| {:<26} | {:<26} | {}", uuid, parent, image_path)
+                let alternate = master.alternate_master.clone().unwrap_or_default();
+                let mtype = master.master_type.clone().unwrap_or_default();
+                let subtype = master.subtype.clone().unwrap_or_default();
+                let orig_uuid = master.original_version_uuid.clone().unwrap_or_default();
+                println!("| {:<22} | {:<22} | {:<22} | {:<4} | {:<5} | {} | {}", uuid, parent, alternate, mtype, subtype, orig_uuid, image_path)
             }
             _ => println!("master {} not found", master_uuid),
         }
@@ -351,8 +355,8 @@ fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
 
     let versions = library.versions();
     println!("{} Versions:", versions.len());
-    println!("| uuid                       | master                     | project                    | original | name");
-    println!("+----------------------------+----------------------------+----------------------------+----------+------------");
+    println!("| uuid                   | master                 | project                | orig  | raw   | num | name");
+    println!("+------------------------+------------------------+------------------------+-------+-------+-----+------------");
     for version_uuid in versions {
         if version_uuid.is_empty() {
             continue;
@@ -363,13 +367,17 @@ fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
                 let parent = version.parent().as_ref().unwrap();
                 let project_uuid = version.project_uuid.as_ref().unwrap();
                 let name = version.name.as_ref().unwrap();
+                let rawmaster = version.raw_master_uuid == version.master_uuid;
+                let num = version.version_number.map(|v| v.to_string()).unwrap_or_default();
 
                 println!(
-                    "| {:<26} | {:<26} | {:<26} | {:>8} | {}",
+                    "| {:<22} | {:<22} | {:<22} | {:>5} | {:>5} | {:>3} | {}",
                     uuid,
                     parent,
                     project_uuid,
                     version.is_original.unwrap_or(false),
+                    rawmaster,
+                    num,
                     name
                 )
             }

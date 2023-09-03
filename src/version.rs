@@ -29,7 +29,7 @@ pub struct Version {
     uuid: Option<String>,
     model_id: Option<i64>,
     /// The associated `Master`.
-    master_uuid: Option<String>,
+    pub master_uuid: Option<String>,
 
     /// uuid of the `Folder` project this reside in.
     pub project_uuid: Option<String>,
