@@ -3,6 +3,10 @@ name = "aplib-extractor"
 version = "0.1.0"
 authors = ["Hubert Figuière <hub@figuiere.net>"]
 edition = "2021"
+description = "Extract data from Apple Aperture™ libraries."
+license = "MPL-2.0"
+repository = "https://github.com/hfiguiere/aplib-extractor"
+documentation = "https://docs.rs/aplib-extractor/"
 
 [dependencies]
 chrono = "0.4.19"
