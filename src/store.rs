@@ -30,4 +30,15 @@ impl Wrapper {
             Wrapper::None => None,
         }
     }
+
+    /// Extract the parent from the wrapper
+    pub fn parent_uuid(&self) -> Option<String> {
+        match *self {
+            Wrapper::Album(ref o) => o.parent().clone(),
+            Wrapper::Folder(ref o) => o.parent().clone(),
+            Wrapper::Version(ref o) => o.parent().clone(),
+            Wrapper::Master(ref o) => o.parent().clone(),
+            Wrapper::None => None,
+        }
+    }
 }

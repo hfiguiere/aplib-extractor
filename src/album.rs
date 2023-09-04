@@ -19,7 +19,9 @@ use crate::AplibObject;
 use crate::AplibType;
 use crate::PlistLoadable;
 
-#[derive(Clone, Copy, Debug, Default, num_derive::FromPrimitive, num_derive::ToPrimitive, PartialEq)]
+#[derive(
+    Clone, Copy, Debug, Default, num_derive::FromPrimitive, num_derive::ToPrimitive, PartialEq,
+)]
 #[repr(u32)]
 /// Subclass for album
 pub enum Subclass {
@@ -43,7 +45,7 @@ pub struct Album {
     folder_uuid: Option<String>,
     model_id: Option<i64>,
 
-    /// Subclass. See ``Subclass`` enum. (Normal, Smart)
+    /// Subclass. See ``Subclass`` enum. (Implicit, Smart, User)
     pub subclass: Option<Subclass>,
     /// ```Type```. Seems to always be 1
     pub album_type: Option<i64>,
