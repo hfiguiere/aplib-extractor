@@ -48,6 +48,8 @@ struct CommandArgs {
     folders: bool,
     #[arg(long)]
     keywords: bool,
+    #[arg(long)]
+    volumes: bool,
     path: String,
 }
 
@@ -91,6 +93,7 @@ fn process_audit(args: &Args) {
                 return;
             }
         }
+        library.load_volumes(PROGRESS_NONE);
         library.load_folders(PROGRESS_NONE);
         library.load_albums(PROGRESS_NONE);
         library.load_masters(PROGRESS_NONE);
@@ -188,6 +191,9 @@ fn process_dump(args: &Args) {
                 .unwrap_or(&String::from("NONE"))
         );
 
+        if args.all || args.volumes {
+            dump_volumes(&mut library);
+        }
         if args.all || args.folders {
             dump_folders(&mut library);
         }
@@ -206,6 +212,46 @@ fn process_dump(args: &Args) {
         }
     } else {
         unreachable!()
+    }
+}
+
+fn dump_volumes(library: &mut Library) {
+    let mut pb = ProgressBar::on(stderr(), 1);
+    pb.tick_format("|/-\\");
+
+    library.load_folders(Some(&mut |_: u64| {
+        pb.tick();
+        true
+    }));
+    pb.finish();
+
+    let volumes = library.volumes();
+    println!("{} Volumes:", volumes.len());
+
+    println!("| Name                   | uuid                   | Volume Name                            | model id |");
+    println!("+------------------------+------------------------+----------------------------------------+----------+");
+    for uuid in volumes {
+        if uuid.is_empty() {
+            continue;
+        }
+        match library.get(uuid) {
+            Some(StoreWrapper::Volume(volume)) => {
+                let name = volume.volume_name.as_ref().unwrap();
+                let uuid = volume.uuid().as_ref().unwrap();
+                let disk_uuid = volume.disk_uuid.clone().unwrap_or_default();
+                let model_id = volume.model_id();
+                println!(
+                    "| {:<22} | {:<22} | {:<22} | {:>4} |",
+                    name,
+                    uuid,
+                    disk_uuid,
+                    model_id,
+                )
+            }
+            _ => {
+                println!("Folder not found.");
+            }
+        }
     }
 }
 

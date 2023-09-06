@@ -8,6 +8,7 @@ use crate::album::Album;
 use crate::folder::Folder;
 use crate::master::Master;
 use crate::version::Version;
+use crate::volume::Volume;
 use crate::AplibObject;
 
 /// Wrap an AplibObject to key it into the store.
@@ -16,6 +17,7 @@ pub enum Wrapper {
     Folder(Box<Folder>),
     Master(Box<Master>),
     Version(Box<Version>),
+    Volume(Box<Volume>),
     None,
 }
 
@@ -27,6 +29,7 @@ impl Wrapper {
             Wrapper::Folder(ref o) => o.uuid().clone(),
             Wrapper::Version(ref o) => o.uuid().clone(),
             Wrapper::Master(ref o) => o.uuid().clone(),
+            Wrapper::Volume(ref o) => o.uuid().clone(),
             Wrapper::None => None,
         }
     }
@@ -38,6 +41,7 @@ impl Wrapper {
             Wrapper::Folder(ref o) => o.parent().clone(),
             Wrapper::Version(ref o) => o.parent().clone(),
             Wrapper::Master(ref o) => o.parent().clone(),
+            Wrapper::Volume(ref o) => o.parent().clone(),
             Wrapper::None => None,
         }
     }
