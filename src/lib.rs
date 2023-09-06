@@ -17,6 +17,7 @@ mod notes;
 pub mod plutils;
 mod store;
 mod version;
+mod volume;
 mod xmp;
 
 #[cfg(test)]
@@ -36,6 +37,14 @@ pub use master::Master;
 pub use store::Wrapper as StoreWrapper;
 pub use version::Version;
 
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("sqlite error {0}")]
+    Sql(#[from]rusqlite::Error),
+}
+
+type Result<T> = std::result::Result<T, Error>;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 /// `AplibObject` types.
 pub enum AplibType {
@@ -49,6 +58,8 @@ pub enum AplibType {
     Master,
     /// Version
     Version,
+    /// Volume
+    Volume,
 }
 
 /// Object that can be loaded from a single plist.
@@ -58,6 +69,14 @@ pub trait PlistLoadable {
     where
         P: AsRef<Path>,
         Self: Sized;
+}
+
+/// Object that can be loaded from a sqlite row.
+pub trait SqliteLoadable {
+    fn table() -> &'static str;
+    fn columns() -> &'static [&'static str];
+    fn from_row(row: &rusqlite::Row) -> Result<Self>
+        where Self: Sized;
 }
 
 /// Basic trait from the library objects.

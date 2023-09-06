@@ -34,6 +34,7 @@ const DATAMODEL_VERSION_PLIST: &str = "DataModelVersion.plist";
 const KEYWORDS_PLIST: &str = "Keywords.plist";
 const ALBUMS_DIR: &str = "Albums";
 const FOLDERS_DIR: &str = "Folders";
+const VOLUMES_DIR: &str = "Volumes";
 const VERSIONS_BASE_DIR: &str = "Versions";
 
 pub const PROGRESS_NONE: Option<fn(u64) -> bool> = None;
@@ -103,6 +104,8 @@ pub struct Library {
     masters: HashSet<String>,
     /// All the version UUID
     versions: HashSet<String>,
+    /// All the volumes UUID
+    volumes: HashSet<String>,
 
     /// The object store. The key is the UUID
     objects: HashMap<String, store::Wrapper>,
@@ -126,6 +129,7 @@ impl Library {
             //            keywords: HashSet::new(),
             masters: HashSet::new(),
             versions: HashSet::new(),
+            volumes: HashSet::new(),
 
             objects: HashMap::new(),
             auditor: None,
@@ -358,6 +362,38 @@ impl Library {
         list
     }
 
+    fn list_volumes_items_dirs(&self) -> Vec<PathBuf> {
+        let ppath = self.build_path(VOLUMES_DIR, true);
+
+        if !fs::metadata(&ppath).unwrap().is_dir() {
+            // XXX return a Result
+            return Vec::new();
+        }
+
+        Library::recurse_list_directory(&ppath, 4)
+    }
+
+    fn list_volumes_items(&self, ext: &str) -> Vec<PathBuf> {
+        let list = self.list_volumes_items_dirs();
+        let mut items = Vec::new();
+
+        for dir in list {
+            if !fs::metadata(&dir).unwrap().is_dir() {
+                continue;
+            }
+
+            for entry in fs::read_dir(&dir).unwrap() {
+                let entry = entry.unwrap();
+                let p = entry.path();
+                if p.extension().unwrap() == ext {
+                    items.push(entry.path().to_owned());
+                }
+            }
+        }
+
+        items
+    }
+
     fn list_versions_items_dirs(&self) -> Vec<PathBuf> {
         let ppath = self.build_path(VERSIONS_BASE_DIR, true);
 
@@ -388,6 +424,48 @@ impl Library {
         }
 
         items
+    }
+
+    fn load_volumes_items<T, F>(&mut self, ext: &str, set: &mut HashSet<String>, mut pg: Option<F>)
+    where
+        T: PlistLoadable + AplibObject,
+        F: FnMut(u64) -> bool,
+    {
+        let file_list = self.list_volumes_items(ext);
+        let audit = self.auditor.is_some();
+        for file in file_list {
+            let mut report = if audit { Some(Report::new()) } else { None };
+            if let Some(obj) = T::from_path(&file, report.as_mut()) {
+                let mut store = false;
+                if let Some(ref uuid) = *obj.uuid() {
+                    set.insert(uuid.to_owned());
+                    store = true;
+                    if audit {
+                        self.auditor
+                            .as_mut()
+                            .unwrap()
+                            .parsed(&file.to_string_lossy(), report.unwrap());
+                    }
+                }
+                if store {
+                    self.store(T::wrap(obj));
+                }
+            } else {
+                if audit {
+                    self.auditor
+                        .as_mut()
+                        .unwrap()
+                        .skip(&file.to_string_lossy(), SkipReason::ParseFailed);
+                }
+                println!("Error decoding object from {:?}", file);
+            }
+            if let Some(pg) = pg.as_mut() {
+                if !pg(1) {
+                    println!("Cancelled!");
+                    break;
+                }
+            }
+        }
     }
 
     fn load_versions_items<T, F>(&mut self, ext: &str, set: &mut HashSet<String>, mut pg: Option<F>)
@@ -432,6 +510,15 @@ impl Library {
         }
     }
 
+    /// Load volumess.
+    pub fn load_volumes<F: FnMut(u64) -> bool>(&mut self, pg: Option<F>) {
+        if self.volumes.is_empty() {
+            let mut volumes: HashSet<String> = HashSet::new();
+            self.load_volumes_items::<Version, F>("apvolume", &mut volumes, pg);
+            self.volumes = volumes;
+        }
+    }
+
     /// Load versions.
     pub fn load_versions<F: FnMut(u64) -> bool>(&mut self, pg: Option<F>) {
         if self.versions.is_empty() {
@@ -458,6 +545,11 @@ impl Library {
     /// Return versions uuids.
     pub fn versions(&self) -> &HashSet<String> {
         &self.versions
+    }
+
+    /// Return volumes uuids.
+    pub fn volumes(&self) -> &HashSet<String> {
+        &self.volumes
     }
 
     /// List keywords.
