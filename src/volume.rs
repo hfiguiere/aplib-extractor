@@ -8,7 +8,7 @@ use std::path::Path;
 
 use crate::audit::{audit_get_int_value, audit_get_str_value, Report};
 use crate::store;
-use crate::{AplibObject, AplibType, SqliteLoadable, PlistLoadable, Result};
+use crate::{AplibObject, AplibType, PlistLoadable, Result, SqliteLoadable};
 
 pub struct Volume {
     uuid: Option<String>,
@@ -18,19 +18,18 @@ pub struct Volume {
     pub volume_name: Option<String>,
 }
 
-const COLUMNS: [&str; 4] = ["modelId", "uuid", "name", "diskUuid"];
-
 impl SqliteLoadable for Volume {
-    fn table() -> &'static str {
+    fn tables() -> &'static str {
         &"RKVolume"
     }
 
-    fn columns() -> &'static [&'static str] {
-        &COLUMNS
+    fn columns() -> &'static str {
+        &"modelId, uuid, name, diskUuid"
     }
 
     fn from_row(row: &rusqlite::Row) -> Result<Self>
-        where Self: Sized
+    where
+        Self: Sized,
     {
         let model_id = row.get(0)?;
         let uuid = row.get(1)?;

@@ -219,7 +219,7 @@ fn dump_volumes(library: &mut Library) {
     let mut pb = ProgressBar::on(stderr(), 1);
     pb.tick_format("|/-\\");
 
-    library.load_folders(Some(&mut |_: u64| {
+    library.load_volumes(Some(&mut |_: u64| {
         pb.tick();
         true
     }));
@@ -228,8 +228,8 @@ fn dump_volumes(library: &mut Library) {
     let volumes = library.volumes();
     println!("{} Volumes:", volumes.len());
 
-    println!("| Name                   | uuid                   | Volume Name                            | model id |");
-    println!("+------------------------+------------------------+----------------------------------------+----------+");
+    println!("| Name                   | uuid                   | Disk UUID                            | id   |");
+    println!("+------------------------+------------------------+--------------------------------------+------+");
     for uuid in volumes {
         if uuid.is_empty() {
             continue;
@@ -241,11 +241,8 @@ fn dump_volumes(library: &mut Library) {
                 let disk_uuid = volume.disk_uuid.clone().unwrap_or_default();
                 let model_id = volume.model_id();
                 println!(
-                    "| {:<22} | {:<22} | {:<22} | {:>4} |",
-                    name,
-                    uuid,
-                    disk_uuid,
-                    model_id,
+                    "| {:<22} | {:<22} | {:<36} | {:>4} |",
+                    name, uuid, disk_uuid, model_id,
                 )
             }
             _ => {

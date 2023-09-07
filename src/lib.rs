@@ -40,7 +40,7 @@ pub use version::Version;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("sqlite error {0}")]
-    Sql(#[from]rusqlite::Error),
+    Sql(#[from] rusqlite::Error),
 }
 
 type Result<T> = std::result::Result<T, Error>;
@@ -73,10 +73,13 @@ pub trait PlistLoadable {
 
 /// Object that can be loaded from a sqlite row.
 pub trait SqliteLoadable {
-    fn table() -> &'static str;
-    fn columns() -> &'static [&'static str];
+    /// Return the comma separated tables.
+    fn tables() -> &'static str;
+    /// Return the comma spearates columns.
+    fn columns() -> &'static str;
     fn from_row(row: &rusqlite::Row) -> Result<Self>
-        where Self: Sized;
+    where
+        Self: Sized;
 }
 
 /// Basic trait from the library objects.
