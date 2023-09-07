@@ -8,6 +8,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use once_cell::unsync::OnceCell;
 use plist::Value;
 
 use crate::album::Album;
@@ -18,8 +19,8 @@ use crate::master::Master;
 use crate::plutils;
 use crate::store;
 use crate::version::Version;
-use crate::AplibObject;
-use crate::PlistLoadable;
+use crate::volume::Volume;
+use crate::{AplibObject, PlistLoadable, SqliteLoadable};
 
 // This is mostly from db_version = 110
 
@@ -111,6 +112,8 @@ pub struct Library {
     objects: HashMap<String, store::Wrapper>,
     /// Auditor for the audit mode.
     auditor: Option<Reporter>,
+    /// Database connection
+    database_conn: OnceCell<Option<rusqlite::Connection>>,
 }
 
 impl Library {
@@ -133,6 +136,8 @@ impl Library {
 
             objects: HashMap::new(),
             auditor: None,
+
+            database_conn: OnceCell::new(),
         }
     }
 
@@ -143,6 +148,15 @@ impl Library {
     /// Get the auditor
     pub fn auditor(&self) -> Option<&Reporter> {
         self.auditor.as_ref()
+    }
+
+    /// Get the main database from the library.
+    pub fn database(&self) -> &Option<rusqlite::Connection> {
+        self.database_conn.get_or_init(|| {
+            let dbpath = self.path.join("Database/apdb/Library.apdb");
+            let connection = rusqlite::Connection::open(dbpath);
+            connection.ok()
+        })
     }
 
     /// Store the wrapped object.
@@ -362,8 +376,8 @@ impl Library {
         list
     }
 
-    fn list_volumes_items_dirs(&self) -> Vec<PathBuf> {
-        let ppath = self.build_path(VOLUMES_DIR, true);
+    fn list_items_dirs(&self, dir: &str) -> Vec<PathBuf> {
+        let ppath = self.build_path(dir, true);
 
         if !fs::metadata(&ppath).unwrap().is_dir() {
             // XXX return a Result
@@ -373,40 +387,9 @@ impl Library {
         Library::recurse_list_directory(&ppath, 4)
     }
 
-    fn list_volumes_items(&self, ext: &str) -> Vec<PathBuf> {
-        let list = self.list_volumes_items_dirs();
-        let mut items = Vec::new();
-
-        for dir in list {
-            if !fs::metadata(&dir).unwrap().is_dir() {
-                continue;
-            }
-
-            for entry in fs::read_dir(&dir).unwrap() {
-                let entry = entry.unwrap();
-                let p = entry.path();
-                if p.extension().unwrap() == ext {
-                    items.push(entry.path().to_owned());
-                }
-            }
-        }
-
-        items
-    }
-
-    fn list_versions_items_dirs(&self) -> Vec<PathBuf> {
-        let ppath = self.build_path(VERSIONS_BASE_DIR, true);
-
-        if !fs::metadata(&ppath).unwrap().is_dir() {
-            // XXX return a Result
-            return Vec::new();
-        }
-
-        Library::recurse_list_directory(&ppath, 4)
-    }
-
-    fn list_versions_items(&self, ext: &str) -> Vec<PathBuf> {
-        let list = self.list_versions_items_dirs();
+    // XXX shall this a list_items() be merged?
+    fn list_recursive_items(&self, dir: &str, ext: &str) -> Vec<PathBuf> {
+        let list = self.list_items_dirs(dir);
         let mut items = Vec::new();
 
         for dir in list {
@@ -428,10 +411,39 @@ impl Library {
 
     fn load_volumes_items<T, F>(&mut self, ext: &str, set: &mut HashSet<String>, mut pg: Option<F>)
     where
-        T: PlistLoadable + AplibObject,
+        T: PlistLoadable + SqliteLoadable + AplibObject,
         F: FnMut(u64) -> bool,
     {
-        let file_list = self.list_volumes_items(ext);
+        use rusqlite::params;
+
+        let file_list = self.list_items(VOLUMES_DIR, ext);
+        if file_list.is_empty() {
+            // open the database and load from there.
+            let mut objects = Vec::new();
+            if let Some(conn) = self.database() {
+                let query = format!("SELECT {} FROM {}", T::columns(), T::tables());
+                if let Ok(mut stmt) = conn.prepare(&query) {
+                    if let Ok(volumes) = stmt.query_and_then(params![], |row| T::from_row(row)) {
+                        volumes
+                            .into_iter()
+                            .filter(|vol| vol.is_ok())
+                            .for_each(|vol| {
+                                let vol = vol.unwrap();
+                                if let Some(uuid) = vol.uuid() {
+                                    set.insert(uuid.clone());
+                                    objects.push(vol);
+                                }
+                            });
+                    }
+                }
+            }
+
+            objects.into_iter().for_each(|vol| {
+                self.store(T::wrap(vol));
+            });
+
+            return;
+        }
         let audit = self.auditor.is_some();
         for file in file_list {
             let mut report = if audit { Some(Report::new()) } else { None };
@@ -473,7 +485,7 @@ impl Library {
         T: PlistLoadable + AplibObject,
         F: FnMut(u64) -> bool,
     {
-        let file_list = self.list_versions_items(ext);
+        let file_list = self.list_recursive_items(VERSIONS_BASE_DIR, ext);
         let audit = self.auditor.is_some();
         for file in file_list {
             let mut report = if audit { Some(Report::new()) } else { None };
@@ -514,7 +526,7 @@ impl Library {
     pub fn load_volumes<F: FnMut(u64) -> bool>(&mut self, pg: Option<F>) {
         if self.volumes.is_empty() {
             let mut volumes: HashSet<String> = HashSet::new();
-            self.load_volumes_items::<Version, F>("apvolume", &mut volumes, pg);
+            self.load_volumes_items::<Volume, F>("apvolume", &mut volumes, pg);
             self.volumes = volumes;
         }
     }
