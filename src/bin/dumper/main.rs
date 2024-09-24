@@ -31,6 +31,7 @@ struct Args {
 enum Command {
     Dump(CommandArgs),
     Audit(CommandArgs),
+    List(CommandArgs),
     Tree(tree::TreeArgs),
 }
 
@@ -59,8 +60,44 @@ fn main() {
     match args.command {
         Command::Dump(_) => process_dump(&args),
         Command::Audit(_) => process_audit(&args),
+        Command::List(_) => process_list(&args),
         Command::Tree(args) => tree::process_tree(&args),
     };
+}
+
+fn process_list(args: &Args) {
+    if let Command::List(args) = &args.command {
+        let mut library = Library::new(&args.path);
+        {
+            let version = library.library_version();
+            if version.is_err() {
+                println!("Invalid library");
+                return;
+            }
+        }
+        library.load_volumes(PROGRESS_NONE);
+        library.load_masters(PROGRESS_NONE);
+
+        let masters = library.masters();
+        for master_uuid in masters {
+            if master_uuid.is_empty() {
+                continue;
+            }
+            match library.get(master_uuid) {
+                Some(StoreWrapper::Master(master)) => {
+                    let image_path = master.image_path.as_ref().unwrap();
+                    let volume_uuid = master.file_volume_uuid.as_ref().unwrap();
+                    if let Some(StoreWrapper::Volume(volume)) = library.get(volume_uuid) {
+                        println!(
+                            "{}/{image_path}",
+                            volume.volume_name.clone().unwrap_or_else(String::default)
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
 }
 
 fn print_report(report: &Report) {
