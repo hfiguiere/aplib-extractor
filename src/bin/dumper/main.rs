@@ -83,18 +83,10 @@ fn process_list(args: &Args) {
             if master_uuid.is_empty() {
                 continue;
             }
-            match library.get(master_uuid) {
-                Some(StoreWrapper::Master(master)) => {
-                    let image_path = master.image_path.as_ref().unwrap();
-                    let volume_uuid = master.file_volume_uuid.as_ref().unwrap();
-                    if let Some(StoreWrapper::Volume(volume)) = library.get(volume_uuid) {
-                        println!(
-                            "{}/{image_path}",
-                            volume.volume_name.clone().unwrap_or_else(String::default)
-                        );
-                    }
-                }
-                _ => {}
+            if let Some(master_path) = library.resolve_master_path(master_uuid) {
+                println!("{master_path}");
+            } else {
+                eprintln!("Can't resolve master path for {master_uuid}");
             }
         }
     }

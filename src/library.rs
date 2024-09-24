@@ -564,6 +564,33 @@ impl Library {
         &self.volumes
     }
 
+    /// Resolve the path of a master to it's macOS on disk location
+    /// either to an existing volume or relative to the library.
+    pub fn resolve_master_path(&self, uuid: &str) -> Option<String> {
+        match self.get(uuid) {
+            Some(crate::StoreWrapper::Master(master)) => {
+                let image_path = master.image_path.as_ref().unwrap();
+                master
+                    .file_volume_uuid
+                    .as_ref()
+                    .and_then(|volume_uuid| {
+                        self.get(volume_uuid).and_then(|object| {
+                            if let crate::StoreWrapper::Volume(volume) = object {
+                                Some(format!(
+                                    "/Volumes/{}/{image_path}",
+                                    volume.volume_name.clone().unwrap_or_else(String::default)
+                                ))
+                            } else {
+                                None
+                            }
+                        })
+                    })
+                    .or_else(|| Some(format!("Masters/{image_path}")))
+            }
+            _ => None,
+        }
+    }
+
     /// List keywords.
     pub fn list_keywords(&mut self) -> Option<Vec<Keyword>> {
         let audit = self.auditor.is_some();
