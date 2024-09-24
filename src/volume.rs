@@ -20,11 +20,11 @@ pub struct Volume {
 
 impl SqliteLoadable for Volume {
     fn tables() -> &'static str {
-        &"RKVolume"
+        "RKVolume"
     }
 
     fn columns() -> &'static str {
-        &"modelId, uuid, name, diskUuid"
+        "modelId, uuid, name, diskUuid"
     }
 
     fn from_row(row: &rusqlite::Row) -> Result<Self>
