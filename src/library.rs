@@ -570,22 +570,20 @@ impl Library {
         match self.get(uuid) {
             Some(crate::StoreWrapper::Master(master)) => {
                 let image_path = master.image_path.as_ref().unwrap();
-                master
-                    .file_volume_uuid
-                    .as_ref()
-                    .and_then(|volume_uuid| {
-                        self.get(volume_uuid).and_then(|object| {
-                            if let crate::StoreWrapper::Volume(volume) = object {
-                                Some(format!(
-                                    "/Volumes/{}/{image_path}",
-                                    volume.volume_name.clone().unwrap_or_else(String::default)
-                                ))
-                            } else {
-                                None
-                            }
-                        })
+                if let Some(volume_uuid) = master.file_volume_uuid.as_ref() {
+                    self.get(volume_uuid).and_then(|object| {
+                        if let crate::StoreWrapper::Volume(volume) = object {
+                            Some(format!(
+                                "/Volumes/{}/{image_path}",
+                                volume.volume_name.clone().unwrap_or_else(String::default)
+                            ))
+                        } else {
+                            None
+                        }
                     })
-                    .or_else(|| Some(format!("Masters/{image_path}")))
+                } else {
+                    Some(format!("Masters/{image_path}"))
+                }
             }
             _ => None,
         }
