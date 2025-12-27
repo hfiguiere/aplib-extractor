@@ -10,7 +10,7 @@ documentation = "https://docs.rs/aplib-extractor/"
 
 [dependencies]
 chrono = "0.4.19"
-exempi2 = "0.2.0"
+exempi2 = "0.3.0"
 lazy_static = "1.4.0"
 maplit = "1.0.2"
 num-derive = "0.4.0"
