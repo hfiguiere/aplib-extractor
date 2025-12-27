@@ -38,6 +38,7 @@ pub use library::{Library, ModelInfo, PROGRESS_NONE};
 pub use master::Master;
 pub use store::Wrapper as StoreWrapper;
 pub use version::Version;
+pub use xmp::ToXmp;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
