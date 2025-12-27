@@ -17,6 +17,7 @@ use aplib::AplibObject;
 use aplib::Keyword;
 use aplib::Library;
 use aplib::ModelInfo;
+use aplib::NotesProperties;
 use aplib::StoreWrapper;
 use aplib::{AlbumSubclass, PROGRESS_NONE};
 
@@ -67,6 +68,9 @@ struct CommandArgs {
     #[arg(long)]
     /// Dump the keywords
     keywords: bool,
+    #[arg(long)]
+    /// Dump the notes
+    notes: bool,
     #[arg(long)]
     /// Dump the volumes
     volumes: bool,
@@ -251,6 +255,9 @@ fn process_dump(args: &Args) {
         }
         if args.all || args.keywords {
             dump_keywords(&mut library);
+        }
+        if args.all || args.notes {
+            dump_notes(&mut library);
         }
 
         if args.all || args.masters {
@@ -468,6 +475,76 @@ fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
                 )
             }
             _ => println!("version {version_uuid} not found"),
+        }
+    }
+}
+
+fn dump_note(t: char, note: &NotesProperties) {
+    let uuid = note.uuid.as_ref().unwrap();
+    let date = if let Some(date) = &note.create_date {
+        date.to_string()
+    } else {
+        "None".to_string()
+    };
+    let property = note.property_key.clone().unwrap_or_default();
+    println!(
+        "| {t} | {uuid:<22} | {date:<33} | {:>8} | {property:<13} | {}",
+        if let Some(note_data) = &note.data {
+            note_data.len().to_string()
+        } else {
+            "None".to_string()
+        },
+        if let Some(note) = &note.note {
+            note
+        } else {
+            "None"
+        }
+    );
+}
+
+fn dump_notes(library: &mut Library) {
+    let mut pb = ProgressBar::on(stderr(), 1);
+    pb.tick_format("|/-\\");
+
+    library.load_masters(Some(&mut |inc: u64| {
+        pb.add(inc);
+        true
+    }));
+    pb.finish();
+
+    library.load_folders(Some(&mut |_: u64| {
+        pb.tick();
+        true
+    }));
+    pb.finish();
+
+    println!("| T | uuid                   | created                           | data len | property      | note                   ");
+    println!("+---+------------------------+-----------------------------------+----------+---------------|------------------------");
+    let masters = library.masters();
+    for master_uuid in masters {
+        if master_uuid.is_empty() {
+            continue;
+        }
+        if let Some(StoreWrapper::Master(master)) = library.get(master_uuid) {
+            if let Some(notes) = &master.notes {
+                for note in notes {
+                    dump_note('M', note);
+                }
+            }
+        }
+    }
+
+    let folders = library.folders();
+    for folder_uuid in folders {
+        if folder_uuid.is_empty() {
+            continue;
+        }
+        if let Some(StoreWrapper::Folder(folder)) = library.get(folder_uuid) {
+            if let Some(notes) = &folder.notes {
+                for note in notes {
+                    dump_note('F', note);
+                }
+            }
         }
     }
 }

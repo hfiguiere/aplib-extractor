@@ -17,12 +17,12 @@ use crate::plutils::Value;
 #[derive(Debug)]
 pub struct NotesProperties {
     attached_to_uuid: Option<String>,
-    create_date: Option<DateTime<Utc>>,
-    data: Option<Vec<u8>>,
+    pub create_date: Option<DateTime<Utc>>,
+    pub data: Option<Vec<u8>>,
     model_id: Option<i64>,
-    note: Option<String>,
-    uuid: Option<String>,
-    property_key: Option<String>,
+    pub note: Option<String>,
+    pub uuid: Option<String>,
+    pub property_key: Option<String>,
 }
 
 impl NotesProperties {
