@@ -19,7 +19,7 @@ use aplib::Library;
 use aplib::ModelInfo;
 use aplib::NotesProperties;
 use aplib::StoreWrapper;
-use aplib::{AlbumSubclass, PROGRESS_NONE};
+use aplib::{AlbumSubclass, ToXmp, PROGRESS_NONE};
 
 mod tree;
 
@@ -38,12 +38,26 @@ enum Command {
     Audit(NoArgs),
     /// List all masters
     List(NoArgs),
+    /// Dump XMP
+    Xmp(XmpArgs),
     /// Print the library tree
     Tree(tree::TreeArgs),
 }
 
 #[derive(Clone, Debug, Parser)]
 struct NoArgs {
+    /// Path to the Aperture Library
+    path: String,
+}
+
+#[derive(Clone, Debug, Parser)]
+struct XmpArgs {
+    #[arg(long)]
+    /// Version uuid to dump XMP
+    version: Option<String>,
+    #[arg(long)]
+    /// All XMP (very verbose)
+    all: bool,
     /// Path to the Aperture Library
     path: String,
 }
@@ -85,8 +99,52 @@ fn main() {
         Command::Dump(_) => process_dump(&args),
         Command::Audit(_) => process_audit(&args),
         Command::List(_) => process_list(&args),
+        Command::Xmp(args) => process_xmp(&args),
         Command::Tree(args) => tree::process_tree(&args),
     };
+}
+
+/// Return true if the library is ok
+fn check_library(library: &mut Library) -> bool {
+    let version = library.library_version();
+    if version.is_err() {
+        println!("Invalid library");
+        return false;
+    }
+
+    true
+}
+
+fn dump_one_xmp(library: &Library, uuid: &str) {
+    use exempi2::{SerialFlags, Xmp};
+
+    if let Some(StoreWrapper::Version(version)) = library.get(uuid) {
+        let mut xmp = Xmp::new();
+        version.to_xmp(&mut xmp);
+        println!(
+            "{}",
+            xmp.serialize(SerialFlags::OMITPACKETWRAPPER, 0).unwrap()
+        );
+    }
+}
+
+fn process_xmp(args: &XmpArgs) {
+    let mut library = Library::new(&args.path);
+    if !check_library(&mut library) {
+        return;
+    }
+    if args.all || args.version.is_some() {
+        library.load_versions(PROGRESS_NONE);
+    }
+    if args.all {
+        let versions = library.versions();
+        for version_uuid in versions {
+            dump_one_xmp(&library, version_uuid);
+        }
+    }
+    if let Some(version) = &args.version {
+        dump_one_xmp(&library, version);
+    }
 }
 
 fn process_list(args: &Args) {
