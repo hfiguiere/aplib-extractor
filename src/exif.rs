@@ -19,11 +19,15 @@ use crate::xmp::{ToXmp, XmpProperty, XmpTranslator};
 
 lazy_static::lazy_static! {
     /// HashMap for Exif properties (Aperture) to XMP.
+    ///
+    /// XmpTranslator::Custom mean it should be implemented in custom_value_to_string
     static ref EXIF_TO_XMP: HashMap<&'static str, XmpTranslator> = maplit::hashmap!{
         "ApertureValue" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF, "ApertureValue")),
         "Artist" => XmpTranslator::Property(XmpProperty::new(
             NS_DC, "creator")),
+        "BrightnessValue" => XmpTranslator::Property(XmpProperty::new(
+            NS_EXIF, "BrightnessValue")),
         "CameraSerialNumber" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF_AUX, "SerialNumber")),
         "CaptureDayOfMonth" => XmpTranslator::Custom,
@@ -33,7 +37,7 @@ lazy_static::lazy_static! {
         "CaptureMonthOfYear" => XmpTranslator::None,
         "CaptureSecondOfMinute" => XmpTranslator::None,
         "CaptureYear" => XmpTranslator::None,
-        //"ColorModel"
+        "ColorModel" => XmpTranslator::Custom,
         "ColorSpace" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF, "ColorSpace")),
         "Copyright" => XmpTranslator::Property(XmpProperty::new(
@@ -59,6 +63,8 @@ lazy_static::lazy_static! {
             NS_EXIF, "FlashPixVersion")),
         "FocalLength" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF, "FocalLength")),
+        "FocalLenIn35mmFilm" =>  XmpTranslator::Property(XmpProperty::new(
+            NS_EXIF, "FocalLengthIn35mmFilm")),
         "FocusDistance" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF_AUX, "ApproximateFocusDistance")),
         //    +- Exif.FocusMode
@@ -94,7 +100,8 @@ lazy_static::lazy_static! {
             NS_EXIF, "PixelYDimension")),
         "PixelWidth" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF, "PixelXDimension")),
-        //    +- Exif.ProfileName
+        "ProfileName" => XmpTranslator::Property(XmpProperty::new(
+            NS_PHOTOSHOP, "ICCProfile")),
         "Saturation"  => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF, "Saturation")),
         "SceneCaptureType" => XmpTranslator::Property(XmpProperty::new(
@@ -105,13 +112,15 @@ lazy_static::lazy_static! {
             NS_EXIF, "ShutterSpeedValue")),
         "Software" => XmpTranslator::Property(XmpProperty::new(
             NS_XMP, "CreatorTool")),
+        "SubjectDistance" => XmpTranslator::Property(XmpProperty::new(
+            NS_EXIF, "SubjectDistance")),
         "WhiteBalance" => XmpTranslator::Property(XmpProperty::new(
             NS_EXIF, "SceneCaptureType")),
         //    +- Exif.WhiteBalanceIndex
     };
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub enum ExifValue {
     #[default]
     None,
@@ -148,10 +157,10 @@ impl ExifProperties {
                 _ => ExifValue::None,
             };
             if ev != ExifValue::None {
-                values.insert(key.to_owned(), ev);
+                values.insert(key.to_owned(), ev.clone());
                 if let Some(ref mut r) = *auditor {
                     if !EXIF_TO_XMP.contains_key(&key.as_str()) {
-                        r.skip(&format!("Exif.{key}"), SkipReason::UnknownProp);
+                        r.skip(&format!("Exif.{key} = {:?}", ev), SkipReason::UnknownProp);
                     }
                 }
             } else if let Some(ref mut r) = *auditor {
@@ -219,6 +228,30 @@ impl ExifProperties {
             }
             "LensMinMM" => {
                 self.lens_info(xmp);
+            }
+            "ColorModel" => {
+                let model = self.bag.get("ColorModel");
+                if let Some(ExifValue::Str(model)) = &model {
+                    match model.as_str() {
+                        "RGB" => {
+                            let _ = xmp.set_property(
+                                NS_TIFF,
+                                "SamplesPerPixel",
+                                "3",
+                                exempi2::PropFlags::NONE,
+                            );
+                        }
+                        "Gray" => {
+                            let _ = xmp.set_property(
+                                NS_TIFF,
+                                "SamplesPerPixel",
+                                "1",
+                                exempi2::PropFlags::NONE,
+                            );
+                        }
+                        _ => println!("Unknown colour model {model}"),
+                    }
+                }
             }
             _ => {}
         }
