@@ -1,14 +1,15 @@
 /*
- * Copyright (C) 2016-2023 Hubert Figuière
+ * Copyright (C) 2016-2025 Hubert Figuière
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+use std::path::{Path, PathBuf};
+
 use chrono::{DateTime, Utc};
 use exempi2::Xmp;
-use std::path::Path;
 
 use crate::audit::{
     audit_get_array_value, audit_get_bool_value, audit_get_date_value, audit_get_dict_value,
@@ -30,6 +31,7 @@ use crate::PlistLoadable;
 pub struct Version {
     uuid: Option<String>,
     model_id: Option<i64>,
+    pub file: PathBuf,
     /// The associated `Master`.
     pub master_uuid: Option<String>,
 
@@ -73,6 +75,7 @@ impl PlistLoadable for Version {
     {
         use crate::plutils::*;
 
+        let file = plist_path.as_ref().to_owned();
         let plist = parse_plist(plist_path);
         match plist {
             Value::Dictionary(ref dict) => {
@@ -80,6 +83,7 @@ impl PlistLoadable for Version {
                 let exif = audit_get_dict_value(dict, "exifProperties", &mut auditor);
                 let custom_info = audit_get_dict_value(dict, "customInfo", &mut auditor);
                 let result = Some(Version {
+                    file,
                     uuid: audit_get_str_value(dict, "uuid", &mut auditor),
                     master_uuid: audit_get_str_value(dict, "masterUuid", &mut auditor),
                     project_uuid: audit_get_str_value(dict, "projectUuid", &mut auditor),
@@ -187,13 +191,12 @@ fn test_version_parse() {
     use crate::xmp;
     use exempi2;
 
-    let version = Version::from_path(
-        testutils::get_test_file_path("Version-0.apversion").as_path(),
-        None,
-    );
+    let file = testutils::get_test_file_path("Version-0.apversion");
+    let version = Version::from_path(&file, None);
     assert!(version.is_some());
     let version = version.unwrap();
 
+    assert_eq!(version.file, file);
     assert_eq!(version.uuid.as_ref().unwrap(), "MHMIbw5CQaiMgQ3n7g2w2A");
     assert!(version.is_original.unwrap());
     assert_eq!(

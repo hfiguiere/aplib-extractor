@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2016-2023 Hubert Figuière
+ * Copyright (C) 2016-2025 Hubert Figuière
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Utc};
 use num_traits::FromPrimitive;
@@ -47,6 +47,7 @@ pub struct Album {
     folder_uuid: Option<String>,
     model_id: Option<i64>,
 
+    pub file: PathBuf,
     /// Subclass. See ``Subclass`` enum. (Implicit, Smart, User)
     pub subclass: Option<Subclass>,
     /// ```Type```. Seems to always be 1
@@ -80,6 +81,7 @@ impl PlistLoadable for Album {
     {
         use crate::plutils::*;
 
+        let file = plist_path.as_ref().to_owned();
         let plist = parse_plist(plist_path);
         match plist {
             Value::Dictionary(ref dict) => {
@@ -87,6 +89,7 @@ impl PlistLoadable for Album {
                 let subclass = audit_get_int_value(&info_dict, "albumSubclass", &mut auditor)
                     .and_then(Subclass::from_i64);
                 let result = Some(Album {
+                    file,
                     uuid: audit_get_str_value(&info_dict, "uuid", &mut auditor),
                     folder_uuid: audit_get_str_value(&info_dict, "folderUuid", &mut auditor),
                     subclass,
@@ -217,13 +220,12 @@ fn test_album_parse() {
 fn test_album_content_parse() {
     use crate::testutils;
 
-    let album = Album::from_path(
-        testutils::get_test_file_path("x6yNun58SB2sImfCarTJHA.apalbum").as_path(),
-        None,
-    );
+    let file = testutils::get_test_file_path("x6yNun58SB2sImfCarTJHA.apalbum");
+    let album = Album::from_path(&file, None);
     assert!(album.is_some());
     let album = album.unwrap();
 
+    assert_eq!(album.file, file);
     assert_eq!(album.uuid.as_ref().unwrap(), "x6yNun58SB2sImfCarTJHA");
     assert_eq!(album.folder_uuid.as_ref().unwrap(), "TopLevelAlbums");
     assert_eq!(album.model_id.unwrap(), 181);

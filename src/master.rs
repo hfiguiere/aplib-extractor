@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2016-2023 Hubert Figuière
+ * Copyright (C) 2016-2025 Hubert Figuière
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Utc};
 
@@ -27,6 +27,7 @@ pub struct Master {
     model_id: Option<i64>,
     project_uuid: Option<String>,
 
+    pub file: PathBuf,
     /// If it is RAW+JPEG, there is another master.
     pub alternate_master: Option<String>,
     /// uuid of the orignal version
@@ -66,6 +67,7 @@ impl PlistLoadable for Master {
         P: AsRef<Path>,
     {
         use crate::plutils::*;
+        let file = plist_path.as_ref().to_owned();
         let plist = parse_plist(plist_path);
         match plist {
             Value::Dictionary(ref dict) => {
@@ -82,6 +84,7 @@ impl PlistLoadable for Master {
                         "originalVersionUuid",
                         &mut auditor,
                     ),
+                    file,
                     project_uuid: audit_get_str_value(dict, "projectUuid", &mut auditor),
                     import_group_uuid: audit_get_str_value(dict, "importGroupUuid", &mut auditor),
                     filename: audit_get_str_value(dict, "fileName", &mut auditor),
@@ -179,13 +182,12 @@ impl Master {}
 fn test_master_parse() {
     use crate::testutils;
 
-    let master = Master::from_path(
-        testutils::get_test_file_path("Master.apmaster").as_path(),
-        None,
-    );
+    let file = testutils::get_test_file_path("Master.apmaster");
+    let master = Master::from_path(&file, None);
     assert!(master.is_some());
     let master = master.unwrap();
 
+    assert_eq!(master.file, file);
     assert_eq!(master.uuid.as_ref().unwrap(), "JpLq7STrRMmgm5YZTm6IzA");
     assert_eq!(
         master.project_uuid.as_ref().unwrap(),

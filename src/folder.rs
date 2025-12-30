@@ -1,10 +1,12 @@
 /*
+ Copyright (C) 2016-2025 Hubert Figuière
+
  This Source Code Form is subject to the terms of the Mozilla Public
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Utc};
 use num_traits::FromPrimitive;
@@ -43,6 +45,7 @@ pub struct Folder {
     /// id in model
     model_id: Option<i64>,
 
+    pub file: PathBuf,
     /// Folder type. (Project, Folder)
     pub folder_type: Option<Type>,
     /// Db model version
@@ -77,11 +80,13 @@ impl PlistLoadable for Folder {
     {
         use crate::plutils::*;
 
+        let file = plist_path.as_ref().to_owned();
         let plist = parse_plist(plist_path);
         match plist {
             Value::Dictionary(ref dict) => {
                 let notes = audit_get_array_value(dict, "notes", &mut auditor);
                 let result = Some(Folder {
+                    file,
                     path: audit_get_str_value(dict, "folderPath", &mut auditor),
                     folder_type: audit_get_int_value(dict, "folderType", &mut auditor)
                         .and_then(FromPrimitive::from_i64),
@@ -158,13 +163,12 @@ impl Folder {}
 fn test_folder_parse() {
     use crate::testutils;
 
-    let folder = Folder::from_path(
-        testutils::get_test_file_path("a%TX9lmjQVWvuK9u6RNhGQ.apfolder").as_path(),
-        None,
-    );
+    let file = testutils::get_test_file_path("a%TX9lmjQVWvuK9u6RNhGQ.apfolder");
+    let folder = Folder::from_path(&file, None);
     assert!(folder.is_some());
     let folder = folder.unwrap();
 
+    assert_eq!(folder.file, file);
     assert_eq!(folder.uuid.as_ref().unwrap(), "a%TX9lmjQVWvuK9u6RNhGQ");
     assert_eq!(folder.parent_uuid.as_ref().unwrap(), "AllProjectsItem");
     assert_eq!(folder.model_id.unwrap(), 333);
