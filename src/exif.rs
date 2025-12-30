@@ -16,6 +16,7 @@ use plist::Value;
 use crate::audit::{Report, SkipReason};
 use crate::xmp::ns::*;
 use crate::xmp::{ToXmp, XmpProperty, XmpTranslator};
+use crate::Result;
 
 lazy_static::lazy_static! {
     /// HashMap for Exif properties (Aperture) to XMP.
@@ -259,14 +260,14 @@ impl ExifProperties {
 }
 
 impl ToXmp for ExifProperties {
-    fn to_xmp(&self, xmp: &mut Xmp) -> bool {
+    fn to_xmp(&self, xmp: &mut Xmp) -> Result<()> {
         for (key, value) in &self.bag {
             if let Some(translator) = EXIF_TO_XMP.get(&key.as_str()) {
                 match *translator {
                     XmpTranslator::Property(ref prop) => {
                         if let Some(value) = Self::value_to_string(value) {
                             /*let result = */
-                            prop.put_into_xmp(&value, xmp);
+                            prop.put_into_xmp(&value, xmp)?;
                         }
                     }
                     XmpTranslator::Custom => self.custom_value_to_string(key, xmp),
@@ -274,6 +275,6 @@ impl ToXmp for ExifProperties {
                 }
             }
         }
-        true
+        Ok(())
     }
 }

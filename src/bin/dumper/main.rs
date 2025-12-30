@@ -120,7 +120,7 @@ fn dump_one_xmp(library: &Library, uuid: &str) {
 
     if let Some(StoreWrapper::Version(version)) = library.get(uuid) {
         let mut xmp = Xmp::new();
-        version.to_xmp(&mut xmp);
+        let _ = version.to_xmp(&mut xmp);
         println!(
             "{}",
             xmp.serialize(SerialFlags::OMITPACKETWRAPPER, 0).unwrap()

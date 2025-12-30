@@ -23,7 +23,7 @@ use crate::store;
 use crate::xmp::ToXmp;
 use crate::AplibObject;
 use crate::AplibType;
-use crate::PlistLoadable;
+use crate::{PlistLoadable, Result};
 
 #[derive(Debug)]
 /// A rendered image. There is one for the orignal, and one per
@@ -171,16 +171,16 @@ impl AplibObject for Version {
 }
 
 impl ToXmp for Version {
-    fn to_xmp(&self, xmp: &mut Xmp) -> bool {
+    fn to_xmp(&self, xmp: &mut Xmp) -> Result<()> {
         // Here we make sure the Exif data are
         // processed before Iptc.
         if let Some(ref exif) = self.exif {
-            exif.to_xmp(xmp);
+            exif.to_xmp(xmp)?;
         }
         if let Some(ref iptc) = self.iptc {
-            iptc.to_xmp(xmp);
+            iptc.to_xmp(xmp)?;
         }
-        true
+        Ok(())
     }
 }
 
@@ -217,7 +217,7 @@ fn test_version_parse() {
     let mut xmp = Xmp::new();
 
     let result = version.to_xmp(&mut xmp);
-    assert!(result);
+    assert!(result.is_ok());
 
     let mut options: exempi2::PropFlags = exempi2::PropFlags::NONE;
     let value = xmp.get_property(xmp::ns::NS_DC, "creator", &mut options);

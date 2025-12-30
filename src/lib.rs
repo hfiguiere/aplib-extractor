@@ -45,6 +45,8 @@ pub use xmp::ToXmp;
 pub enum Error {
     #[error("sqlite error {0}")]
     Sql(#[from] rusqlite::Error),
+    #[error("xmp error {0}")]
+    Xmp(#[from] exempi2::Error),
 }
 
 type Result<T> = std::result::Result<T, Error>;

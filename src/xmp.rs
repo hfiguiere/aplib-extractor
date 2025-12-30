@@ -8,6 +8,8 @@
 
 use exempi2::Xmp;
 
+use crate::Result;
+
 /// Define namespace constants until we can get them out of Exempi.
 pub mod ns {
     pub const NS_DC: &str = "http://purl.org/dc/elements/1.1/";
@@ -69,59 +71,53 @@ impl XmpProperty {
     }
 
     /// Put the property `value` into the XMP meta.
-    pub fn put_into_xmp(&self, value: &str, xmp: &mut Xmp) -> bool {
+    pub fn put_into_xmp(&self, value: &str, xmp: &mut Xmp) -> Result<()> {
         if self.array {
-            if xmp
-                .set_property(
+            xmp.set_property(
+                self.ns,
+                self.property,
+                "",
+                exempi2::PropFlags::VALUE_IS_ARRAY,
+            )?;
+
+            for element in value.split(", ") {
+                xmp.set_array_item(
                     self.ns,
                     self.property,
-                    "",
-                    exempi2::PropFlags::VALUE_IS_ARRAY,
-                )
-                .is_err()
-            {
-                return false;
+                    -1,
+                    element,
+                    exempi2::PropFlags::ARRAY_INSERT_AFTER,
+                )?;
             }
-            for element in value.split(", ") {
-                if xmp
-                    .set_array_item(
-                        self.ns,
-                        self.property,
-                        -1,
-                        element,
-                        exempi2::PropFlags::ARRAY_INSERT_AFTER,
-                    )
-                    .is_err()
-                {
-                    return false;
-                }
-            }
-            return true;
         } else if self.index.is_none() && self.field.is_none() {
-            return xmp
-                .set_property(self.ns, self.property, value, exempi2::PropFlags::NONE)
-                .is_ok();
+            return Ok(xmp.set_property(
+                self.ns,
+                self.property,
+                value,
+                exempi2::PropFlags::NONE,
+            )?);
         } else if let Some(ref field) = self.field {
             // XXX when there is the API in exempi, use it.
             // For now we have to compose the path by hand.
             if let Ok(prefix) = exempi2::namespace_prefix(field.ns) {
                 let property = format!("{}/{}{}", self.property, prefix, field.property);
-                return xmp
-                    .set_property(self.ns, &property, value, exempi2::PropFlags::NONE)
-                    .is_ok();
-            }
-        } else if let Some(index) = self.index {
-            return xmp
-                .set_array_item(
+                return Ok(xmp.set_property(
                     self.ns,
-                    self.property,
-                    index,
+                    &property,
                     value,
                     exempi2::PropFlags::NONE,
-                )
-                .is_ok();
+                )?);
+            }
+        } else if let Some(index) = self.index {
+            return Ok(xmp.set_array_item(
+                self.ns,
+                self.property,
+                index,
+                value,
+                exempi2::PropFlags::NONE,
+            )?);
         }
-        false
+        Ok(())
     }
 }
 
@@ -138,7 +134,7 @@ pub(crate) enum XmpTranslator {
 /// Trait for conversion to XMP.
 pub trait ToXmp {
     /// Push the object properties to the `xmp` XMP meta.
-    fn to_xmp(&self, xmp: &mut Xmp) -> bool;
+    fn to_xmp(&self, xmp: &mut Xmp) -> Result<()>;
 }
 
 #[cfg(test)]
@@ -155,9 +151,9 @@ fn test_xmp() {
         XmpProperty::new(ns::NS_IPTC4XMP, "CiAdrCity"),
     );
     let prop3 = XmpProperty::new_array(ns::NS_DC, "subject");
-    assert!(prop1.put_into_xmp("Batman", &mut xmp));
-    assert!(prop2.put_into_xmp("Gotham", &mut xmp));
-    assert!(prop3.put_into_xmp("The Joker, Two Faces", &mut xmp));
+    assert!(prop1.put_into_xmp("Batman", &mut xmp).is_ok());
+    assert!(prop2.put_into_xmp("Gotham", &mut xmp).is_ok());
+    assert!(prop3.put_into_xmp("The Joker, Two Faces", &mut xmp).is_ok());
 
     let mut options: exempi2::PropFlags = exempi2::PropFlags::NONE;
     let value = xmp.get_property(prop1.ns, prop1.property, &mut options);

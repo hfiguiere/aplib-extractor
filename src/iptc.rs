@@ -14,6 +14,7 @@ use plist::Value;
 use crate::audit::{Report, SkipReason};
 use crate::xmp::ns::*;
 use crate::xmp::{ToXmp, XmpProperty, XmpTranslator};
+use crate::Result;
 
 lazy_static::lazy_static! {
     /// HashMap for IPTC properties (Aperture) to XMP.
@@ -132,16 +133,16 @@ impl IptcProperties {
 }
 
 impl ToXmp for IptcProperties {
-    fn to_xmp(&self, xmp: &mut Xmp) -> bool {
+    fn to_xmp(&self, xmp: &mut Xmp) -> Result<()> {
         for (key, value) in &self.bag {
             let value = match *value {
                 IptcValue::Str(ref str) => str,
                 _ => continue,
             };
             if let Some(XmpTranslator::Property(ref prop)) = IPTC_TO_XMP.get(&key.as_str()) {
-                prop.put_into_xmp(value, xmp);
+                prop.put_into_xmp(value, xmp)?;
             }
         }
-        true
+        Ok(())
     }
 }
