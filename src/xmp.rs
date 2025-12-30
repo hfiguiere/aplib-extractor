@@ -20,6 +20,7 @@ pub mod ns {
     pub const NS_EXIF: &str = "http://ns.adobe.com/exif/1.0/";
     pub const NS_EXIF_AUX: &str = "http://ns.adobe.com/exif/1.0/aux/";
     pub const NS_TIFF: &str = "http://ns.adobe.com/tiff/1.0/";
+    pub const NS_LIGHTROOM: &str = "http://ns.adobe.com/lightroom/1.0/";
 }
 
 #[derive(Clone, Debug)]

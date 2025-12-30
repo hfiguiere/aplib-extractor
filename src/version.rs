@@ -6,10 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Utc};
-use exempi2::Xmp;
+use exempi2::{PropFlags, Xmp};
 
 use crate::audit::{
     audit_get_array_value, audit_get_bool_value, audit_get_date_value, audit_get_dict_value,
@@ -20,7 +21,10 @@ use crate::exif::ExifProperties;
 use crate::iptc::IptcProperties;
 use crate::plutils::Value;
 use crate::store;
-use crate::xmp::ToXmp;
+use crate::xmp::{
+    ns::{NS_DC, NS_LIGHTROOM},
+    ToXmp,
+};
 use crate::AplibObject;
 use crate::AplibType;
 use crate::{PlistLoadable, Result};
@@ -149,6 +153,46 @@ impl PlistLoadable for Version {
     }
 }
 
+impl Version {
+    fn keywords_to_xmp(&self, keywords: &[Value], xmp: &mut Xmp) -> Result<()> {
+        if keywords.is_empty() {
+            return Ok(());
+        }
+        // keywords for DublinCore
+        let mut dc_kw = HashSet::new();
+        xmp.set_property(
+            NS_LIGHTROOM,
+            "hierarchicalSubject",
+            "",
+            PropFlags::VALUE_IS_ARRAY,
+        )?;
+        for keyword in keywords {
+            if let Value::String(keyword) = &keyword {
+                let mut kw = keyword.split("\t").collect::<Vec<_>>();
+                kw.reverse();
+                let hier_kw = kw.join("|");
+                for k in kw {
+                    dc_kw.insert(k);
+                }
+                xmp.set_array_item(
+                    NS_LIGHTROOM,
+                    "hierarchicalSubject",
+                    -1,
+                    &hier_kw,
+                    PropFlags::ARRAY_INSERT_AFTER,
+                )?;
+            }
+        }
+
+        xmp.set_property(NS_DC, "subject", "", PropFlags::VALUE_IS_ARRAY)?;
+        for k in dc_kw {
+            xmp.set_array_item(NS_DC, "subject", -1, k, PropFlags::ARRAY_INSERT_AFTER)?
+        }
+
+        Ok(())
+    }
+}
+
 impl AplibObject for Version {
     fn obj_type(&self) -> AplibType {
         AplibType::Version
@@ -172,6 +216,7 @@ impl AplibObject for Version {
 
 impl ToXmp for Version {
     fn to_xmp(&self, xmp: &mut Xmp) -> Result<()> {
+        exempi2::register_namespace(NS_LIGHTROOM, "lr")?;
         // Here we make sure the Exif data are
         // processed before Iptc.
         if let Some(ref exif) = self.exif {
@@ -179,6 +224,9 @@ impl ToXmp for Version {
         }
         if let Some(ref iptc) = self.iptc {
             iptc.to_xmp(xmp)?;
+        }
+        if let Some(keywords) = &self.keywords {
+            self.keywords_to_xmp(keywords, xmp)?;
         }
         Ok(())
     }
