@@ -61,7 +61,7 @@ lazy_static::lazy_static! {
 //        "DateCreated" => "",
         "Headline" => XmpTranslator::Property(XmpProperty::new(
             NS_PHOTOSHOP, "Headline")),
-        "Keywords" => XmpTranslator::Property(XmpProperty::new(
+        "Keywords" => XmpTranslator::Property(XmpProperty::new_array(
             NS_DC, "subject")),
 //        "Label" => "",
         "ObjectAttributeReference" => XmpTranslator::Property(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Hubert Figuière
+ * Copyright (C) 2017-2025 Hubert Figuière
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,6 +31,8 @@ pub struct XmpProperty {
     index: Option<i32>,
     /// The sub property if applicable
     field: Option<Box<XmpProperty>>,
+    /// The array content, split on `, `.
+    array: bool,
 }
 
 impl XmpProperty {
@@ -41,6 +43,7 @@ impl XmpProperty {
             property,
             index: None,
             field: None,
+            array: false,
         }
     }
 
@@ -51,12 +54,50 @@ impl XmpProperty {
             property,
             index: None,
             field: Some(Box::new(field)),
+            array: false,
+        }
+    }
+
+    pub fn new_array(ns: &'static str, property: &'static str) -> XmpProperty {
+        XmpProperty {
+            ns,
+            property,
+            index: None,
+            field: None,
+            array: true,
         }
     }
 
     /// Put the property `value` into the XMP meta.
     pub fn put_into_xmp(&self, value: &str, xmp: &mut Xmp) -> bool {
-        if self.index.is_none() && self.field.is_none() {
+        if self.array {
+            if xmp
+                .set_property(
+                    self.ns,
+                    self.property,
+                    "",
+                    exempi2::PropFlags::VALUE_IS_ARRAY,
+                )
+                .is_err()
+            {
+                return false;
+            }
+            for element in value.split(", ") {
+                if xmp
+                    .set_array_item(
+                        self.ns,
+                        self.property,
+                        -1,
+                        element,
+                        exempi2::PropFlags::ARRAY_INSERT_AFTER,
+                    )
+                    .is_err()
+                {
+                    return false;
+                }
+            }
+            return true;
+        } else if self.index.is_none() && self.field.is_none() {
             return xmp
                 .set_property(self.ns, self.property, value, exempi2::PropFlags::NONE)
                 .is_ok();
@@ -113,11 +154,19 @@ fn test_xmp() {
         "CreatorContactInfo",
         XmpProperty::new(ns::NS_IPTC4XMP, "CiAdrCity"),
     );
+    let prop3 = XmpProperty::new_array(ns::NS_DC, "subject");
     assert!(prop1.put_into_xmp("Batman", &mut xmp));
     assert!(prop2.put_into_xmp("Gotham", &mut xmp));
+    assert!(prop3.put_into_xmp("The Joker, Two Faces", &mut xmp));
 
     let mut options: exempi2::PropFlags = exempi2::PropFlags::NONE;
     let value = xmp.get_property(prop1.ns, prop1.property, &mut options);
     assert!(value.is_ok());
     assert_eq!(value.unwrap().to_str(), Ok("Batman"));
+    options = exempi2::PropFlags::NONE;
+    let value = xmp.get_array_item(prop3.ns, prop3.property, 1, &mut options);
+    assert_eq!(value.unwrap().to_str(), Ok("The Joker"));
+    options = exempi2::PropFlags::NONE;
+    let value = xmp.get_array_item(prop3.ns, prop3.property, 2, &mut options);
+    assert_eq!(value.unwrap().to_str(), Ok("Two Faces"));
 }
