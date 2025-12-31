@@ -64,6 +64,9 @@ struct XmpArgs {
 
 #[derive(Clone, Debug, Parser)]
 struct DumpArgs {
+    #[arg(short, long)]
+    /// Don't output progress
+    silent: bool,
     #[arg(long)]
     /// Dump everything
     all: bool,
@@ -286,39 +289,51 @@ fn process_dump(args: &DumpArgs) {
             .unwrap_or(&String::from("NONE"))
     );
 
+    let silent = args.silent;
     if args.all || args.volumes {
-        dump_volumes(&mut library);
+        dump_volumes(&mut library, silent);
     }
     if args.all || args.folders {
-        dump_folders(&mut library);
+        dump_folders(&mut library, silent);
     }
     if args.all || args.albums {
-        dump_albums(&mut library);
+        dump_albums(&mut library, silent);
     }
     if args.all || args.keywords {
         dump_keywords(&mut library);
     }
     if args.all || args.notes {
-        dump_notes(&mut library);
+        dump_notes(&model_info, &mut library, silent);
     }
 
     if args.all || args.masters {
-        dump_masters(&model_info, &mut library);
+        dump_masters(&model_info, &mut library, silent);
     }
     if args.all || args.versions {
-        dump_versions(&model_info, &mut library);
+        dump_versions(&model_info, &mut library, silent);
     }
 }
 
-fn dump_volumes(library: &mut Library) {
-    let mut pb = ProgressBar::on(stderr(), 1);
-    pb.tick_format("|/-\\");
-
-    library.load_volumes(Some(&mut |_: u64| {
-        pb.tick();
+fn progress(total: u64) -> Box<dyn FnMut(u64) -> bool> {
+    let mut pb = ProgressBar::on(stderr(), total);
+    if total == 1 {
+        pb.tick_format("|/-\\");
+    }
+    Box::new(move |inc: u64| {
+        if total == 1 {
+            pb.tick();
+        } else {
+            pb.add(inc);
+        }
         true
-    }));
-    pb.finish();
+    })
+}
+
+fn dump_volumes(library: &mut Library, silent: bool) {
+    {
+        let p = progress(1);
+        library.load_volumes(if silent { None } else { Some(p) });
+    }
 
     let volumes = library.volumes();
     println!("{} Volumes:", volumes.len());
@@ -344,15 +359,11 @@ fn dump_volumes(library: &mut Library) {
     }
 }
 
-fn dump_folders(library: &mut Library) {
-    let mut pb = ProgressBar::on(stderr(), 1);
-    pb.tick_format("|/-\\");
-
-    library.load_folders(Some(&mut |_: u64| {
-        pb.tick();
-        true
-    }));
-    pb.finish();
+fn dump_folders(library: &mut Library, silent: bool) {
+    {
+        let p = progress(1);
+        library.load_folders(if silent { None } else { Some(p) });
+    }
 
     let folders = library.folders();
     println!("{} Folders:", folders.len());
@@ -392,15 +403,11 @@ fn dump_folders(library: &mut Library) {
     }
 }
 
-fn dump_albums(library: &mut Library) {
-    let mut pb = ProgressBar::on(stderr(), 1);
-    pb.tick_format("|/-\\");
-
-    library.load_albums(Some(&mut |_: u64| {
-        pb.tick();
-        true
-    }));
-    pb.finish();
+fn dump_albums(library: &mut Library, silent: bool) {
+    {
+        let p = progress(1);
+        library.load_albums(if silent { None } else { Some(p) });
+    }
 
     let albums = library.albums();
     println!("{} Albums:", albums.len());
@@ -442,15 +449,12 @@ fn dump_keywords(library: &mut Library) {
     }
 }
 
-fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
+fn dump_masters(model_info: &ModelInfo, library: &mut Library, silent: bool) {
     let count = model_info.master_count.unwrap_or(0) as u64;
-    let mut pb = ProgressBar::on(stderr(), count);
-
-    library.load_masters(Some(&mut |inc: u64| {
-        pb.add(inc);
-        true
-    }));
-    pb.finish();
+    {
+        let p = progress(count);
+        library.load_masters(if silent { None } else { Some(p) });
+    }
 
     let masters = library.masters();
     println!("{} Masters:", masters.len());
@@ -478,15 +482,12 @@ fn dump_masters(model_info: &ModelInfo, library: &mut Library) {
     }
 }
 
-fn dump_versions(model_info: &ModelInfo, library: &mut Library) {
+fn dump_versions(model_info: &ModelInfo, library: &mut Library, silent: bool) {
     let count = model_info.version_count.unwrap_or(0) as u64;
-    let mut pb = ProgressBar::on(stderr(), count);
-
-    library.load_versions(Some(&mut |inc: u64| {
-        pb.add(inc);
-        true
-    }));
-    pb.finish();
+    {
+        let p = progress(count);
+        library.load_versions(if silent { None } else { Some(p) });
+    }
 
     let versions = library.versions();
     println!("{} Versions:", versions.len());
@@ -541,21 +542,17 @@ fn dump_note(t: char, note: &NotesProperties) {
     );
 }
 
-fn dump_notes(library: &mut Library) {
-    let mut pb = ProgressBar::on(stderr(), 1);
-    pb.tick_format("|/-\\");
+fn dump_notes(model_info: &ModelInfo, library: &mut Library, silent: bool) {
+    {
+        let count = model_info.master_count.unwrap_or(0) as u64;
+        let p = progress(count);
+        library.load_masters(if silent { None } else { Some(p) });
+    }
 
-    library.load_masters(Some(&mut |inc: u64| {
-        pb.add(inc);
-        true
-    }));
-    pb.finish();
-
-    library.load_folders(Some(&mut |_: u64| {
-        pb.tick();
-        true
-    }));
-    pb.finish();
+    {
+        let p = progress(1);
+        library.load_folders(if silent { None } else { Some(p) });
+    }
 
     println!("| T | uuid                   | created                           | data len | property      | note                   ");
     println!("+---+------------------------+-----------------------------------+----------+---------------|------------------------");
